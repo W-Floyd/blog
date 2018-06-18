@@ -13,4 +13,4 @@ Having no real clue what I'm doing, here's what I've ordered thus far:
 List of things:
 
 - Rice cooker
-- (http://ali.onl/128Q)[Thermistors] ($2.97 - 100pcs, for temperature readings)
+- [Thermistors](http://ali.onl/128Q) ($2.97 - 100pcs, for temperature readings)
