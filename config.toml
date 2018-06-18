@@ -1,91 +1,41 @@
 baseurl = "http://notmy.space/blog/"
+languageCode = "en-us"
 title = "William Floyd's Blog"
-themesDir = "./themes/"
-theme = "whiteplain"
-languageCode = "en"
-# Disqus shortname
-#disqusShortname = ""
-# google analytics tracking id
-#googleAnalytics = ""
+theme = "natrium"
+preserveTaxonomyNames = true
+rssLimit = 10
+paginate = 10
 pygmentsCodefences = true
-pygmentsUseClasses = true
-pygmentsOptions = "linenos=table"
-# Copyright notice. This is displayer in the footer.
-copyright = "&copy; Copyright 2018 William Floyd"
-
-[params]
-  # Date format
-  #dateFormat = "January 2, 2006"
-
-# This is displayer in About page.
-[params.author]
-  name = "William Floyd"
-
-  # Gravatar or Abatar image
-  #gravatar = "Gravatar email or MD5 Hash"
-  #avatar = "/path/to/avatar"
-
-  #twitter = "Twitter username"
-  #facebook = "Facebook username"
-  #googleplus = "Googleplus username"
-  #instagram = "Instagram username"
-  #tumblr = "Tumblr username"
-  #flickr = "Flickr username"
-  #reddit = "Reddit username"
-  #linkedin = "Linkedin username"
-  #slideshare = "Slideshare username"
-  #github = "Github username"
-  #gitlab = "Gitlab username"
-  #bitbucket = "Bitbucket username"
-  #stackoverflow = "Stackoverflow username"
-  #jsfiddle = "Jsfiddle username"
-  #codepen = "Codepen username"
-  #deviantart = "Deviantart username"
-  #behance = "Behance username"
-  #dribbble = "Dribbble username"
-  #wordpress = "Wordpress username"
-  #medium = "Medium username"
-  #foursquare = "Foursquare username"
-  #xing = "Xing username"
-  #quora = "Quora username"
-  #youtube = "Youtube username"
-  #vimeo = "Vimeo username"
-  #whatsapp = "Whatsapp username"
-  #skype = "Skype username"
-  #snapchat = "Snapchat username"
-  #pinterest = "Pinterest username"
-  #telegram = "Telegram username"
-  #vine = "Vine username"
-  #email = "Your email"
+pygmentsStyle = "native"
 
 [taxonomies]
-  category = "categories"
-  tag = "tags"
-  series = "series"
+    category = "categories"  
+    tag = "tags"
+
+[permalinks]
+    post = "/:slug/"
+    page = "/:slug/"
 
 [[menu.main]]
-  name = "Categories"
-  weight = 1
-  identifier = "categories"
-  url = "/categories/"
+    name = "About"
+    url = "/about/"
+    weight = -110
+    
 [[menu.main]]
-  name = "Tags"
-  weight = 2
-  identifier = "tags"
-  url = "/tags/"
-[[menu.main]]
-  name = "Archives"
-  weight = 3
-  identifier = "archives"
-  url = "/archives/"
-[[menu.main]]
-  name = "About"
-  weight = 4
-  identifier = "about"
-  url = "/about/"
+    name = "Tags"
+    url = "/tags"
+    weight = -120
 
-[[menu.footer]]
-  name = "About"
-  weight = 1
-  identifier = "about"
-  url = "/about/"
+[[menu.main]]
+    name = "Categories"
+    url = "/categories"
+    weight = -130
+
+[params]
+    description = ""
+
+[params.logo]
+    url = "logo.png"
+    width = 50
+    height = 50
+    alt = "Logo"
