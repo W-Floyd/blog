@@ -1,7 +1,7 @@
 ---
 author: "William Floyd"
 date: 2018-06-18
-title: Smart Rice Cooker Conversion - Part 1
+title: Smart Rice Cooker Conversion: Part 1
 ---
 
 The "why" isn't important (read "doesn't exist"), but I want to take a regular old "dumb" rice cooker, and convert it into a "smart" rice cooker.
