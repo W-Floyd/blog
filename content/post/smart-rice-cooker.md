@@ -1,5 +1,5 @@
 ---
-title: "Smart Rice Cooker Conversion: Part 1"
+title: "Smart Rice Cooker Conversion"
 date: "2018-06-18"
 author: "William Floyd"
 ---
@@ -24,11 +24,11 @@ Ideally, I will have the rice cooker serve an API, which my Orange Pi will bounc
 For now though, I am away from home, working, so I can't do anything on this for at least another 2 weeks, probably 3.
 Many of my parts have arrived (rice cooker, thermistors, relay, and NodeMCU), so once I get home, I can hit the ground running.
 
-#### API
+# API
 
 I tentatively (with no real experience designing them) plan on my API being the following.
 
-*Italicized* = Description
+*Italicized* = Description  
 **Bolded** = Final endpoints
 
 - /sensor
@@ -49,4 +49,4 @@ I tentatively (with no real experience designing them) plan on my API being the 
     - **/list**
       - *List known cooking routines*
     - **/start**
-      - *Start, or optionally schedule a routine*
+      - *Start a routine, optionally at a scheduled time*
