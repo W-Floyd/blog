@@ -89,4 +89,4 @@ Heating should be fine be fine with fairly large PWM, as the thermal lag I expec
 
 # Dep Graph
 
-<img src="connections.svg">
+<img src="/static/rice/connections.svg">
