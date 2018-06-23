@@ -1,4 +1,4 @@
-baseurl = "notmy.space/blog/"
+baseurl = "//notmy.space/blog/"
 languageCode = "en-us"
 title = "William Floyd's Blog"
 theme = "natrium"
