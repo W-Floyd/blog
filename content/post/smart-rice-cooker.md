@@ -47,23 +47,23 @@ I tentatively (with no real experience designing them) plan on my API being some
 
 *Italicized* = Description  
 
-- /sensor/temperature - *Returns temperature*
-- /action/light/kill - *Stops all light activity*
-- /action/light/set - *Change lighting mode, with optional duration*
-- /action/temperature/kill - *Stops all heating/cooling, lets the cooker cool to room temperature alone*
-- /action/temperature/set - *Heat/cool to given temperature, then hold. Should allow setting a target heat/cool rate. Should allow setting a hold duration*
-- /routine/cook/list - *List known cooking routines (proxy to `/settings/cook/recipe/list`)*
-- /routine/cook/start - *Start a routine*
-- /routine/cook/kill - *Kill any current running routine*
-- /routine/cook/schedule/list - *List any scheduled routines*
-- /routine/cook/schedule/set - *Submit/modify/delete a scheduled routine*
-- /settings/lighting/list - *List lighting modes*
-- /settings/lighting/set - *Submit/modify/delete a lighting mode*
-- /settings/cook/warm/temperature - *Set post-cook warming temperature*
-- /settings/cook/warm/set - *Turn post-cook warming on/off*
-- /settings/cook/warm/duration - *Determine post-cook warming duration*
-- /settings/cook/recipe/list - *List known cooking routines*
-- /settings/cook/recipe/set - *Submit/modify/delete a cooking routine*
+- `/sensor/temperature` - *Returns temperature*
+- `/action/light/kill` - *Stops all light activity*
+- `/action/light/set` - *Change lighting mode, with optional duration*
+- `/action/temperature/kill` - *Stops all heating/cooling, lets the cooker cool to room temperature alone*
+- `/action/temperature/set` - *Heat/cool to given temperature, then hold. Should allow setting a target heat/cool rate. Should allow setting a hold duration*
+- `/routine/cook/list - *List known cooking routines (proxy to `/settings/cook/recipe/list`)*
+- `/routine/cook/start` - *Start a routine*
+- `/routine/cook/kill` - *Kill any current running routine*
+- `/routine/cook/schedule/list` - *List any scheduled routines*
+- `/routine/cook/schedule/set` - *Submit/modify/delete a scheduled routine*
+- `/settings/lighting/list` - *List lighting modes*
+- `/settings/lighting/set` - *Submit/modify/delete a lighting mode*
+- `/settings/cook/warm/temperature` - *Set post-cook warming temperature*
+- `/settings/cook/warm/set` - *Turn post-cook warming on/off*
+- `/settings/cook/warm/duration` - *Determine post-cook warming duration*
+- `/settings/cook/recipe/list` - *List known cooking routines*
+- `/settings/cook/recipe/set` - *Submit/modify/delete a cooking routine*
 
 # Cooking schedule definition specifications
 
