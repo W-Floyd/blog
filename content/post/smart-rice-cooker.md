@@ -34,12 +34,16 @@ Ideally, I will have the rice cooker serve an API, which my Orange Pi will bounc
 For now though, I am away from home, working, so I can't do anything on this for at least another 2 weeks, probably 3.
 Many of my parts have arrived (rice cooker, thermistors, relay, and NodeMCU), so once I get home, I can hit the ground running.
 
+***
+
 # Thoughts
 
 ## Heating
 
 The contents of the rice cooker should be considered when heating/cooling, as they will absorb the heat and thermal lag will be an issue.
 If possible, look into either weighing the contents for a rough approximation (hard/complicated) or use recipe provided portion sizes to calculate the thermal capacity of the contents (water, mainly).
+
+***
 
 # API
 
