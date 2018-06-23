@@ -1,0 +1,173 @@
+digraph {
+    overlap=false
+    center=true
+    splines=true
+    sep="0.05"
+    node [style=filled, shape=record, color="black" fillcolor="tomato" ]
+
+    subgraph cluster_key {
+    
+        node [fillcolor="none"]
+        
+        subgraph cluster_doc {
+            "Done"[done]
+            "Documented"[documented]
+            "Undocumented"[fillcolor="tomato"]
+        }
+        
+        subgraph cluster_sub {
+        
+            "Depend on value"
+            "Proxy to value"
+            "Depend on function"
+        
+        }
+        
+        "Depend on value" -> "Node"[depend_value]
+        "Proxy to value" -> "Node"[proxy_value]
+        "Depend on function" -> "Node"[depend_function]
+        
+        label="Key"
+        
+    }
+
+    subgraph cluster_directives {
+    
+        "Sleep"
+        "Heat"
+        "Cool"
+        "Temperature"
+        label="Directives"
+        
+    }
+    
+    subgraph cluster_api {
+    
+        subgraph cluster_action {
+            
+            subgraph cluster_light {
+            
+                "/api/action/light/kill"[label="kill"]
+                "/api/action/light/set"[label="set"]
+                
+                label="light"
+                
+            }
+            
+            subgraph cluster_temperature {
+            
+                "/api/action/temperature/kill"[label="kill"]
+                "/api/action/temperature/set"[label="set"]
+                
+                label="temperature"
+                
+            }
+
+            label="action"
+        }
+        
+        subgraph cluster_sensor {
+        
+            "/api/sensor/temperature"[label="temperature"]
+            
+            label="sensor"
+            
+        }
+        
+        subgraph cluster_routine {
+        
+            subgraph cluster_routine_cook {
+            
+                "/api/routine/cook/list"[label="list"]
+                "/api/routine/cook/start"[label="start"]
+                "/api/routine/cook/kill"[label="kill"]
+            
+                subgraph cluster_schedule {
+                
+                    "/api/routine/cook/schedule/list"[label="list"]
+                    "/api/routine/cook/schedule/set"[label="set"]
+                
+                    label="schedule"
+                }
+            
+                label="cook"
+            }
+        
+            label="routine"
+        }
+        
+        subgraph cluster_settings {
+        
+            subgraph cluster_lighting {
+            
+                "/api/settings/lighting/list"[label="list"]
+                "/api/settings/lighting/set"[label="set"]
+                
+                label="lighting"
+                
+            }
+            
+            subgraph cluster_settings_cook {
+            
+                subgraph cluster_warm {
+                
+                    "/api/settings/cook/warm/temperature"[label="temperature"]
+                    "/api/settings/cook/warm/set"[label="set"]
+                    "/api/settings/cook/warm/duration"[label="duration"]
+                    
+                    label="warm"
+                    
+                }
+                
+                subgraph cluster_recipe {
+                
+                    "/api/settings/cook/recipe/list"[label="list"]
+                    "/api/settings/cook/recipe/set"[label="set"]
+                    
+                    label="recipe"
+                    
+                }
+            
+                label="cook"
+                
+            }
+            
+            label="settings"
+            
+        }
+        
+        label="api"
+    }
+    
+    "Temperature" -> { "Heat" "Cool" "Sleep" }[depend_function]
+    "/api/routine/cook/list" -> "/api/settings/cook/recipe/list"[proxy_value]
+
+// Description checklist ///////////////////////////////////////////////////////
+
+"/api/sensor/temperature"[documented]
+"/api/action/light/kill"[documented]
+"/api/action/light/set"[documented]
+"/api/action/temperature/kill"[documented]
+"/api/action/temperature/set"[documented]
+"/api/routine/cook/list"[documented]
+"/api/routine/cook/start"[documented]
+"/api/routine/cook/kill"[documented]
+"/api/routine/cook/schedule/list"[documented]
+"/api/routine/cook/schedule/set"[documented]
+"/api/settings/lighting/list"[documented]
+"/api/settings/lighting/set"[documented]
+"/api/settings/cook/warm/temperature"[documented]
+"/api/settings/cook/warm/set"[documented]
+"/api/settings/cook/warm/duration"[documented]
+"/api/settings/cook/recipe/list"[documented]
+"/api/settings/cook/recipe/set"[documented]
+
+"Temperature"[documented]
+"Heat"[documented]
+"Cool"[documented]
+"Sleep"[documented]
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+}
