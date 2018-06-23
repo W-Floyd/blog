@@ -52,7 +52,8 @@ I tentatively (with no real experience designing them) plan on my API being some
 - `/action/light/set` - *Change lighting mode, with optional duration*
 - `/action/temperature/kill` - *Stops all heating/cooling, lets the cooker cool to room temperature alone*
 - `/action/temperature/set` - *Heat/cool to given temperature, then hold. Should allow setting a target heat/cool rate. Should allow setting a hold duration*
-- `/routine/cook/list` - *List known cooking routines (proxy to `/settings/cook/recipe/list`)*
+- `/routine/cook/list` - *List known cooking routines*
+*(proxy to `/settings/cook/recipe/list`)*
 - `/routine/cook/start` - *Start a routine*
 - `/routine/cook/kill` - *Kill any current running routine*
 - `/routine/cook/schedule/list` - *List any scheduled routines*
