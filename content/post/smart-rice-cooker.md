@@ -38,18 +38,35 @@ Many of my parts have arrived (rice cooker, thermistors, relay, and NodeMCU), so
 
 # Thoughts
 
+Having received shipment of the rice cooker, and beginning to use it, I realise there's nothing about it that makes it fit only for rice, if I can control the heating myself.
+Everything about it is like any other hot pot, it's just tuned for cooking rice.
+
+Thus, once I convert the thing to being smart, I will be able to use it for, say, ramen, or any number of other things.
+The possibility of steaming things only furthers this goal.
+
 ## Heating
 
 The contents of the rice cooker should be considered when heating/cooling, as they will absorb the heat and thermal lag will be an issue.
 If possible, look into either weighing the contents for a rough approximation (hard/complicated) or use recipe provided portion sizes to calculate the thermal capacity of the contents (water, mainly).
+
+Seeing as the dumb rice cooker still manages to kick itself off when needed, even given different serving sizes, there must be a simple way to find the time needed to cook the rice, even without predefines portion sizes.
+
+On the face of it, I would assume the time rice is kept at full heat will only slightly increase in duration as the volume of rice increases, if at all.
+The time it takes to get up to heat shouln't be ignored, as some cooking must be done during that time.
+The variety of rice should not be discounted either.
+
+Further research into the dynamics of rice cooking are meritted, once internet and more rice is available once again.
+
+## Cooling
+
+I am planning my setup in such a way as to allow actively cooling the cooking pot, but upon further consideration, it is likely not an issue worth worrying about.
+As such, I'll continue my planning as I am, but not be too worried about the details for now.
 
 ***
 
 # API
 
 I tentatively (with no real experience designing them) plan on my API being something like the following.
-
-*Italicized* = Description  
 
 - `/action/light/kill` - *Stops all light activity*
 - `/action/light/set` - *Change lighting mode, with optional duration*
@@ -69,7 +86,7 @@ I tentatively (with no real experience designing them) plan on my API being some
 - `/settings/cook/warm/temperature` - *Set post-cook warming temperature*
 - `/settings/lighting/list` - *List lighting modes*
 - `/settings/lighting/set` - *Submit/modify/delete a lighting mode*
-- `/settings/time` - *Set/read date and time*
+- `/settings/time/set` - *Set/read date and time*
 
 # Cooking schedule definition specifications
 
@@ -84,13 +101,14 @@ Just wait for given duration, or until a given condition is met.
 Heat for a given duration, or until a given condition is met.
 
 ### Cool
+Cool for a given duration, or until a given condition is met.
 If I someday choose to use a fan, this should be an active feature.
 Instead, it's the same as `Sleep` for now.
 
 ### Temperature
 Heat/cool to given temperature, optionally at a given rate of change (may be difficult for cooling if no fan is included).
 This should just be a proxy directive to `Heat`, `Cool`, and `Sleep`.
-For now that should work, but in due course, with tuning and benchmarks, this should run cooling at a variable rate.
+For now that should work, but in due course, with tuning and benchmarks, this should run cooling at a variable rate (using a fan, I wouldn't want to cut on and off all the time).
 Heating should be fine be fine with fairly large PWM, as the thermal lag I expect to be significant, and we want to try to hit our deadline as quickly as possible.
 
 # Dep Graph
