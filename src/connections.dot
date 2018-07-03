@@ -98,6 +98,8 @@ digraph {
         
         subgraph cluster_settings {
         
+            "/api/settings/time"[label="time"]
+
             subgraph cluster_lighting {
             
                 "/api/settings/lighting/list"[label="list"]
@@ -144,23 +146,24 @@ digraph {
 
 // Description checklist ///////////////////////////////////////////////////////
 
-"/api/sensor/temperature"[documented]
 "/api/action/light/kill"[documented]
 "/api/action/light/set"[documented]
 "/api/action/temperature/kill"[documented]
 "/api/action/temperature/set"[documented]
-"/api/routine/cook/list"[documented]
-"/api/routine/cook/start"[documented]
 "/api/routine/cook/kill"[documented]
+"/api/routine/cook/list"[documented]
 "/api/routine/cook/schedule/list"[documented]
 "/api/routine/cook/schedule/set"[documented]
-"/api/settings/lighting/list"[documented]
-"/api/settings/lighting/set"[documented]
-"/api/settings/cook/warm/temperature"[documented]
-"/api/settings/cook/warm/set"[documented]
-"/api/settings/cook/warm/duration"[documented]
+"/api/routine/cook/start"[documented]
+"/api/sensor/temperature"[documented]
 "/api/settings/cook/recipe/list"[documented]
 "/api/settings/cook/recipe/set"[documented]
+"/api/settings/cook/warm/duration"[documented]
+"/api/settings/cook/warm/set"[documented]
+"/api/settings/cook/warm/temperature"[documented]
+"/api/settings/lighting/list"[documented]
+"/api/settings/lighting/set"[documented]
+"/api/settings/time"[documented]
 
 "Temperature"[documented]
 "Heat"[documented]
