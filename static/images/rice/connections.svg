@@ -113,8 +113,8 @@
 <!-- Depend on value -->
 <g id="node4" class="node">
 <title>Depend on value</title>
-<polygon fill="transparent" stroke="#000000" points="905.0548,-919.3938 905.0548,-955.3938 1041.0548,-955.3938 1041.0548,-919.3938 905.0548,-919.3938"/>
-<text text-anchor="middle" x="973.0548" y="-933.6938" font-family="Times,serif" font-size="14.00" fill="#000000">Depend on value</text>
+<polygon fill="transparent" stroke="#000000" points="879.4052,-825.7921 879.4052,-861.7921 1015.4052,-861.7921 1015.4052,-825.7921 879.4052,-825.7921"/>
+<text text-anchor="middle" x="947.4052" y="-840.0921" font-family="Times,serif" font-size="14.00" fill="#000000">Depend on value</text>
 </g>
 <!-- Node -->
 <g id="node7" class="node">
@@ -125,32 +125,32 @@
 <!-- Depend on value&#45;&gt;Node -->
 <g id="edge1" class="edge">
 <title>Depend on value&#45;&gt;Node</title>
-<path fill="none" stroke="#0000ff" d="M1004.0425,-919.2236C1017.5434,-911.3071 1033.4707,-901.9678 1047.5628,-893.7046"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1049.6584,-896.5332 1056.5144,-888.4557 1046.1176,-890.4947 1049.6584,-896.5332"/>
+<path fill="none" stroke="#0000ff" d="M1015.451,-857.8947C1026.1938,-860.1212 1036.9497,-862.3504 1046.6602,-864.3629"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1046.2345,-867.849 1056.7368,-866.4513 1047.6552,-860.9946 1046.2345,-867.849"/>
 </g>
 <!-- Proxy to value -->
 <g id="node5" class="node">
 <title>Proxy to value</title>
-<polygon fill="transparent" stroke="#000000" points="890.7255,-874.3893 890.7255,-910.3893 1009.7255,-910.3893 1009.7255,-874.3893 890.7255,-874.3893"/>
-<text text-anchor="middle" x="950.2255" y="-888.6893" font-family="Times,serif" font-size="14.00" fill="#000000">Proxy to value</text>
+<polygon fill="transparent" stroke="#000000" points="879.7255,-874.3893 879.7255,-910.3893 998.7255,-910.3893 998.7255,-874.3893 879.7255,-874.3893"/>
+<text text-anchor="middle" x="939.2255" y="-888.6893" font-family="Times,serif" font-size="14.00" fill="#000000">Proxy to value</text>
 </g>
 <!-- Proxy to value&#45;&gt;Node -->
 <g id="edge2" class="edge">
 <title>Proxy to value&#45;&gt;Node</title>
-<path fill="none" stroke="#00bfff" d="M1009.8129,-883.4002C1022.3426,-881.5101 1035.2237,-879.5669 1046.6762,-877.8392"/>
-<polygon fill="#00bfff" stroke="#00bfff" points="1047.3751,-881.2735 1056.7411,-876.3209 1046.3309,-874.3518 1047.3751,-881.2735"/>
+<path fill="none" stroke="#00bfff" d="M999.0701,-884.046C1015.1486,-881.8044 1032.0858,-879.443 1046.588,-877.4212"/>
+<polygon fill="#00bfff" stroke="#00bfff" points="1047.2495,-880.8629 1056.6704,-876.0155 1046.2828,-873.93 1047.2495,-880.8629"/>
 </g>
 <!-- Depend on function -->
 <g id="node6" class="node">
 <title>Depend on function</title>
-<polygon fill="transparent" stroke="#000000" points="879.9052,-825.7921 879.9052,-861.7921 1036.9052,-861.7921 1036.9052,-825.7921 879.9052,-825.7921"/>
-<text text-anchor="middle" x="958.4052" y="-840.0921" font-family="Times,serif" font-size="14.00" fill="#000000">Depend on function</text>
+<polygon fill="transparent" stroke="#000000" points="883.5548,-919.3938 883.5548,-955.3938 1040.5548,-955.3938 1040.5548,-919.3938 883.5548,-919.3938"/>
+<text text-anchor="middle" x="962.0548" y="-933.6938" font-family="Times,serif" font-size="14.00" fill="#000000">Depend on function</text>
 </g>
 <!-- Depend on function&#45;&gt;Node -->
 <g id="edge3" class="edge">
 <title>Depend on function&#45;&gt;Node</title>
-<path fill="none" stroke="#6495ed" d="M1037.0626,-861.5184C1040.4331,-862.278 1043.7394,-863.0231 1046.9394,-863.7442"/>
-<polygon fill="#6495ed" stroke="#6495ed" points="1046.2216,-867.1702 1056.7465,-865.9544 1047.7606,-860.3414 1046.2216,-867.1702"/>
+<path fill="none" stroke="#6495ed" d="M996.1067,-919.2236C1012.0518,-910.7151 1031.0771,-900.5631 1047.3684,-891.87"/>
+<polygon fill="#6495ed" stroke="#6495ed" points="1049.4257,-894.7394 1056.6005,-886.9437 1046.1303,-888.5636 1049.4257,-894.7394"/>
 </g>
 <!-- Sleep -->
 <g id="node8" class="node">
@@ -197,26 +197,26 @@
 <!-- /api/action/light/kill -->
 <g id="node12" class="node">
 <title>/api/action/light/kill</title>
-<polygon fill="#caff70" stroke="#000000" points="670.9525,-457.5636 670.9525,-493.5636 724.9525,-493.5636 724.9525,-457.5636 670.9525,-457.5636"/>
-<text text-anchor="middle" x="697.9525" y="-471.8636" font-family="Times,serif" font-size="14.00" fill="#000000">kill</text>
+<polygon fill="#caff70" stroke="#000000" points="730.9525,-507.5636 730.9525,-543.5636 784.9525,-543.5636 784.9525,-507.5636 730.9525,-507.5636"/>
+<text text-anchor="middle" x="757.9525" y="-521.8636" font-family="Times,serif" font-size="14.00" fill="#000000">kill</text>
 </g>
 <!-- /api/action/light/set -->
 <g id="node13" class="node">
 <title>/api/action/light/set</title>
-<polygon fill="#caff70" stroke="#000000" points="730.9525,-507.5636 730.9525,-543.5636 784.9525,-543.5636 784.9525,-507.5636 730.9525,-507.5636"/>
-<text text-anchor="middle" x="757.9525" y="-521.8636" font-family="Times,serif" font-size="14.00" fill="#000000">set</text>
+<polygon fill="#caff70" stroke="#000000" points="670.9525,-457.5636 670.9525,-493.5636 724.9525,-493.5636 724.9525,-457.5636 670.9525,-457.5636"/>
+<text text-anchor="middle" x="697.9525" y="-471.8636" font-family="Times,serif" font-size="14.00" fill="#000000">set</text>
 </g>
 <!-- /api/action/temperature/kill -->
 <g id="node14" class="node">
 <title>/api/action/temperature/kill</title>
-<polygon fill="#caff70" stroke="#000000" points="580.9525,-522.5636 580.9525,-558.5636 634.9525,-558.5636 634.9525,-522.5636 580.9525,-522.5636"/>
-<text text-anchor="middle" x="607.9525" y="-536.8636" font-family="Times,serif" font-size="14.00" fill="#000000">kill</text>
+<polygon fill="#caff70" stroke="#000000" points="520.9525,-472.5636 520.9525,-508.5636 574.9525,-508.5636 574.9525,-472.5636 520.9525,-472.5636"/>
+<text text-anchor="middle" x="547.9525" y="-486.8636" font-family="Times,serif" font-size="14.00" fill="#000000">kill</text>
 </g>
 <!-- /api/action/temperature/set -->
 <g id="node15" class="node">
 <title>/api/action/temperature/set</title>
-<polygon fill="#caff70" stroke="#000000" points="520.9525,-472.5636 520.9525,-508.5636 574.9525,-508.5636 574.9525,-472.5636 520.9525,-472.5636"/>
-<text text-anchor="middle" x="547.9525" y="-486.8636" font-family="Times,serif" font-size="14.00" fill="#000000">set</text>
+<polygon fill="#caff70" stroke="#000000" points="580.9525,-522.5636 580.9525,-558.5636 634.9525,-558.5636 634.9525,-522.5636 580.9525,-522.5636"/>
+<text text-anchor="middle" x="607.9525" y="-536.8636" font-family="Times,serif" font-size="14.00" fill="#000000">set</text>
 </g>
 <!-- /api/sensor/temperature -->
 <g id="node16" class="node">
@@ -245,14 +245,14 @@
 <!-- /api/routine/cook/start -->
 <g id="node18" class="node">
 <title>/api/routine/cook/start</title>
-<polygon fill="#caff70" stroke="#000000" points="385.9525,-458.0636 385.9525,-494.0636 439.9525,-494.0636 439.9525,-458.0636 385.9525,-458.0636"/>
-<text text-anchor="middle" x="412.9525" y="-472.3636" font-family="Times,serif" font-size="14.00" fill="#000000">start</text>
+<polygon fill="#caff70" stroke="#000000" points="385.9525,-570.0636 385.9525,-606.0636 439.9525,-606.0636 439.9525,-570.0636 385.9525,-570.0636"/>
+<text text-anchor="middle" x="412.9525" y="-584.3636" font-family="Times,serif" font-size="14.00" fill="#000000">start</text>
 </g>
 <!-- /api/routine/cook/kill -->
 <g id="node19" class="node">
 <title>/api/routine/cook/kill</title>
-<polygon fill="#caff70" stroke="#000000" points="385.9525,-570.0636 385.9525,-606.0636 439.9525,-606.0636 439.9525,-570.0636 385.9525,-570.0636"/>
-<text text-anchor="middle" x="412.9525" y="-584.3636" font-family="Times,serif" font-size="14.00" fill="#000000">kill</text>
+<polygon fill="#caff70" stroke="#000000" points="385.9525,-458.0636 385.9525,-494.0636 439.9525,-494.0636 439.9525,-458.0636 385.9525,-458.0636"/>
+<text text-anchor="middle" x="412.9525" y="-472.3636" font-family="Times,serif" font-size="14.00" fill="#000000">kill</text>
 </g>
 <!-- /api/routine/cook/schedule/list -->
 <g id="node20" class="node">
@@ -269,7 +269,7 @@
 <!-- /api/settings/time -->
 <g id="node22" class="node">
 <title>/api/settings/time</title>
-<polygon fill="#ff6347" stroke="#000000" points="384.7144,-176.9227 384.7144,-212.9227 438.7144,-212.9227 438.7144,-176.9227 384.7144,-176.9227"/>
+<polygon fill="#caff70" stroke="#000000" points="384.7144,-176.9227 384.7144,-212.9227 438.7144,-212.9227 438.7144,-176.9227 384.7144,-176.9227"/>
 <text text-anchor="middle" x="411.7144" y="-191.2227" font-family="Times,serif" font-size="14.00" fill="#000000">time</text>
 </g>
 <!-- /api/settings/lighting/list -->
