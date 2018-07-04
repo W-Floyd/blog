@@ -26,3 +26,13 @@ To my surprise, however, it was already done, dutifully warming my rice.
 Not having added any salt or other things to make it more interesting, it was plain, but not unpleasant.
 Next time, I was try a fraction more water and adding some salt as I should have.
 Promising results though, as I have never cooked rice before, in a pot or otherwise.
+
+## 2018-07-03.1
+
+Tried again, 100ml of rice, slightly too much water (160ml), salted this time.
+Appeared slightly too wet, but perfectly tolerable.
+Put it on to warm for a minute or so longer, then carried it off.
+By the time I had gotten some chillie to go with it, it was just fine.
+Very much met expectations (good), very much worthwhile in my mind.
+
+Might try a slight bit more salt next time, but all seems well.
