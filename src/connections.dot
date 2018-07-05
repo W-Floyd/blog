@@ -20,12 +20,14 @@ digraph {
             "Depend on value"
             "Proxy to value"
             "Depend on function"
+            "Proxy to function"
         
         }
         
         "Depend on value" -> "Node"[depend_value]
         "Proxy to value" -> "Node"[proxy_value]
         "Depend on function" -> "Node"[depend_function]
+        "Proxy to function" -> "Node"[proxy_function]
         
         label="Key"
         
@@ -33,11 +35,30 @@ digraph {
 
     subgraph cluster_directives {
     
-        "Sleep"
-        "Heat"
-        "Cool"
-        "Temperature"
+        subgraph cluster_primary {
+            "Sleep"
+            "Heat"
+            label="Primary"
+        }
+        
+        subgraph cluster_secondary {
+            "Lighting Change"
+            "Lighting Kill"
+            "Temperature Kill"
+            "Temperature Change"
+            "Temperature Hold"
+            label="Secondary"
+        }
+        
         label="Directives"
+        
+    }
+    
+    subgraph cluster_sensor {
+    
+        "Temperature"
+        
+        label="Sensors"
         
     }
     
@@ -66,7 +87,7 @@ digraph {
             label="action"
         }
         
-        subgraph cluster_sensor {
+        subgraph cluster_api_sensor {
         
             "/api/sensor/temperature"[label="temperature"]
             
@@ -119,16 +140,6 @@ digraph {
             
             subgraph cluster_settings_cook {
             
-                subgraph cluster_warm {
-                
-                    "/api/settings/cook/warm/temperature"[label="temperature"]
-                    "/api/settings/cook/warm/set"[label="set"]
-                    "/api/settings/cook/warm/duration"[label="duration"]
-                    
-                    label="warm"
-                    
-                }
-                
                 subgraph cluster_recipe {
                 
                     "/api/settings/cook/recipe/list"[label="list"]
@@ -149,7 +160,14 @@ digraph {
         label="api"
     }
     
-    "Temperature" -> { "Heat" "Cool" "Sleep" }[depend_function]
+    "Temperature Change" -> { "Heat" "Sleep" }[depend_function]
+    "Temperature Hold" -> { "Heat" "Sleep" }[depend_function]
+    "Temperature Kill" -> "Heat"[proxy_function]
+    { "Temperature Change" "Temperature Hold" } -> "Temperature"[depend_value]
+    
+    "/api/action/temperature/set" -> "Temperature Change"[proxy_function]
+    "/api/action/temperature/kill" -> "Temperature Kill"[proxy_function]
+    "/api/action/temperature/kill" -> "Temperature"[proxy_value]
     "/api/routine/cook/list" -> "/api/settings/cook/recipe/list"[proxy_value]
 
 // Description checklist ///////////////////////////////////////////////////////
@@ -166,17 +184,17 @@ digraph {
 "/api/sensor/temperature"[documented]
 "/api/settings/cook/recipe/list"[documented]
 "/api/settings/cook/recipe/set"[documented]
-"/api/settings/cook/warm/duration"[documented]
-"/api/settings/cook/warm/set"[documented]
-"/api/settings/cook/warm/temperature"[documented]
 "/api/settings/lighting/list"[documented]
 "/api/settings/lighting/set"[documented]
 "/api/settings/time/set"[documented]
 
-"Temperature"[documented]
 "Heat"[documented]
-"Cool"[documented]
+"Lighting Change"[documented]
+"Lighting Kill"[documented]
 "Sleep"[documented]
+"Temperature Change"[documented]
+"Temperature Hold"[documented]
+"Temperature Kill"[documented]
 
 ////////////////////////////////////////////////////////////////////////////////
 
