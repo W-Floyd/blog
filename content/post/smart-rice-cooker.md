@@ -55,12 +55,34 @@ Everything about it is like any other hot pot, it's just tuned for cooking rice.
 Thus, once I convert the thing to being smart, I will be able to use it for, say, ramen, or any number of other things.
 The possibility of steaming things only furthers this goal.
 
+## Recipe Submission
+
+Wrap the JSON as an object so that flags and things can be passed along without modifying the recipe.
+
+Recipe IDs are handled internally by the cooker, as a hash of the contents.
+
+When submitting a recipe, the server will return the ID of the recipe, so the client may immediately attempt to start a recipe, but flags such as `delete-on-complete` make sure that recipes may be temporary in nature and not stay in history (parametric recipes are a prime example)
+
 ## Recipes
 
 Recipes should be submitted as simple JSON structures.
-These may be linted, and will contain no logic.
+These may be linted prior to submission, and will contain no logic.
 All calculations are to be done when producing the recipe.
 This is done so as to ease the technical burden on the cooker.
+
+## Tuning
+
+Heating should be tuned through the frontend.
+A wattage value may be submitted as a rough guide.
+
+Otherwise, say how much water you put in, it will heat up until a threshold temperature is reached.
+Wait until the heat dropping is stable (thermal lag needs to be gotten rid of), then read temperature.
+Given this information, the cooker may then calculate the heating rate of the hot pot, as the thermal capacity of the water is known, and the thermal lag is mostly taken care of.
+
+This information may be used for ballpark estimates for cooking duration, when accounting for the time it takes to reach temperature.
+Examples of use might be scheduling a recipe in time to get home.
+
+However, more useful will be using prior cooking runs to average the cooking times.
 
 ## Heating / Cooling
 
@@ -68,7 +90,7 @@ Active cooling is not something worth designing for, as it is not an issue to be
 
 ## Coding
 
-Internally, a temperature kill switch should be enacted, which will kick in if the 
+Internally, a temperature kill switch should be enacted, which will kick in if the temperature gets too high.
 
 ***
 
@@ -76,20 +98,15 @@ Internally, a temperature kill switch should be enacted, which will kick in if t
 
 I tentatively (with no real experience designing them) plan on my API being something like the following.
 
-- `/action/light/kill` - *Kill all light activity*
-- `/action/light/set` - *Change lighting mode, with optional duration*
-- `/action/temperature/kill` - *Stops all heating*
-- `/action/temperature/set` - *Heat/cool to given temperature.*
-- `/routine/cook/kill` - *Kill any current running routine*
-- `/routine/cook/list` - *List known cooking routines*
-- `/routine/cook/schedule/list` - *List any scheduled routines*
-- `/routine/cook/schedule/set` - *Submit/modify/delete a scheduled routine*
-- `/routine/cook/start` - *Start a routine*
+- `/cookbook/add` - *Add a recipe*
+- `/cookbook/delete` - *Delete a recipe*
+- `/cookbook/list` - *List known recipes*
+- `/action/kill` - *Kill any current running recipe*
+- `/action/start` - *Start a recipe*
+- `/action/schedule/add` - *Schedule a recipe*
+- `/action/schedule/delete` *Delete a scheduled recipe*
+- `/action/schedule/list` - *List scheduled recipes*
 - `/sensor/temperature` - *Returns temperature*
-- `/settings/cook/recipe/list` - *List known cooking routines*
-- `/settings/cook/recipe/set` - *Submit/modify/delete a cooking routine*
-- `/settings/lighting/list` - *List lighting modes*
-- `/settings/lighting/set` - *Submit/modify/delete a lighting mode*
 - `/settings/time/set` - *Set/read date and time*
 
 # Cooking recipe definition specifications
@@ -115,13 +132,17 @@ These are defined as such:
 
 ### Sleep
 Wait for a given duration.
-No need to expose to recipes directly, see `Kill`, `Temperature Change`, and `Temperature Hold` instead.
+No need to expose to recipes directly, see `Temperature Kill`, `Temperature Change`, and `Temperature Hold` instead.
 Will keep things like LED lights going still.
 
 ### Heat
 Takes a bool, turns the heating element on or off.
 Non-blocking so that conditions may be checked without unnecessarily cycling the relay.
-Dangerous to expose to recipes directly, see `Kill`
+Dangerous to expose to recipes directly, see `Temperature Kill`
+
+### All Kill
+Mostly to be used as a soft kill switch, invoked from a physical button or via API.
+Proxy to `Temperature Kill` and `Lighting Kill`, then exits any current recipe.
 
 ### Lighting Change
 Change lighting mode.
@@ -141,12 +162,11 @@ This should just be a proxy directive to `Heat` and `Sleep`.
 That is, `Heat` if under temp, `Sleep` if over temp, until an internal clock has ticked over the time required.
 
 ### Temperature Kill
-Turns off heat, cancels any running recipe.
+Turns off heat.
 Takes no input.
 Just a proxy to `Heat`, but only as a false bool.
 
 *Might* be used at the end of a recipe, unnecessary though.
-Mostly to be used as a soft kill switch, invoked from a physical button or via API.
 Examples might be canceling an infinite temperature holding cycle (e.g rice warming).
 
 # Dep Graph

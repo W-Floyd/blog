@@ -42,11 +42,25 @@ digraph {
         }
         
         subgraph cluster_secondary {
+        
+            "All Kill"
+        
             "Lighting Change"
             "Lighting Kill"
-            "Temperature Kill"
-            "Temperature Change"
-            "Temperature Hold"
+            
+            subgraph cluster_directives_lighting {
+                "Lighting Change"
+                "Lighting Kill"
+                label="Lighting"
+            }
+            
+            subgraph cluster_directives_temperature {
+                "Temperature Change"
+                "Temperature Hold"
+                "Temperature Kill"
+                label="Temperature"
+            }
+            
             label="Secondary"
         }
         
@@ -63,29 +77,7 @@ digraph {
     }
     
     subgraph cluster_api {
-    
-        subgraph cluster_action {
-            
-            subgraph cluster_light {
-            
-                "/api/action/light/kill"[label="kill"]
-                "/api/action/light/set"[label="set"]
-                
-                label="light"
-                
-            }
-            
-            subgraph cluster_temperature {
-            
-                "/api/action/temperature/kill"[label="kill"]
-                "/api/action/temperature/set"[label="set"]
-                
-                label="temperature"
-                
-            }
 
-            label="action"
-        }
         
         subgraph cluster_api_sensor {
         
@@ -95,26 +87,22 @@ digraph {
             
         }
         
-        subgraph cluster_routine {
+        subgraph cluster_recipe {
+            
+            "/api/recipe/list"[label="list"]
+            "/api/recipe/start"[label="start"]
+            "/api/recipe/kill"[label="kill"]
         
-            subgraph cluster_routine_cook {
+            subgraph cluster_schedule {
             
-                "/api/routine/cook/list"[label="list"]
-                "/api/routine/cook/start"[label="start"]
-                "/api/routine/cook/kill"[label="kill"]
+                "/api/recipe/schedule/add"[label="add"]
+                "/api/recipe/schedule/delete"[label="delete"]
+                "/api/recipe/schedule/list"[label="list"]
             
-                subgraph cluster_schedule {
-                
-                    "/api/routine/cook/schedule/list"[label="list"]
-                    "/api/routine/cook/schedule/set"[label="set"]
-                
-                    label="schedule"
-                }
-            
-                label="cook"
+                label="schedule"
             }
         
-            label="routine"
+            label="recipe"
         }
         
         subgraph cluster_settings {
@@ -138,18 +126,12 @@ digraph {
                 
             }
             
-            subgraph cluster_settings_cook {
             
-                subgraph cluster_recipe {
+            subgraph cluster_settings_recipe {
+            
+                "/api/settings/recipe/set"[label="set"]
                 
-                    "/api/settings/cook/recipe/list"[label="list"]
-                    "/api/settings/cook/recipe/set"[label="set"]
-                    
-                    label="recipe"
-                    
-                }
-            
-                label="cook"
+                label="recipe"
                 
             }
             
@@ -160,34 +142,30 @@ digraph {
         label="api"
     }
     
+    "All Kill" -> { "Temperature Kill" "Lighting Kill" }[proxy_function]
     "Temperature Change" -> { "Heat" "Sleep" }[depend_function]
     "Temperature Hold" -> { "Heat" "Sleep" }[depend_function]
     "Temperature Kill" -> "Heat"[proxy_function]
     { "Temperature Change" "Temperature Hold" } -> "Temperature"[depend_value]
+    "/api/recipe/kill" -> "All Kill"[proxy_function]
     
-    "/api/action/temperature/set" -> "Temperature Change"[proxy_function]
-    "/api/action/temperature/kill" -> "Temperature Kill"[proxy_function]
-    "/api/action/temperature/kill" -> "Temperature"[proxy_value]
-    "/api/routine/cook/list" -> "/api/settings/cook/recipe/list"[proxy_value]
+    "/api/sensor/temperature" -> "Temperature"[proxy_value]
 
 // Description checklist ///////////////////////////////////////////////////////
 
-"/api/action/light/kill"[documented]
-"/api/action/light/set"[documented]
-"/api/action/temperature/kill"[documented]
-"/api/action/temperature/set"[documented]
-"/api/routine/cook/kill"[documented]
-"/api/routine/cook/list"[documented]
-"/api/routine/cook/schedule/list"[documented]
-"/api/routine/cook/schedule/set"[documented]
-"/api/routine/cook/start"[documented]
+"/api/recipe/kill"[documented]
+"/api/recipe/list"[documented]
+"/api/recipe/schedule/add"[documented]
+"/api/recipe/schedule/delete"[documented]
+"/api/recipe/schedule/list"[documented]
+"/api/recipe/start"[documented]
 "/api/sensor/temperature"[documented]
-"/api/settings/cook/recipe/list"[documented]
-"/api/settings/cook/recipe/set"[documented]
+"/api/settings/recipe/set"[documented]
 "/api/settings/lighting/list"[documented]
 "/api/settings/lighting/set"[documented]
 "/api/settings/time/set"[documented]
 
+"All Kill"[documented]
 "Heat"[documented]
 "Lighting Change"[documented]
 "Lighting Kill"[documented]
