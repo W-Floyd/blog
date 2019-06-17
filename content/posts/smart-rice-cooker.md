@@ -36,7 +36,7 @@ Many of my parts have arrived (rice cooker, thermistors, relay, and NodeMCU), so
 
 ***
 
-# Terminology
+## Terminology
 
 ### Directive
 
@@ -47,7 +47,7 @@ Internally, directives chain each other with conditions to achieve their given g
 
 ***
 
-# Thoughts
+## Thoughts
 
 Having received shipment of the rice cooker, and beginning to use it, I realize there's nothing about it that makes it fit only for rice, if I can control the heating myself.
 Everything about it is like any other hot pot, it's just tuned for cooking rice.
@@ -55,7 +55,7 @@ Everything about it is like any other hot pot, it's just tuned for cooking rice.
 Thus, once I convert the thing to being smart, I will be able to use it for, say, ramen, or any number of other things.
 The possibility of steaming things only furthers this goal.
 
-## Recipe Submission
+### Recipe Submission
 
 Wrap the JSON as an object so that flags and things can be passed along without modifying the recipe.
 
@@ -63,14 +63,14 @@ Recipe IDs are handled internally by the cooker, as a hash of the contents.
 
 When submitting a recipe, the server will return the ID of the recipe, so the client may immediately attempt to start a recipe, but flags such as `delete-on-complete` make sure that recipes may be temporary in nature and not stay in history (parametric recipes are a prime example)
 
-## Recipes
+### Recipes
 
 Recipes should be submitted as simple JSON structures.
 These may be linted prior to submission, and will contain no logic.
 All calculations are to be done when producing the recipe.
 This is done so as to ease the technical burden on the cooker.
 
-## Tuning
+### Tuning
 
 Heating should be tuned through the frontend.
 A wattage value may be submitted as a rough guide.
@@ -84,17 +84,17 @@ Examples of use might be scheduling a recipe in time to get home.
 
 However, more useful will be using prior cooking runs to average the cooking times.
 
-## Heating / Cooling
+### Heating / Cooling
 
 Active cooling is not something worth designing for, as it is not an issue to begin with.
 
-## Coding
+### Coding
 
 Internally, a temperature kill switch should be enacted, which will kick in if the temperature gets too high.
 
 ***
 
-# API
+## API
 
 I tentatively (with no real experience designing them) plan on my API being something like the following.
 
@@ -109,59 +109,67 @@ I tentatively (with no real experience designing them) plan on my API being some
 - `/sensor/temperature` - *Returns temperature*
 - `/settings/time/set` - *Set/read date and time*
 
-# Cooking recipe definition specifications
+## Cooking recipe definition specifications
 
 They may be categorized as follows:
 
-#### Primary Directives
+### Primary Directives
 
-* Heat
-* Sleep
+- Heat
+- Sleep
 
-#### Secondary Directives
+### Secondary Directives
 
-* Lighting Change
-* Lighting Kill
-* Temperature Change
-* Temperature Hold
-* Temperature Kill
+- Lighting Change
+- Lighting Kill
+- Temperature Change
+- Temperature Hold
+- Temperature Kill
 
-## Definitions
+### Definitions
 
 These are defined as such:
 
-### Sleep
+#### Sleep
+
 Wait for a given duration.
 No need to expose to recipes directly, see `Temperature Kill`, `Temperature Change`, and `Temperature Hold` instead.
 Will keep things like LED lights going still.
 
-### Heat
+#### Heat
+
 Takes a bool, turns the heating element on or off.
 Non-blocking so that conditions may be checked without unnecessarily cycling the relay.
 Dangerous to expose to recipes directly, see `Temperature Kill`
 
-### All Kill
+#### All Kill
+
 Mostly to be used as a soft kill switch, invoked from a physical button or via API.
 Proxy to `Temperature Kill` and `Lighting Kill`, then exits any current recipe.
 
-### Lighting Change
+#### Lighting Change
+
 Change lighting mode.
 
-### Lighting Kill
+#### Lighting Kill
+
 Kill any running lighting mode.
 
-### Temperature Change
+#### Temperature Change
+
 Heat/cool to given temperature.
 This should just be a proxy directive to `Heat` and `Sleep`.
 That is, `Heat` if under temp, `Sleep` if over temp.
 As heating during cooking tends to be a matter of getting to temperature as quickly as possible, there is no need for a duration setting.
 
-### Temperature Hold
+#### Temperature Hold
+
 Hold at current temperature for given duration.
 This should just be a proxy directive to `Heat` and `Sleep`.
 That is, `Heat` if under temp, `Sleep` if over temp, until an internal clock has ticked over the time required.
 
-### Temperature Kill
+#### Temperature Kill
+
 Turns off heat.
 Takes no input.
 Just a proxy to `Heat`, but only as a false bool.
@@ -169,6 +177,8 @@ Just a proxy to `Heat`, but only as a false bool.
 *Might* be used at the end of a recipe, unnecessary though.
 Examples might be canceling an infinite temperature holding cycle (e.g rice warming).
 
-# Dep Graph
+## Dependency Graph
 
-<img src="/images/rice/connections.svg">
+![Dependency Connections][connections]
+
+[connections]: /images/rice/connections.svg "Dependency Connections"
