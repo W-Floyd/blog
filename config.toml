@@ -1,42 +1,45 @@
-baseurl = "//notmy.space/blog/"
-languageCode = "en-us"
+baseURL = "//notmy.space/blog/"
+languageCode = "en"
+defaultContentLanguage = "en"
 title = "William Floyd's Blog"
-theme = "natrium"
-preserveTaxonomyNames = true
-rssLimit = 10
+theme = "KeepIt"
 paginate = 10
-pygmentsCodefences = true
-pygmentsStyle = "native"
 canonifyURLs = true
+enableEmoji = true
 
-[taxonomies]
-    category = "categories"  
-    tag = "tags"
+[sitemap]
+  changefreq = "daily"
+  filename = "sitemap.xml"
+  priority = 0.5
 
-[permalinks]
-    post = "/:slug/"
-    page = "/:slug/"
+[blackfriday]
+  hrefTargetBlank = true
+  nofollowLinks = true
+  noreferrerLinks = true
 
-[[menu.main]]
-    name = "About"
-    url = "/about/"
-    weight = -110
-    
-[[menu.main]]
-    name = "Tags"
-    url = "/tags"
-    weight = -120
+[Permalinks]
+ posts = "/:year/:filename/"
 
-[[menu.main]]
+[menu]
+  [[menu.main]]
+    name = "Blog"
+    url = "/posts/"
+    weight = 1
+
+  [[menu.main]]
     name = "Categories"
-    url = "/categories"
-    weight = -130
+    url = "/categories/"
+    weight = 3
+
+  [[menu.main]]
+    name = "About"
+    url = "/about"
+    weight = 4
 
 [params]
     description = ""
+    since = 2018
+    author = "William Floyd"
+    home_mode = "post"
 
-[params.logo]
-    url = "logo.png"
-    width = 50
-    height = 50
-    alt = "Logo"
+[params.share]

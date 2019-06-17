@@ -1,13 +1,13 @@
-      <footer class="footer">
-        <ul class="footer-links">
-          <li>
-            <a href="{{ .Site.RSSLink }}" type="application/rss+xml" target="_blank"><i class="fa fa-rss"></i> {{ i18n "footerRSS" }}</a>
-          </li>
-          <li>
-            <a href="https://github.com/W-Floyd/blog"><i class="fa fa-github"></i> Code</a>
-          </li>
-        </ul>
-      </footer>
+<footer class="footer">
+    <div class="copyright">
+        &copy;
+        {{ with .Site.Params.since }}
+        <span itemprop="copyrightYear">{{.}} - {{ now.Year }}</span>
+        {{ end }}
+         {{ if .Site.Params.author }}
+            <span class="author" itemprop="copyrightHolder"><a href="{{ .Site.BaseURL }}">{{ .Site.Params.author  }}</a></span>
+         {{ end }}
     </div>
-  </body>
-</html>
+</footer>
+
+{{ partial "js.html" . }}
