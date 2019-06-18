@@ -14,6 +14,11 @@ tags: [
 ]
 ---
 
+This project has been stagnant for some time now.
+I'll probably end up using 3D printer code and a G-Code translator to do what I want in the end.
+
+***
+
 The "why" isn't important (read "doesn't exist"), but I want to take a regular old "dumb" rice cooker, and convert it into a "smart" rice cooker.
 
 So, a whim and a few minutes on Aliexpress later, my pint sized rice cooker and an assortment of electronics are on the slow boat from China.
