@@ -2,6 +2,6 @@
 
 git pull
 
-hugo
+HUGO_ENV=production hugo --gc --minify
 
 exit
