@@ -1,11 +1,13 @@
 baseURL = "//notmy.space/"
 languageCode = "en"
 defaultContentLanguage = "en"
-title = "William Floyd's Blog"
+title = "William Floyd"
 theme = "KeepIt"
-paginate = 10
-canonifyURLs = true
+
+paginate = 12
 enableEmoji = true
+enableRobotsTXT = true
+canonifyURLs = true
 
 [sitemap]
   changefreq = "daily"
@@ -37,9 +39,16 @@ enableEmoji = true
     weight = 4
 
 [params]
-    description = ""
+    description = "This is not MySpace, it's my space"
     since = 2018
     author = "William Floyd"
-    home_mode = "post"
+    home_mode = ""
 
-[params.share]
+[params.gravatar]
+    email = "william.png2000@gmail.com"
+
+[params.social]
+    GitHub = "W-Floyd"
+    Linkedin = "william-floyd-906674190"
+    Email   = "william.png2000@gmail.com"
+    Steam = "W-Floyd"
