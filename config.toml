@@ -39,7 +39,7 @@ canonifyURLs = true
     weight = 4
 
 [params]
-    description = "This is not MySpace, it's my space"
+    subtitle = "This is not MySpace, it's my space"
     since = 2018
     author = "William Floyd"
     home_mode = ""
