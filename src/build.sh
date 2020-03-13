@@ -2,7 +2,7 @@
 
 __target='../static/images/generated/rice/connections.svg'
 
-mkdir -p "${__target}"
+mkdir -p "$(dirname "${__target}")"
 
 sed -e 's/\[depend_value\]/[color=blue]/' \
 -e 's/\[proxy_value\]/\[color=deepskyblue\]/' \
