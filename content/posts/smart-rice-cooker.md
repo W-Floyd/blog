@@ -180,10 +180,10 @@ Takes no input.
 Just a proxy to `Heat`, but only as a false bool.
 
 *Might* be used at the end of a recipe, unnecessary though.
-Examples might be canceling an infinite temperature holding cycle (e.g rice warming).
+Examples might be cancelling an infinite temperature holding cycle (e.g rice warming).
 
 ## Dependency Graph
 
 ![Dependency Connections][connections]
 
-[connections]: /images/rice/connections.svg "Dependency Connections"
+[connections]: /images/generated/rice/connections.svg "Dependency Connections"
