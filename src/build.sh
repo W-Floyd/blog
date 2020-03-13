@@ -1,6 +1,6 @@
 #!/bin/bash
 
-__target='../static/images/generated/rice/connections.svg'
+__target='./static/images/generated/rice/connections.svg'
 
 mkdir -p "$(dirname "${__target}")"
 
