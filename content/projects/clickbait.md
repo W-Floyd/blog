@@ -37,4 +37,4 @@ And so it was that we began brainstorming.
 
 ***
 
-![Laying the groundwork](/images/reduced/clickbait/20190919_143530.jpg"The first parts put together as a demonstration, the core of our launching mechanism")
+![Laying the groundwork](/images/reduced/clickbait/20190919_143530.jpg)
