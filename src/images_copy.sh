@@ -1,6 +1,6 @@
 #!/bin/bash
 
-__target='./static/images/reduced/clickbait/'
+__target='./static/images/reduced/clickbait'
 __source='../blog-images/dirs/clickbait/reduced/'
 
 if [ -d "${__target}" ]; then
