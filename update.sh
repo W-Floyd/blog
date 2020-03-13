@@ -2,7 +2,7 @@
 
 git pull
 
-if [ -d './static/images/generated/']; then
+if [ -d './static/images/generated/' ]; then
     rm -r './static/images/generated/'
 fi
 
