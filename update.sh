@@ -3,7 +3,7 @@
 git pull
 
 find src -iname '*.sh' | while read -r __file; do
-    time ./${1}
+    time ./${__file}
 done
 
 HUGO_ENV=production hugo --gc --minify
