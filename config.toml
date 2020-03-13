@@ -52,3 +52,6 @@ canonifyURLs = true
     Linkedin = "william-floyd-906674190"
     Email   = "william.png2000@gmail.com"
     Steam = "W-Floyd"
+
+
+[params.share]
