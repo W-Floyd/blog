@@ -23,11 +23,5 @@ I am halfway through the 4th semester of my Mechanical Engineering degree at LeT
 Yet I *feel* that though I have learnt much over what is soon to be 2 years of education, I have at the same time also done nothing of interest.
 The closest I have come yet are perhaps the engineering projects of 2nd and 3rd semesters, though I shudder at the memory.
 
-Sleep is a most wonderful and valuable thing, but it was not something that I had anticipated lacking in my life as I entered University in the Fall of 2018.
-To be sure, I had stayed up late before, but never before had I done so as regularly, or with such frequent severity, as in my 2nd and 3rd semesters.
-For it was in the Spring and Fall of 2019 that I completed my only Engineering projects so far...
-
-My first semester passed - in retrospect - rather peacefully, but Spring of 2019 brought with it University Physics 1 and Intro. to Engineering Practices (IEP) 2.
-These projects will be given their own separate posts, detailing some aspects of them.
-
-For now, I plan on writing up these projects, and hopefully I will document any future endeavours.
+My first semester passed - in retrospect - rather peacefully, but Spring of 2019 brought with it IEP 2, and Fall brought EPM.
+I feel then that the projects that came out of these classes should be given a proper writeup, so as to flesh out the content of this site.
