@@ -2,6 +2,10 @@
 
 git pull --recurse-submodules
 
+if [ -d './static/images/reduced/' ]; then
+    rm -r './static/images/reduced/'
+fi
+
 if [ -d './static/images/generated/' ]; then
     rm -r './static/images/generated/'
 fi
