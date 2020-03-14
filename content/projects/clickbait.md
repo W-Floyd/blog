@@ -84,7 +84,7 @@ It was, it seemed, all coming together.
 {{<youtube PWh-TsoAOK4>}}
 
 Finally, some success came to us.
-A limit switch was mounted to the front of the device, and the motor was successfully power tested, along with the release of the launch mechanism.
+The motor was successfully power tested, along with the release of the launch mechanism.
 The end was near, or so it seemed.
 
 ***
@@ -96,7 +96,7 @@ Attempts were made to use a small DC motor, but with no luck.
 The lateral pressure of our motor acting through a belt meant friction was too much for our motor.
 Without time enough to reposition it, another solution had to be made.
 
-Remaining at this point was a means of reeling in the line, a means of depressing the button on the rear of the reel, and the connecting electronics that would drive the entire contraption.
+Remaining at this point was a means of reeling in the line, a means of depressing the button on the rear of the reel, a limit switch at the front of machine, and the connecting electronics that would drive the entire contraption.
 
 ***
 
@@ -114,7 +114,13 @@ This saved the most time 3D printed as compared to a smaller pulley with other p
 
 Finally, the mechanics of the project were completed, with each component individually power tested, though not yet in tandem with one another.
 As all of this was coming about, I had also begun getting the electronics in order.
+A limit switch was installed to keep the motor from destroying the machine
+When this switch invariably failed to activate, it resulted in the destruction of the front piece of the machine - at that stage more of a nuisance than a disaster.
+Spares were kept by, and small changes were made so the switch could be mounted elsewhere in a more reliable fashion.
+
 By way of a multi-button garage door opener, and a 433MHz receiver, wireless control could be granted to an Arduino for little money.
+A cheap buck-converter was added in order to run the Arduino and wireless setup, as well as the stepper motor driver.
+Thankfully, the voltage of the battery meant the stepper motor could be powered from the battery directly (18V being safely within the rated 12-24V range)
 
 {{<youtube TPhMx11LOok>}}
 
