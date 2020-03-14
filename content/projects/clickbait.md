@@ -124,6 +124,8 @@ Thankfully, the voltage of the battery meant the stepper motor could be powered 
 
 {{<youtube TPhMx11LOok>}}
 
+In the above video, the finished product may be seen.
+
 ***
 
 Finally, presentation day came.
@@ -133,9 +135,10 @@ While we corrected by hand for the presentation (by re-chucking the leadscrew af
 After all, the final time-lapse of the project would not do with such continual, and blatant, hand-holding.
 
 The solution, it turned out, was free: the end of the leadscrew was notched and tapered on a lathe, allowing the drill chuck to get a firm hold on the metal.
-With this solved, the final time-lapse was completed, and a collective sigh of relieve was given.
 
 {{<youtube 4iX2adGqZVI>}}
+
+With this solved, the final time-lapse was completed, and a collective sigh of relieve was given.
 
 ***
 
