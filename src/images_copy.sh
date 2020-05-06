@@ -16,6 +16,6 @@ __func() {
 
 __func './static/images/reduced/clickbait' '../blog-images/dirs/clickbait/reduced'
 
-__func './static/images/reduced/midiMixer/v1' '../blog-images/dirs/dirs/midiMixer/v1/reduced'
+__func './static/images/reduced/midiMixer/v1' '../blog-images/dirs/midiMixer/v1/reduced'
 
 exit
