@@ -18,4 +18,6 @@ __func './static/images/reduced/clickbait' '../blog-images/dirs/clickbait/reduce
 
 __func './static/images/reduced/midiMixer/v1' '../blog-images/dirs/midiMixer/v1/reduced'
 
+__func './static/images/reduced/midiMixer/handwired' '../blog-images/dirs/midiMixer/handwired/reduced'
+
 exit
