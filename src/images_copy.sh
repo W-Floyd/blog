@@ -1,5 +1,9 @@
 #!/bin/bash
 
+__list='clickbait
+midiMixer/v1
+midiMixer/handwired'
+
 __target_prefix='./static/images'
 __source_prefix='../blog-images/dirs'
 
@@ -15,11 +19,9 @@ __copy() {
     __target="${1}"
     __source="${2}"
 
-    if [ -d "${__target}" ]; then
-        rm -r "${__target}"
+    if ! [ -d "${__target}" ]; then
+        mkdir -p "${__target}"
     fi
-
-    mkdir -p "$(dirname "${__target}")"
 
     while read -r __file; do
         cp -r "${__file}" "${__target}"
@@ -27,15 +29,26 @@ __copy() {
 
 }
 
-__func() {
+__copy_wrapper() {
     __copy_reduced "${1}"
     __copy_original "${1}"
 }
 
-__func 'clickbait'
+__clean() {
+    __target="${1}"
+    __source="${2}"
 
-__func 'midiMixer/v1'
+    if [ -d "${__target}" ]; then
+        rm -r "${__target}"
+    fi
+}
 
-__func 'midiMixer/handwired'
+while read -r __dir; do
+    __clean "${__dir}"
+done <<<"${__list}"
+
+while read -r __dir; do
+    __copy_wrapper "${__dir}"
+done <<<"${__list}"
 
 exit
