@@ -2,7 +2,7 @@
 title: "midiMixer - A simple Arduino powered MIDI potentiometer bank"
 date: "2020-05-06"
 author: "William Floyd"
-featured_image: "/images/reduced/midiMixer/v1/20200506_152408.jpg"
+featured_image: "v1/20200506_152408.jpg"
 categories: [
     "Hardware",
     "PCB",
