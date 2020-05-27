@@ -227,6 +227,8 @@ __process_generic_image() {
 
     "__find_${1}" | while read -r __source_file; do
 
+        export FILE_HASH="$(md5sum "${__source_file}")"
+
         __target="$(sed 's|^\./src/|./|' <<<"${__source_file}")"
 
         if ! __check_file "${__source_file}"; then
@@ -254,6 +256,8 @@ __process_generic_image() {
             fi
 
         fi
+
+        unset FILE_HASH
 
     done
 
