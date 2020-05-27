@@ -2,7 +2,7 @@
 title: "Clickbait - The Automatic Fishing Caster"
 date: "2020-03-13"
 author: "William Floyd"
-featured_image: "/images/reduced/clickbait/20191120_224129.jpg"
+featured_image: "media/20191120_224129.jpg"
 categories: [
     "Hardware",
     "Engineering",
@@ -38,7 +38,7 @@ And so it was that we began brainstorming.
 
 ***
 
-![Laying the groundwork](/images/reduced/clickbait/20190919_143530.jpg)
+[![Laying the groundwork](media/20190919_143530.jpg)](media/src/20190919_143530.jpg)
 
 The idea was fairly simple - use two smooth rods and a leadscrew to pull a carriage against springs that would then somehow fire the fishing weight.
 The choice of this mechanism was, for the most part, due to availability of parts.
@@ -46,9 +46,9 @@ I already owned the necessary rods and bearings, and springs were readily availa
 
 ***
 
-![First print](/images/reduced/clickbait/20190919_224711.jpg)
+[![First print](media/20190919_224711.jpg)](media/src/20190919_224711.jpg)
 
-Soon, we had [some](/images/reduced/clickbait/20190919_213947.jpg) basic 3D printed parts in order - for it was 3D printing that was most accessible to us, and allowed largely unattended manufacturing while classes continued.
+Soon, we had [some](media/20190919_213947.jpg) basic 3D printed parts in order - for it was 3D printing that was most accessible to us, and allowed largely unattended manufacturing while classes continued.
 Despite this early start of progress, however, the ever present tendency toward procrastination crept in.
 The usual array of excuses were made by all, and little actual work was accomplished.
 
@@ -61,22 +61,22 @@ Nor was it realistic for us to budget a baitcasting reel instead of a much cheap
 
 ***
 
-![T'was but a Fanta-sea](/images/reduced/clickbait/20191010_152148.jpg)
+[![T'was but a Fanta-sea](media/20191010_152148.jpg)](media/src/20191010_152148.jpg)
 
 Eventually, however, some progress was made - progress in something of a wrong direction, but progress nonetheless.
 As the shape of our ungainly creation began to emerge, it was clear progress needed to be made quickly.
 Once we coupled our stepper motor to the leadscrew and power tested the unit, it was also clear that change was in order.
 
 So a decision was made: a cheap cordless drill would be pilfered for a battery, motor and chuck.
-A H-Bridge would need to be bought for the drill motor (I [tried to](/images/reduced/clickbait/20191025_194859.jpg) [make one](/images/reduced/clickbait/20191102_144426.jpg), but the magic smoke was released...), and a latching system needed to be made.
+A H-Bridge would need to be bought for the drill motor (I [tried to](media/20191025_194859.jpg) [make one](media/20191102_144426.jpg), but the magic smoke was released...), and a latching system needed to be made.
 
 ***
 
-![Latching Track Installed](/images/reduced/clickbait/20191110_014623.jpg)
+[![Latching Track Installed](media/20191110_014623.jpg)](media/src/20191110_014623.jpg)
 
 The next week or so resulted in the beginnings of a working launch mechanism.
 With the aid of a rubber band, a latching track was put under the rods and springs, such that the motor would tension the launching carriage, then return to the front of the mechanism to allow the eventual release of the catch using a servo.
-Soon after this, the motor was [appropriately mounted to the frame](/images/reduced/clickbait/20191110_072012.jpg), with a carefully fit 3D printed socket.
+Soon after this, the motor was [appropriately mounted to the frame](media/20191110_072012.jpg), with a carefully fit 3D printed socket.
 It was, it seemed, all coming together.
 
 ***
@@ -89,7 +89,7 @@ The end was near, or so it seemed.
 
 ***
 
-![Reel Mounted](/images/reduced/clickbait/20191115_090125.jpg)
+[![Reel Mounted](media/20191115_090125.jpg)](media/src/20191115_090125.jpg)
 
 Following soon after was the reel being mounted to the device also.
 Attempts were made to use a small DC motor, but with no luck.
@@ -100,7 +100,7 @@ Remaining at this point was a means of reeling in the line, a means of depressin
 
 ***
 
-![Plenty of Torque](/images/reduced/clickbait/20191118_032416.jpg)
+[![Plenty of Torque](media/20191118_032416.jpg)](media/src/20191118_032416.jpg)
 
 As it turned out, the very same stepper motor that had once tried to turn our leadscrew now instead would be pressed into service reeling in the line.
 Overkill, to be sure, and it's power most wastefully used, it did indeed reliably turn our reel, albeit slowly.
@@ -110,7 +110,7 @@ This saved the most time 3D printed as compared to a smaller pulley with other p
 
 ***
 
-![It'll Send You Reeling!](/images/reduced/clickbait/20191120_224129.jpg)
+[![It'll Send You Reeling!](media/20191120_224129.jpg)](media/src/20191120_224129.jpg)
 
 Finally, the mechanics of the project were completed, with each component individually power tested, though not yet in tandem with one another.
 As all of this was coming about, I had also begun getting the electronics in order.
