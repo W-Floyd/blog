@@ -1,6 +1,23 @@
 #!/bin/bash
 
-[ "$(env | /bin/sed -r -e '/^(PWD|SHLVL|_)=/d')" ] && exec -c $0
+###############################################################################
+
+[ "$(env | /bin/sed -r -e '/^(PWD|SHLVL|_|PATH)=/d')" ] && exec -c $0
+
+export PATH
+
+###############################################################################
+
+__needed_programs='convert
+jpegoptim
+fdp
+zopflipng'
+
+while read -r __program; do
+    if ! which "${__program}" &>/dev/null; then
+        echo "Error: Need '${__program}'"
+    fi
+done <<<"${__needed_programs}"
 
 ###############################################################################
 # Variables
@@ -9,7 +26,8 @@
 __ignore_variables='PWD
 SHLVL
 _
-OLDPWD'
+OLDPWD
+PATH'
 
 ########################################
 # Default Options
@@ -245,14 +263,18 @@ __process_generic_image() {
                 rm "${__target}"
             fi
 
-            if [ "${__JPEG_RESCALE}" == 'true' ]; then
-                convert "${__source_file}" -quality "${JPEG_QUALITY}" -auto-orient -resize "${JPEG_SCALE}"% "${__target}"
+            __img_rescale="__${1^^}_RESCALE"
+
+            if [ "${!__img_rescale}" == 'true' ]; then
+                "__rescale_${1}" "${__source_file}" "${__target}"
             else
                 cp "${__source_file}" "${__target}"
             fi
 
-            if [ "${__JPEG_OPTIMIZE}" == 'true' ]; then
-                jpegoptim -s "${__target}" 1>/dev/null
+            __img_optimize="__${1^^}_OPTIMIZE"
+
+            if [ "${!__img_optimize}" == 'true' ]; then
+                "__optimize_${1}" "${__target}"
             fi
 
         fi
@@ -263,6 +285,14 @@ __process_generic_image() {
 
     __set_env './src/.env'
 
+}
+
+__rescale_jpeg() {
+    convert "${1}" -quality "${JPEG_QUALITY}" -auto-orient -resize "${JPEG_SCALE}"% "${2}"
+}
+
+__optimize_jpeg() {
+    jpegoptim -s "${1}" 1>/dev/null
 }
 
 ########################################
