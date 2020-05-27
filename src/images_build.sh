@@ -13,9 +13,12 @@ jpegoptim
 fdp
 zopflipng'
 
+__fatal_error='false'
+
 while read -r __program; do
     if ! which "${__program}" &>/dev/null; then
-        echo "Error: Need '${__program}'"
+        echo "Need '${__program}'"
+        __fatal_error='true'
     fi
 done <<<"${__needed_programs}"
 
@@ -66,6 +69,13 @@ PNG_SCALE'
 ###############################################################################
 # Functions
 ###############################################################################
+
+__fatal_error_handler(){
+if [ "${__fatal_error}" == 'true' ]; then
+    echo 'Fatal Error: Exiting'
+    exit
+fi
+}
 
 ########################################
 # __set_env <env file>
@@ -339,6 +349,8 @@ __check_file() {
 }
 
 ###############################################################################
+
+__fatal_error_handler
 
 {
 
