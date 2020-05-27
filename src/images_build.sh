@@ -50,18 +50,22 @@ __PROCESS_PNG=true
 __depends__PROCESS_PNG=(PNG_OPTIMIZE PNG_RESCALE)
 __PNG_OPTIMIZE=false
 __depends__PNG_OPTIMIZE=(PNG_EFFORT)
-__PNG_EFFORT=9
+# quick/default/more/placebo
+__PNG_EFFORT='quick'
 __PNG_RESCALE=true
-__depends__PNG_RESCALE=(PNG_SCALE)
+__depends__PNG_RESCALE=(PNG_SCALE PNG_QUALITY)
 __PNG_SCALE="${__global_scale}"
+__PNG_QUALITY=0
 
-__ENVIRONMENT_LIST='JPEG_QUALITY
+__ENVIRONMENT_LIST='PROCESS_JPEG
+PROCESS_PNG
+PROCESS_SCRIPT
+JPEG_QUALITY
 JPEG_RESCALE
 JPEG_SCALE
 JPEG_OPTIMIZE
-PROCESS_JPEG
-PROCESS_PNG
 PNG_OPTIMIZE
+PNG_QUALITY
 PNG_EFFORT
 PNG_RESCALE
 PNG_SCALE'
@@ -70,11 +74,11 @@ PNG_SCALE'
 # Functions
 ###############################################################################
 
-__fatal_error_handler(){
-if [ "${__fatal_error}" == 'true' ]; then
-    echo 'Fatal Error: Exiting'
-    exit
-fi
+__fatal_error_handler() {
+    if [ "${__fatal_error}" == 'true' ]; then
+        echo 'Fatal Error: Exiting'
+        exit
+    fi
 }
 
 ########################################
@@ -212,6 +216,17 @@ __clear_env() {
 
 }
 
+__unset_unused() {
+    while read -r __var; do
+        #local "${__var}"
+        if [ "${__var}" != "__PROCESS_${1^^}" ]; then
+            eval "${__var#__}"='false'
+        fi
+    done < <(set | grep -E '^__PROCESS_' | sed 's/^\([^=]*\)=.*/\1/')
+
+    __resolve_env
+}
+
 ########################################
 # __process <.env>
 ########################################
@@ -223,6 +238,8 @@ __clear_env() {
 ########################################
 
 __process() {
+
+    __process_scripts
 
     if [ "${PROCESS_JPEG}" == 'true' ]; then
         __process_generic_image jpeg
@@ -244,14 +261,7 @@ __find_png() {
 
 __process_generic_image() {
 
-    while read -r __var; do
-        #local "${__var}"
-        if [ "${__var}" != "__PROCESS_${1^^}" ]; then
-            eval "${__var#__}"='false'
-        fi
-    done < <(set | grep -E '^__PROCESS_' | sed 's/^\([^=]*\)=.*/\1/')
-
-    __resolve_env
+    __unset_unused "${1}"
 
     "__find_${1}" | while read -r __source_file; do
 
@@ -305,6 +315,69 @@ __optimize_jpeg() {
     jpegoptim -s "${1}" 1>/dev/null
 }
 
+__rescale_png() {
+    convert "${1}" -quality "${PNG_QUALITY}" -auto-orient -resize "${PNG_SCALE}"% "${2}"
+}
+
+__optimize_png() {
+
+    local __options=''
+
+    case $variable-name in
+    'quick')
+        __options='-q'
+        ;;
+    'default')
+        __options=''
+        ;;
+    'more')
+        __options='-m'
+        ;;
+    'placebo')
+        __options='--iterations=500 --filters=01234mepb --lossy_8bit --lossy_transparent'
+        ;;
+    *)
+        echo "Unknown PNG_EFFORT option '${PNG_EFFORT}', defaulting to 'quick'"
+        __options='-q'
+        ;;
+    esac
+
+    zopflipng -y ${__options} "${1}" "${1}"
+}
+
+__process_scripts() {
+
+    __unset_unused SCRIPT
+
+    find './src/' -type f \( -iname \*.sh \) | while read -r __source_file; do
+
+        export FILE_HASH="$(
+            {
+                md5sum "${__source_file}"
+                "${__source_file}" -d | sort | while read -r __file; do
+                    md5sum "${__file}"
+                done
+            } | sort | md5sum -
+        )"
+
+        if ! __check_file "${__source_file}" "$("${__source_file}" -t)"; then
+
+            echo "Running: ${__source_file}"
+
+            echo "$(__hash_env)" >"$(__get_hash_file "${__source_file}")"
+
+            "${__source_file}"
+
+        fi
+
+        unset FILE_HASH
+
+    done
+
+    __set_env './src/.env'
+
+}
+
 ########################################
 # __get_hash_file <file>
 ########################################
@@ -319,7 +392,7 @@ __get_hash_file() {
 }
 
 ########################################
-# __check_file <file>
+# __check_file <source> [<target> ...]
 ########################################
 #
 # Check File
@@ -331,11 +404,34 @@ __check_file() {
 
     __hash_file="$(__get_hash_file "${1}")"
 
-    __target="$(sed 's|^\./src/|./|' <<<"${1}")"
+    shift
 
-    if ! [ -e "${__target}" ]; then
-        return 1
+    __targets=''
+
+    if [ "${#}" == '0' ]; then
+
+        __targets="$(sed 's|^\./src/|./|' <<<"${1}")"
+
+    else
+
+        until [ "${#}" == '0' ]; do
+
+            __targets="${__target}
+${1}"
+
+            shift
+
+        done
+
     fi
+
+    while read -r __target; do
+
+        if ! [ -e "${__target}" ]; then
+            return 1
+        fi
+
+    done
 
     if [ -e "${__hash_file}" ]; then
         __file_hash="$(cat "${__hash_file}")"
