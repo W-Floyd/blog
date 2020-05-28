@@ -186,4 +186,4 @@ Examples might be cancelling an infinite temperature holding cycle (e.g rice war
 
 ![Dependency Connections][connections]
 
-[connections]: /images/generated/rice/connections.svg "Dependency Connections"
+[connections]: media/connections.svg "Dependency Connections"
