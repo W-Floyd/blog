@@ -428,13 +428,15 @@ ${__targets}"
 
     fi
 
+    local __target
+
     while read -r __target; do
 
         if ! [ -e "${__target}" ]; then
             return 1
         fi
 
-    done < <(sed '/^$/d' <<< "${__targets}")
+    done < <(sed '/^$/d' <<<"${__targets}")
 
     if [ -e "${__hash_file}" ]; then
         __file_hash="$(cat "${__hash_file}")"
