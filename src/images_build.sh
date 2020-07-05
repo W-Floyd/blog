@@ -354,6 +354,7 @@ __process_scripts() {
         export FILE_HASH="$(
             {
                 md5sum "${__source_file}"
+                "${__source_file}" -d
                 "${__source_file}" -d | sort | while read -r __file; do
                     md5sum "${__file}"
                 done
@@ -402,22 +403,24 @@ __get_hash_file() {
 
 __check_file() {
 
-    __hash_file="$(__get_hash_file "${1}")"
+    __source="${1}"
 
     shift
+
+    __hash_file="$(__get_hash_file "${__source}")"
 
     __targets=''
 
     if [ "${#}" == '0' ]; then
 
-        __targets="$(sed 's|^\./src/|./|' <<<"${1}")"
+        __targets="$(sed 's|^\./src/|./|' <<<"${__source}")"
 
     else
 
         until [ "${#}" == '0' ]; do
 
-            __targets="${__target}
-${1}"
+            __targets="${1}
+${__targets}"
 
             shift
 
@@ -431,7 +434,7 @@ ${1}"
             return 1
         fi
 
-    done
+    done < <(sed '/^$/d' <<< "${__targets}")
 
     if [ -e "${__hash_file}" ]; then
         __file_hash="$(cat "${__hash_file}")"
