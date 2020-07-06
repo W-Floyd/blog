@@ -56,7 +56,7 @@ So it was that my crisp PCBs showed up 3 weeks later - I had one assembled withi
 It's really as simple as it gets - a [Pro Micro](media/v1/20200506_152023.jpg) hooked up to a [4051 analogue multiplexer](media/v1/20200506_152016.jpg), in turn hooked up to 8 potentiometers.
 
 The potentiometers I had on hand ended up being a bit different than the footprints I had used, so I ended up having to clip the mounting tabs off of them.
-This, as one might imagine, made them extraordinarily flimsy, so I designed and printed a couple clamps to [align](v1/20200506_151947.jpg) and [hold solid](media/v1/20200506_152003.jpg) the potentiometers.
+This, as one might imagine, made them extraordinarily flimsy, so I designed and printed a couple clamps to [align](media/v1/20200506_151947.jpg) and [hold solid](media/v1/20200506_152003.jpg) the potentiometers.
 These also have the added benefit of keeping the soldered pins off of whatever surface the mixer is on.
 Should the correct potentiometers be used, these would not be needed, though some feet or a case for the PCB would still be best.
 
