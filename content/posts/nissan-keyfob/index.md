@@ -130,12 +130,34 @@ What we know now is that the keyfob does indeed use a rolling code algorithm, th
 # More Research
 
 I do not have access to the original keyfob at this time, so some image searching may be in order.
-Several leads appeared:
-[![Different model fob with same compatibility](media/research/alt_1.jpg)](media/research/alt_1.jpg)
+Several leads appeared, but the main one was this:
+<!-- [![Different model fob with same compatibility](media/research/alt_1.jpg)](media/research/alt_1.jpg) -->
 [![Pre-owned OEM fob](media/research/alt_2.jpg)](media/research/alt_2.jpg)
-[![Similar model to mine](media/research/alt_3.jpg)](media/research/alt_3.jpg)
+<!-- [![Similar model to mine](media/research/alt_3.jpg)](media/research/alt_3.jpg) -->
 
-None of them appear especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
-As it happens, Microchip is the company in question, producing the widely documented Keeloq product line ([leaked spec sheet](http://keeloq.narod.ru/decryption.pdf)).
-Looking at their product lines, it becomes clear that the original fob used the HCS361 chip.
+None of text appears especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
+As it happens, Microchip is the company in question, producing the widely documented KeeLoq product line ([leaked spec sheet](http://keeloq.narod.ru/decryption.pdf)).
+Looking at their product lines, it becomes clear that the original fob uses the HCS361 chip.
 My aftermarket chips must be using a knockoff or unmarked version of this.
+
+Hurray, we know what chip we're up against, what algorithm it uses, and how to get the information of an existing fob.
+What we do not know is how to program our own chip (or software equivalent).
+This is where things get a lot more involved than I have the expertise to do.
+
+What would be required would be the Nissan manufacturer code for this series of fobs.
+Try as I might, these do not seem to have leaked online, nor have any other manufacturers as far as I can tell.
+Speculating, perhaps those that have access to these codes either keep them to themselves for ethical reasons, or because there is financial incentive to keeping this information private.
+Clearly there are Chinese manufacturers who know what this key is, because it would have been required in order to program this fob.
+
+# Key Problem
+
+So how might I find this manufacturer key?
+Curiously, I cannot even find reference to Nissan ever using KeeLoq, so that does not bode well.
+Trawling the recent NA Nissan git leak doesn't reveal anything related to such a key.
+The consensus seems to be that a [power analysis](https://sci-hub.scihubtw.tw/https://link.springer.com/chapter/10.1007/978-3-642-02384-2_25) of the receiver is required to determine the manufacturer key.
+While apparently not difficult for the researchers, it is beyond my means at this stage.
+I am certainly [not](https://crypto.stackexchange.com/questions/61297/getting-a-keeloq-manufacturer-key) [the](https://reverseengineering.stackexchange.com/questions/11988/question-about-keeloq-a-car-remote-control-standard) [first](https://www.eevblog.com/forum/microcontrollers/microchip-keeloq-classic-new-firmware-for-garage-door-receiver-new-fobs/) [one](https://forum.newae.com/t/finding-the-samples-with-leaking-bits/1919) [to](https://advancedpersistentjest.com/2020/06/13/side-channel-analysis-of-keeloq/) [try](https://github.com/marc-invalid/chipwhisperer-marc/blob/master/doc/marc/keeloq/examples_hcs301/examples_hcs301.md) [this](https://lerner98.medium.com/car-key-hacking-not-really-b60873cd18a).
+
+The way forward would seem to buy a space ECU for my vehicle and to use a ChipWhisperer and attempt to learn how to do power analysis.
+I don't have the time or resources (or frankly the need) to do that for now, so I think this is where my journey ends.
+I'll update this if ever I can get my hands on the manufacturer key and do anything more with this.
