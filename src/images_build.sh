@@ -9,9 +9,11 @@ export PATH
 ###############################################################################
 
 __needed_programs='convert
+identify
 jpegoptim
 fdp
-zopflipng'
+zopflipng
+bc'
 
 __fatal_error='false'
 
@@ -41,33 +43,43 @@ __global_scale='40'
 __PROCESS_JPEG=true
 __depends__PROCESS_JPEG=(JPEG_OPTIMIZE JPEG_RESCALE)
 __JPEG_OPTIMIZE=true
-__JPEG_RESCALE=true
-__depends__JPEG_RESCALE=(JPEG_SCALE JPEG_QUALITY)
+# true/false/auto
+__JPEG_RESCALE=auto
+__depends__JPEG_RESCALE=(JPEG_SCALE JPEG_QUALITY JPEG_RESCALE_THRESHOLD)
+# for auto, in KP
+__JPEG_RESCALE_THRESHOLD=2000
 __JPEG_QUALITY=40
 __JPEG_SCALE="${__global_scale}"
 
 __PROCESS_PNG=true
 __depends__PROCESS_PNG=(PNG_OPTIMIZE PNG_RESCALE)
-__PNG_OPTIMIZE=false
+__PNG_OPTIMIZE=true
 __depends__PNG_OPTIMIZE=(PNG_EFFORT)
 # quick/default/more/placebo
-__PNG_EFFORT='quick'
-__PNG_RESCALE=true
-__depends__PNG_RESCALE=(PNG_SCALE PNG_QUALITY)
+__PNG_EFFORT='default'
+# true/false/auto
+__PNG_RESCALE=auto
+__depends__PNG_RESCALE=(PNG_SCALE PNG_QUALITY PNG_RESCALE_THRESHOLD)
+# for auto, in KP
+__PNG_RESCALE_THRESHOLD=2000
 __PNG_SCALE="${__global_scale}"
 __PNG_QUALITY=0
+
+__PROCESS_SCRIPT=false
 
 __ENVIRONMENT_LIST='PROCESS_JPEG
 PROCESS_PNG
 PROCESS_SCRIPT
 JPEG_QUALITY
 JPEG_RESCALE
+JPEG_RESCALE_THRESHOLD
 JPEG_SCALE
 JPEG_OPTIMIZE
 PNG_OPTIMIZE
 PNG_QUALITY
 PNG_EFFORT
 PNG_RESCALE
+PNG_RESCALE_THRESHOLD
 PNG_SCALE'
 
 ###############################################################################
@@ -121,10 +133,10 @@ __resolve_env() {
     while [ "${__old_hash}" != "${__current_hash}" ]; do
 
         while read -r __check_set; do
-            if ! [ "${!__check_set}" == 'true' ]; then
+            if [ "${!__check_set}" == 'false' ]; then
                 eval "__arr=\"\${__depends__${__check_set}[@]}\""
                 for __item in ${__arr[@]}; do
-                    if [ "${!__item}" == 'true' ]; then
+                    if ! [ "${!__item}" == 'false' ]; then
                         export "${__item}"='false'
                     fi
                 done
@@ -138,7 +150,7 @@ __resolve_env() {
     __need="$(
         {
             while read -r __check_set; do
-                if [ "${!__check_set}" == 'true' ]; then
+                if ! [ "${!__check_set}" == 'false' ]; then
                     eval "__arr=\"\${__depends__${__check_set}[@]}\""
                     for item in ${__arr[@]}; do
                         echo "${item}"
@@ -146,7 +158,7 @@ __resolve_env() {
                 fi
             done < <(set | grep -e '^__depends__' | sed 's/^__depends__\([^=]*\)=.*/\1/')
             while read -r __item; do
-                if [ "${!__item}" == 'true' ]; then
+                if ! [ "${!__item}" == 'false' ]; then
                     echo "${__item}"
                 fi
             done <<<"${__ENVIRONMENT_LIST}"
@@ -284,8 +296,16 @@ __process_generic_image() {
             fi
 
             __img_rescale="${1^^}_RESCALE"
+            __img_rescale_threshold="${1^^}_RESCALE_THRESHOLD"
 
-            if [ "${!__img_rescale}" == 'true' ]; then
+            __print_env
+
+            if (
+                [ "${!__img_rescale}" == 'true' ]
+            ) ||
+                (
+                    [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]
+                ); then
                 "__rescale_${1}" "${__source_file}" "${__target}"
             else
                 cp "${__source_file}" "${__target}"
