@@ -283,7 +283,7 @@ __process_generic_image() {
                 rm "${__target}"
             fi
 
-            __img_rescale="__${1^^}_RESCALE"
+            __img_rescale="${1^^}_RESCALE"
 
             if [ "${!__img_rescale}" == 'true' ]; then
                 "__rescale_${1}" "${__source_file}" "${__target}"
@@ -291,7 +291,7 @@ __process_generic_image() {
                 cp "${__source_file}" "${__target}"
             fi
 
-            __img_optimize="__${1^^}_OPTIMIZE"
+            __img_optimize="${1^^}_OPTIMIZE"
 
             if [ "${!__img_optimize}" == 'true' ]; then
                 "__optimize_${1}" "${__target}"
@@ -323,7 +323,7 @@ __optimize_png() {
 
     local __options=''
 
-    case $variable-name in
+    case "${PNG_EFFORT}" in
     'quick')
         __options='-q'
         ;;
