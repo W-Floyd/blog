@@ -48,7 +48,7 @@ A quick look at the Amazon listing for my fob already tells me what models of fo
 Matching other listings, my specific model is the KBRASTU15.
 This is actually an FCC ID, so that's my next lead.
 
-This [fccid.io](https://fccid.io/KBRASTU15) listing is a rather useful, providing original FCC images and documents.
+This [fccid.io](https://fccid.io/KBRASTU15) listing is rather useful, providing original FCC images and documents.
 Unfortunately, the [internal images](https://fccid.io/KBRASTU15/Internal-Photos/Internal-Photos-140601.pdf) are low enough resolution to prevent reading the IC silkscreen.
 Interestingly, the aftermarket fob has a small fraction of the part count of the original fob, while still functioning perfectly.
 The most useful available document is the [Technical Description](https://fccid.io/KBRASTU15/Operational-Description/Technical-Description-139545.pdf).
@@ -158,6 +158,6 @@ The consensus seems to be that a [power analysis](https://sci-hub.scihubtw.tw/ht
 While apparently not difficult for the researchers, it is beyond my means at this stage.
 I am certainly [not](https://crypto.stackexchange.com/questions/61297/getting-a-keeloq-manufacturer-key) [the](https://reverseengineering.stackexchange.com/questions/11988/question-about-keeloq-a-car-remote-control-standard) [first](https://www.eevblog.com/forum/microcontrollers/microchip-keeloq-classic-new-firmware-for-garage-door-receiver-new-fobs/) [one](https://forum.newae.com/t/finding-the-samples-with-leaking-bits/1919) [to](https://advancedpersistentjest.com/2020/06/13/side-channel-analysis-of-keeloq/) [try](https://github.com/marc-invalid/chipwhisperer-marc/blob/master/doc/marc/keeloq/examples_hcs301/examples_hcs301.md) [this](https://lerner98.medium.com/car-key-hacking-not-really-b60873cd18a).
 
-The way forward would seem to buy a space ECU for my vehicle and to use a ChipWhisperer and attempt to learn how to do power analysis.
+The way forward would seem to buy a spare ECU for my vehicle and to use a ChipWhisperer and attempt to learn how to do power analysis.
 I don't have the time or resources (or frankly the need) to do that for now, so I think this is where my journey ends.
 I'll update this if ever I can get my hands on the manufacturer key and do anything more with this.
