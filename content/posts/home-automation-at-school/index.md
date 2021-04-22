@@ -31,7 +31,7 @@ Using my laptop, I can connect to the wireless network that they reside on, and 
 In fact, I can easily automate this for myself using a couple scripts and a minimal number of hard-coded values:
 
 `hassio.sh`
-```
+```bash
 #!/bin/bash
 
 export HASS_SERVER=https://<server_url>:443
@@ -44,7 +44,7 @@ exit
 ```
 
 `lamps.sh`
-```
+```bash
 #!/bin/bash
 
 declare -A aa
@@ -109,7 +109,7 @@ I automate this according to ambient light in my room, to better match the aesth
 Additionally, I can use it to turn my desktop monitor off, without resorting to using a relay outlet, and even change the color temperature of my system.
 The script I use for this looks like the following:
 
-```
+```bash
 #!/bin/bash
 
 __monitor_i2c='dev:/dev/i2c-3'
@@ -180,7 +180,7 @@ exit
 Note that the display doesn't respond to being turned back on, so this is somewhat incomplete, but it's good enough for my needs.
 The corresponding portion of the config for `ha-mqtt-iot` looks like the following:
 
-```
+```json
     "lights": [
         {
             "info": {
@@ -221,7 +221,7 @@ Pretty simple.
 This makes custom system sensors trivial.
 For example, to show my system IP, I use the following:
 
-```
+```json
     "sensors": [
         {
             "info": {
@@ -244,7 +244,7 @@ Currently, this includes laptop displays (as lights) and batteries (as sensors),
 These are really easy to call.
 An exhaustive example is quite short:
 
-```
+```json
     "builtin": {
         "prefix": "Name Prefix ",
         "backlight": {
@@ -282,7 +282,7 @@ I'm not sure which is the best one at this stage, but refer to [this](https://gi
 I have configured on my VPS a docker image that accepts reverse SSH tunnelling, authorized only to the key of the HA addon.
 From my `docker-compose.yml`:
 
-```
+```json
   homeassistant:
     image: "docker.io/panubo/sshd"
     container_name: homeassistant
@@ -304,7 +304,7 @@ From my `docker-compose.yml`:
 This is then reverse proxied to using Caddy, to expose the website on a subdomain of a website.
 From my `Caddyfile`:
 
-```
+```dockerfile
 <MY_SUBDOMAIN>.{$MY_DOMAIN} {
     reverse_proxy homeassistant:8123
     encode gzip

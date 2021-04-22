@@ -59,7 +59,7 @@ I like Tasmota and ESPHome, I was just able to get more fine control of the setu
 
 The (important) code is as follows:
 
-```
+```yaml
 binary_sensor:
   - platform: gpio
     device_class: power
