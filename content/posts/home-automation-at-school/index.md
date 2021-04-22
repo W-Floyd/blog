@@ -282,7 +282,7 @@ I'm not sure which is the best one at this stage, but refer to [this](https://gi
 I have configured on my VPS a docker image that accepts reverse SSH tunnelling, authorized only to the key of the HA addon.
 From my `docker-compose.yml`:
 
-```json
+```yaml
   homeassistant:
     image: "docker.io/panubo/sshd"
     container_name: homeassistant
