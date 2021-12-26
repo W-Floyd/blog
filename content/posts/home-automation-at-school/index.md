@@ -181,40 +181,40 @@ Note that the display doesn't respond to being turned back on, so this is somewh
 The corresponding portion of the config for `ha-mqtt-iot` looks like the following:
 
 ```json
-    "lights": [
-        {
-            "info": {
-                "name": "Desktop Monitor",
-                "id": "monitor"
-            },
-            "command": [
-                "./scripts/monitor.sh",
-                "command"
-            ],
-            "command_state": [
-                "./scripts/monitor.sh",
-                "command-state"
-            ],
-            "command_color_temp": [
-                "./scripts/monitor.sh",
-                "color-temp"
-            ],
-            "command_color_temp_state": [
-                "./scripts/monitor.sh",
-                "color-temp-state"
-            ],
-            "command_brightness": [
-                "./scripts/monitor.sh",
-                "brightness"
-            ],
-            "command_brightness_state": [
-                "./scripts/monitor.sh",
-                "brightness-state"
-            ],
-            "brightness_scale": 100,
-            "update_interval": 5
-        }
-    ]
+"lights": [
+    {
+        "info": {
+            "name": "Desktop Monitor",
+            "id": "monitor"
+        },
+        "command": [
+            "./scripts/monitor.sh",
+            "command"
+        ],
+        "command_state": [
+            "./scripts/monitor.sh",
+            "command-state"
+        ],
+        "command_color_temp": [
+            "./scripts/monitor.sh",
+            "color-temp"
+        ],
+        "command_color_temp_state": [
+            "./scripts/monitor.sh",
+            "color-temp-state"
+        ],
+        "command_brightness": [
+            "./scripts/monitor.sh",
+            "brightness"
+        ],
+        "command_brightness_state": [
+            "./scripts/monitor.sh",
+            "brightness-state"
+        ],
+        "brightness_scale": 100,
+        "update_interval": 5
+    }
+]
 ```
 
 Pretty simple.
@@ -222,21 +222,21 @@ This makes custom system sensors trivial.
 For example, to show my system IP, I use the following:
 
 ```json
-    "sensors": [
-        {
-            "info": {
-                "name": "IP Address Desktop Solus",
-                "id": "ip-address-desktop-solus",
-                "icon": "mdi:ip-network"
-            },
-            "command_state": [
-                "/bin/bash",
-                "-c",
-                "ip -j address show eno1 | jq -r '.[0].addr_info[0].local'"
-            ],
-            "update_interval": 10
-        }
-    ]
+"sensors": [
+    {
+        "info": {
+            "name": "IP Address Desktop Solus",
+            "id": "ip-address-desktop-solus",
+            "icon": "mdi:ip-network"
+        },
+        "command_state": [
+            "/bin/bash",
+            "-c",
+            "ip -j address show eno1 | jq -r '.[0].addr_info[0].local'"
+        ],
+        "update_interval": 10
+    }
+]
 ```
 
 Some common use cases are built in as well.
@@ -245,28 +245,28 @@ These are really easy to call.
 An exhaustive example is quite short:
 
 ```json
-    "builtin": {
-        "prefix": "Name Prefix ",
-        "backlight": {
-            "enable": true,
-            "temperature": false,
-            "range": {
-                "minimum": 0.025,
-                "maximum": 0.95
-            }
-	},
-	"battery": {
-            "enable": true
-        },
-	"crypto": [
-            {
-             	"coin_name": "dogecoin",
-                "currency_name": "usd",
-                "update_interval": 1,
-                "icon": "mdi:currency-usd"
-            }
-	]
-    }
+"builtin": {
+    "prefix": "Name Prefix ",
+    "backlight": {
+        "enable": true,
+        "temperature": false,
+        "range": {
+            "minimum": 0.025,
+            "maximum": 0.95
+        }
+    },
+    "battery": {
+        "enable": true
+    },
+    "crypto": [
+        {
+            "coin_name": "dogecoin",
+            "currency_name": "usd",
+            "update_interval": 1,
+            "icon": "mdi:currency-usd"
+        }
+    ]
+}
 ```
 
 This lets me tailor my setup to each machine I'm using, while still enjoying the benefits of Home Assistant MQTT Discovery.
@@ -283,20 +283,20 @@ I have configured on my VPS a docker image that accepts reverse SSH tunnelling, 
 From my `docker-compose.yml`:
 
 ```yaml
-  homeassistant:
+homeassistant:
     image: "docker.io/panubo/sshd"
     container_name: homeassistant
     environment:
-      - TCP_FORWARDING=true
-      - GATEWAY_PORTS=true
-      - SSH_ENABLE_ROOT=true
-      - DISABLE_SFTP=true
+        - TCP_FORWARDING=true
+        - GATEWAY_PORTS=true
+        - SSH_ENABLE_ROOT=true
+        - DISABLE_SFTP=true
     volumes:
-      - "./hassio/authorized_keys:/root/.ssh/authorized_keys:ro"
-      - ./docker-config/hassio/data/:/data
-      - ./docker-config/hassio/keys/:/etc/ssh/keys
+        - "./hassio/authorized_keys:/root/.ssh/authorized_keys:ro"
+        - ./docker-config/hassio/data/:/data
+        - ./docker-config/hassio/keys/:/etc/ssh/keys
     ports:
-      - "<MY_PORT>:22"
+        - "<MY_PORT>:22"
     restart: unless-stopped
     hostname: "homeassistant"
 ```
