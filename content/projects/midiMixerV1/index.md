@@ -27,7 +27,7 @@ But in the back of my head I still wanted to build some hardware to help with th
 
 ***
 
-[![Orange Sherbert Dreams](media/handwired/20190811_004928.webp)](media/src/handwired/20190811_004928.jpg)
+![Orange Sherbert Dreams](media/handwired/20190811_004928.webp)
 
 This eventually came about in the summer of 2019, when I finally hand-wired a simple 8 knob control surface.
 Truth be told, I actually built two.
@@ -41,16 +41,16 @@ This would come to change, however, in April of 2020.
 
 ***
 
-[![It's Not Easy, Being Green](media/v1/20200506_152328.webp)](media/src/v1/20200506_152328.jpg)
+![It's Not Easy, Being Green](media/v1/20200506_152328.webp)
 
-[![Look Mum, Open Hardware!](media/v1/20200506_152317.webp)](media/src/v1/20200506_152317.jpg)
+![Look Mum, Open Hardware!](media/v1/20200506_152317.webp)
 
 Fast forward close to a year, and here we are - toilet paper is the currency of the quickly collapsing Covid19 crazed world, and I'm back with my grandparents for the remainder of my semester (which, as of writing, is all but concluded).
 Finding my lack of a social life leaving me with a little bit more free time, and being home yielding a *lot* more distractions, I learned the basics of KiCAD from YouTube, and set out to design a simple PCB.
 My old MIDI controller project came to mind, so I set myself to it, and within a few days had my first Gerber files sent off to JLCPCB.
 In reality, I should have waited a bit and done a couple more design iterations before committing, but I guess $7 is the price of impatience.
 
-[![One In Hand](media/v1/20200506_151852.webp)](media/src/v1/20200506_151852.jpg)
+![One In Hand](media/v1/20200506_151852.webp)
 
 So it was that my crisp PCBs showed up 3 weeks later - I had one assembled within the hour, and my old code dusted off and flashed within two hours.
 It's really as simple as it gets - a [Pro Micro](media/v1/20200506_152023.webp) hooked up to a [4051 analogue multiplexer](media/v1/20200506_152016.webp), in turn hooked up to 8 potentiometers.
@@ -62,7 +62,7 @@ Should the correct potentiometers be used, these would not be needed, though som
 
 ***
 
-[![It Ain't Much, But I'm Proud](media/v1/20200506_152248.webp)](media/src/v1/20200506_152248.jpg)
+![It Ain't Much, But I'm Proud](media/v1/20200506_152248.webp)
 
 This being my first PCB design, I am quite happy it worked out so well - I am studying for Mechanical Engineering, not Electrical...
 However, I see room for improvement.
@@ -71,4 +71,4 @@ The knobs barely clear the Arduino, and the Arduino is mounted far higher off th
 I see myself making a v2 in due course - perhaps next time I will try JLCPCB's SMT assembly?
 I imagine adding indicator LEDs, improving the layout, and adding a button to switch between banks would make this much more useful.
 
-[![That Hair Is Bothering Me](media/v1/20200506_151947.webp)](media/src/v1/20200506_151947.jpg)
+![That Hair Is Bothering Me](media/v1/20200506_151947.webp)
