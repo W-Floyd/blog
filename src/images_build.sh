@@ -11,6 +11,7 @@ export PATH
 __needed_programs='convert
 identify
 jpegoptim
+img2webp
 fdp
 zopflipng
 bc'
@@ -254,11 +255,11 @@ __process() {
     __process_scripts
 
     if [ "${PROCESS_JPEG}" == 'true' ]; then
-        __process_generic_image jpeg
+        __process_generic_image jpeg lossy
     fi
 
     if [ "${PROCESS_PNG}" == 'true' ]; then
-        __process_generic_image png
+        __process_generic_image png lossless
     fi
 
 }
@@ -273,13 +274,15 @@ __find_png() {
 
 __process_generic_image() {
 
+    __mode="${2}"
+
     __unset_unused "${1}"
 
     "__find_${1}" | while read -r __source_file; do
 
         export FILE_HASH="$(md5sum "${__source_file}")"
 
-        __target="$(sed 's|^\./src/|./|' <<<"${__source_file}")"
+        __target="$(sed -e 's|^\./src/|./|' -e 's/[^\.]*$/webp/' <<<"${__source_file}")"
 
         if ! __check_file "${__source_file}"; then
 
@@ -300,22 +303,28 @@ __process_generic_image() {
 
             __print_env
 
+            __convert_options=("-auto-orient" "-quality" "50")
+
+            if [ "${__mode}" == 'lossless' ]; then
+                __convert_options+=("-define" "webp:lossless=true")
+            else
+                __convert_options+=()
+            fi
+
             if (
                 [ "${!__img_rescale}" == 'true' ]
             ) ||
                 (
                     [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]
                 ); then
-                "__rescale_${1}" "${__source_file}" "${__target}"
-            else
-                cp "${__source_file}" "${__target}"
+
+                __convert_options+=("-resize" "$((__img_rescale_threshold*1000))@>")
+
             fi
 
-            __img_optimize="${1^^}_OPTIMIZE"
+            echo "${__convert_options[@]}"
 
-            if [ "${!__img_optimize}" == 'true' ]; then
-                "__optimize_${1}" "${__target}"
-            fi
+            convert  "${__source_file}"  ${__convert_options[@]} "${__target}"
 
         fi
 
@@ -325,44 +334,6 @@ __process_generic_image() {
 
     __set_env './src/.env'
 
-}
-
-__rescale_jpeg() {
-    convert "${1}" -quality "${JPEG_QUALITY}" -auto-orient -resize "${JPEG_SCALE}"% "${2}"
-}
-
-__optimize_jpeg() {
-    jpegoptim -s "${1}" 1>/dev/null
-}
-
-__rescale_png() {
-    convert "${1}" -quality "${PNG_QUALITY}" -auto-orient -resize "${PNG_SCALE}"% "${2}"
-}
-
-__optimize_png() {
-
-    local __options=''
-
-    case "${PNG_EFFORT}" in
-    'quick')
-        __options='-q'
-        ;;
-    'default')
-        __options=''
-        ;;
-    'more')
-        __options='-m'
-        ;;
-    'placebo')
-        __options='--iterations=500 --filters=01234mepb --lossy_8bit --lossy_transparent'
-        ;;
-    *)
-        echo "Unknown PNG_EFFORT option '${PNG_EFFORT}', defaulting to 'quick'"
-        __options='-q'
-        ;;
-    esac
-
-    zopflipng -y ${__options} "${1}" "${1}"
 }
 
 __process_scripts() {
@@ -433,7 +404,7 @@ __check_file() {
 
     if [ "${#}" == '0' ]; then
 
-        __targets="$(sed 's|^\./src/|./|' <<<"${__source}")"
+        __targets="$(sed -e 's|^\./src/|./|' -e 's/[^\.]*$/webp/' <<<"${__source_file}")"
 
     else
 

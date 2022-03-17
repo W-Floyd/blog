@@ -2,7 +2,7 @@
 title: "Analysis of a 2005 Nissan Altima Remote Keyfob"
 date: "2021-01-08"
 author: "William Floyd"
-featured_image: "media/fob/closed.jpg"
+featured_image: "media/fob/closed.webp"
 categories: [
     "Hardware",
     "Electronics",
@@ -30,12 +30,12 @@ I am reluctant to tap into the CAN bus directly, so instead I am going to invest
 
 # The Hardware
 
-[![Opened remote](media/fob/opened.jpg)](media/src/fob/opened.jpg)
+[![Opened remote](media/fob/opened.webp)](media/src/fob/opened.jpg)
 
 While I may analyze the original fob at some point, for the time being I shall work from the aftermarket fob.
-Opening the casing reveals a rather simple circuit ([front](media/fob/pcb_front.jpg), [back](media/fob/pcb_back.jpg)) - battery contacts, four buttons, a smattering of passives, an oscillator, the main control chip, 8 test points, and an antenna trace running around the perimeter of the PCB.
+Opening the casing reveals a rather simple circuit ([front](media/fob/pcb_front.webp), [back](media/fob/pcb_back.webp)) - battery contacts, four buttons, a smattering of passives, an oscillator, the main control chip, 8 test points, and an antenna trace running around the perimeter of the PCB.
 
-[![Closeup](media/fob/closeup.jpg)](media/src/fob/closeup.jpg)
+[![Closeup](media/fob/closeup.webp)](media/src/fob/closeup.jpg)
 
 Rather unhelpfully, the control IC is unmarked, so either I'll need to wait until I can look at the original fob to find any clues, or try to find what I need online.
 
@@ -62,7 +62,7 @@ With this information in hand, I ordered a cheap RTL-SDR (a Nooelec NESDR Mini 2
 
 # SDR Analysis
 
-[![4 Presses of the Locking Key](media/4_locks.png)](media/4_locks.png)
+[![4 Presses of the Locking Key](media/4_locks.webp)](media/4_locks.webp)
 
 The radio, being a North American model, operates at 315MHz.
 Using Universal [Radio Hacker](https://github.com/jopohl/urh), I began capturing examples of locking and unlocking signals.
@@ -112,7 +112,7 @@ In any case, this extra trailing bit is always 0.
 
 Finally we have something like this:
 
-[![Decoded data](media/decoded.png)](media/decoded.png)
+[![Decoded data](media/decoded.webp)](media/decoded.webp)
 
 The top four entries are when locking, the bottom four when unlocking.
 The highlighted segments from left to right, as per the technical document, are:
@@ -131,9 +131,9 @@ What we know now is that the keyfob does indeed use a rolling code algorithm, th
 
 I do not have access to the original keyfob at this time, so some image searching may be in order.
 Several leads appeared, but the main one was this:
-<!-- [![Different model fob with same compatibility](media/research/alt_1.jpg)](media/research/alt_1.jpg) -->
-[![Pre-owned OEM fob](media/research/alt_2.jpg)](media/research/alt_2.jpg)
-<!-- [![Similar model to mine](media/research/alt_3.jpg)](media/research/alt_3.jpg) -->
+<!-- [![Different model fob with same compatibility](media/research/alt_1.webp)](media/src/research/alt_1.jpg) -->
+[![Pre-owned OEM fob](media/research/alt_2.webp)](media/src/research/alt_2.jpg)
+<!-- [![Similar model to mine](media/research/alt_3.webp)](media/src/research/alt_3.jpg) -->
 
 None of text appears especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
 As it happens, Microchip is the company in question, producing the widely documented KeeLoq product line ([leaked spec sheet](http://keeloq.narod.ru/decryption.pdf)).

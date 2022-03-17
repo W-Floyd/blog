@@ -2,7 +2,7 @@
 title: "$20 pen plotter"
 date: "2021-12-26"
 author: "William Floyd"
-featured_image: "media/20190430_053508.jpg"
+featured_image: "media/20190430_053508.webp"
 categories: [
     "Hardware",
     "Electronics",
@@ -23,8 +23,8 @@ Here are some photos mostly of the final results
 ***
 
 
-[![](media/20190430_053508.jpg)](media/src/20190430_053508.jpg)
+[![](media/20190430_053508.webp)](media/src/20190430_053508.jpg)
 
-[![](media/20190430_062452.jpg)](media/src/20190430_062452.jpg)
+[![](media/20190430_062452.webp)](media/src/20190430_062452.jpg)
 
-[![](media/20190430_053503.jpg)](media/src/20190430_053503.jpg)
+[![](media/20190430_053503.webp)](media/src/20190430_053503.jpg)
