@@ -4,6 +4,8 @@ defaultContentLanguage = "en"
 title = "William Floyd"
 theme = "KeepIt"
 
+markup.highlight.noClasses=false
+
 paginate = 12
 enableEmoji = true
 googleAnalytics = "UA-63647911-2"
