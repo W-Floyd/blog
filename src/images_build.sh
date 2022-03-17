@@ -10,10 +10,7 @@ export PATH
 
 __needed_programs='convert
 identify
-jpegoptim
-img2webp
 fdp
-zopflipng
 bc'
 
 __fatal_error='false'
@@ -39,49 +36,38 @@ PATH'
 # Default Options
 ########################################
 
-__global_scale='40'
-
 __PROCESS_JPEG=true
-__depends__PROCESS_JPEG=(JPEG_OPTIMIZE JPEG_RESCALE)
-__JPEG_OPTIMIZE=true
-# true/false/auto
+__depends__PROCESS_JPEG=(JPEG_RESCALE JPEG_CONVERT_LOSSLESS)
+# false/auto
 __JPEG_RESCALE=auto
-__depends__JPEG_RESCALE=(JPEG_SCALE JPEG_QUALITY JPEG_RESCALE_THRESHOLD)
+__depends__JPEG_RESCALE=(JPEG_RESCALE_THRESHOLD)
 # for auto, in KP
 __JPEG_RESCALE_THRESHOLD=2000
-__JPEG_QUALITY=40
-__JPEG_SCALE="${__global_scale}"
+__JPEG_CONVERT_LOSSLESS=false
 
 __PROCESS_PNG=true
-__depends__PROCESS_PNG=(PNG_OPTIMIZE PNG_RESCALE)
-__PNG_OPTIMIZE=true
-__depends__PNG_OPTIMIZE=(PNG_EFFORT)
-# quick/default/more/placebo
-__PNG_EFFORT='default'
-# true/false/auto
+__depends__PROCESS_PNG=(PNG_RESCALE PNG_CONVERT_LOSSLESS)
+# false/auto
 __PNG_RESCALE=auto
-__depends__PNG_RESCALE=(PNG_SCALE PNG_QUALITY PNG_RESCALE_THRESHOLD)
+__depends__PNG_RESCALE=(PNG_RESCALE_THRESHOLD)
 # for auto, in KP
 __PNG_RESCALE_THRESHOLD=2000
-__PNG_SCALE="${__global_scale}"
-__PNG_QUALITY=0
+__PNG_CONVERT_LOSSLESS=true
 
 __PROCESS_SCRIPT=false
+
+__WEBP_QUALITY='50'
 
 __ENVIRONMENT_LIST='PROCESS_JPEG
 PROCESS_PNG
 PROCESS_SCRIPT
-JPEG_QUALITY
 JPEG_RESCALE
 JPEG_RESCALE_THRESHOLD
-JPEG_SCALE
-JPEG_OPTIMIZE
-PNG_OPTIMIZE
-PNG_QUALITY
-PNG_EFFORT
+JPEG_CONVERT_LOSSLESS
 PNG_RESCALE
 PNG_RESCALE_THRESHOLD
-PNG_SCALE'
+PNG_CONVERT_LOSSLESS
+WEBP_QUALITY'
 
 ###############################################################################
 # Functions
@@ -252,14 +238,16 @@ __unset_unused() {
 
 __process() {
 
-    __process_scripts
+    if [ "${PROCESS_SCRIPT}" == 'true' ]; then
+        __process_scripts
+    fi
 
     if [ "${PROCESS_JPEG}" == 'true' ]; then
-        __process_generic_image jpeg lossy
+        __process_generic_image jpeg
     fi
 
     if [ "${PROCESS_PNG}" == 'true' ]; then
-        __process_generic_image png lossless
+        __process_generic_image png
     fi
 
 }
@@ -274,7 +262,7 @@ __find_png() {
 
 __process_generic_image() {
 
-    __mode="${2}"
+    __set_env './src/.env'
 
     __unset_unused "${1}"
 
@@ -300,26 +288,18 @@ __process_generic_image() {
 
             __img_rescale="${1^^}_RESCALE"
             __img_rescale_threshold="${1^^}_RESCALE_THRESHOLD"
+            __img_convert_lossless="${1^^}_CONVERT_LOSSLESS"
 
             __print_env
 
-            __convert_options=("-auto-orient" "-quality" "50")
+            __convert_options=("-auto-orient" "-quality" "${__WEBP_QUALITY}")
 
-            if [ "${__mode}" == 'lossless' ]; then
+            if [ "${!__img_convert_lossless}" == 'true' ]; then
                 __convert_options+=("-define" "webp:lossless=true")
-            else
-                __convert_options+=()
             fi
 
-            if (
-                [ "${!__img_rescale}" == 'true' ]
-            ) ||
-                (
-                    [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]
-                ); then
-
+            if [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]; then
                 __convert_options+=("-resize" "$((__img_rescale_threshold * 1000))@>")
-
             fi
 
             convert "${__source_file}" ${__convert_options[@]} "${__target}"
@@ -329,8 +309,6 @@ __process_generic_image() {
         unset FILE_HASH
 
     done
-
-    __set_env './src/.env'
 
 }
 
@@ -363,8 +341,6 @@ __process_scripts() {
         unset FILE_HASH
 
     done
-
-    __set_env './src/.env'
 
 }
 
@@ -402,7 +378,7 @@ __check_file() {
 
     if [ "${#}" == '0' ]; then
 
-        __targets="$(sed -e 's|^\./src/|./|' -e 's/[^\.]*$/webp/' <<<"${__source_file}")"
+        __targets="$(sed -e 's|^\./src/|./|' -e 's/\(jpeg\|jpg\|png\)$/webp/' <<<"${__source_file}")"
 
     else
 
@@ -444,7 +420,7 @@ __fatal_error_handler
 
 {
 
-    pushd "$(dirname "$0")"
+    pushd "$(dirname "${0}")"
 
     pushd ../
 
