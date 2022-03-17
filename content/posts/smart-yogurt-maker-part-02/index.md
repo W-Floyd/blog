@@ -71,7 +71,7 @@ If the value is between 0.6 and 0.95, it will turn it on, wait 750 milliseconds,
 This ensures when attempting to hold a setpoint that the thermal lag in the system will catch up.
 These values are found purely by experimentation, but yield sub $1^\circ F$ variation easily.
 
-![A slice of history](media/Screenshot%20from%202022-03-17%2002-11-39.webp)
+![A slice of history](media/Screenshot%20from%202022-03-17%2009-48-36.webp)
 
 ## P~~ID~~ Settings
 

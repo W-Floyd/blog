@@ -318,13 +318,11 @@ __process_generic_image() {
                     [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]
                 ); then
 
-                __convert_options+=("-resize" "$((__img_rescale_threshold*1000))@>")
+                __convert_options+=("-resize" "$((__img_rescale_threshold * 1000))@>")
 
             fi
 
-            echo "${__convert_options[@]}"
-
-            convert  "${__source_file}"  ${__convert_options[@]} "${__target}"
+            convert "${__source_file}" ${__convert_options[@]} "${__target}"
 
         fi
 
