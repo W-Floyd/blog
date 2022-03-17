@@ -4,6 +4,12 @@ defaultContentLanguage = "en"
 title = "William Floyd"
 theme = "KeepIt"
 
+[module]
+[[module.mounts]]
+  source = 'content'
+  target = 'content'
+  excludeFiles = "**/media/src"
+
 markup.highlight.noClasses=false
 
 paginate = 12
