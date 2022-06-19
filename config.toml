@@ -10,8 +10,6 @@ theme = "KeepIt"
   target = 'content'
   excludeFiles = "**/media/src"
 
-markup.highlight.noClasses=false
-
 paginate = 12
 enableEmoji = true
 googleAnalytics = "UA-63647911-2"
@@ -28,18 +26,13 @@ canonifyURLs = true
   nofollowLinks = true
   noreferrerLinks = true
 
-[Permalinks]
- posts = "/:year/:filename/"
+[permalinks]
+  posts = "/:year/:month/:title/"
 
 [menu]
   [[menu.main]]
-    name = "Blog"
+    name = "Posts"
     url = "/posts/"
-    weight = 1
-
-  [[menu.main]]
-    name = "Projects"
-    url = "/projects/"
     weight = 1
 
   [[menu.main]]
@@ -63,10 +56,9 @@ canonifyURLs = true
 
 [params.social]
     GitHub = "W-Floyd"
-    Linkedin = "william-floyd-906674190"
+    Linkedin = "william-floyd"
     Email   = "william.png2000@gmail.com"
     Steam = "W-Floyd"
-
 
 [params.share]
 
