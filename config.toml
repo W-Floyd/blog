@@ -2,7 +2,7 @@ baseURL = "//notmy.space/"
 languageCode = "en"
 defaultContentLanguage = "en"
 title = "William Floyd"
-theme = "KeepIt"
+theme = "hugo-coder"
 
 [module]
 [[module.mounts]]
@@ -10,76 +10,98 @@ theme = "KeepIt"
   target = 'content'
   excludeFiles = "**/media/src"
 
-paginate = 12
+paginate = 20
+
+pygmentsStyle = "bw"
+pygmentsCodeFences = true
+pygmentsCodeFencesGuessSyntax = true
+
 enableEmoji = true
-googleAnalytics = "UA-63647911-2"
-enableRobotsTXT = false
-canonifyURLs = true
-
-[sitemap]
-  changefreq = "daily"
-  filename = "sitemap.xml"
-  priority = 0.5
-
-[blackfriday]
-  hrefTargetBlank = true
-  nofollowLinks = true
-  noreferrerLinks = true
 
 [permalinks]
-  posts = "/:year/:month/:title/"
-
-[menu]
-  [[menu.main]]
-    name = "Posts"
-    url = "/posts/"
-    weight = 1
-
-  [[menu.main]]
-    name = "Categories"
-    url = "/categories/"
-    weight = 3
-
-  [[menu.main]]
-    name = "About"
-    url = "/about"
-    weight = 4
+  posts = "/:year/:month/:filename/"
 
 [params]
-    subtitle = "This is not MySpace, it's my space"
-    since = 2018
-    author = "William Floyd"
-    home_mode = ""
+author = "William Floyd"
+description = "William Floyd's personal website"
+gravatar = "william.png2000@gmail.com"
+dateFormat = "January 2, 2006"
+since = 2018
+# Right To Left, shift content direction for languagues such as Arabic
+rtl = false
+# Specify light/dark colorscheme
+# Supported values:
+# "auto" (use preference set by browser)
+# "dark" (dark background, light foreground)
+# "light" (light background, dark foreground) (default)
+colorScheme = "auto"
+# Hide the toggle button, along with the associated vertical divider
+hideColorSchemeToggle = false
+# Series see also post count
+maxSeeAlsoItems = 5
+# Custom CSS
+customCSS = []
+# Custom SCSS, file path is relative to Hugo's asset folder (default: {your project root}/assets)
+customSCSS = []
+# Custom JS
+customJS = []
 
-[params.gravatar]
-    email = "william.png2000@gmail.com"
+# If you want to use Google Tag Manager(https://analytics.google.com/) for analytics, add this section
+[params.googleTagManager]
+id = "UA-63647911-2"
 
-[params.social]
-    GitHub = "W-Floyd"
-    Linkedin = "william-floyd"
-    Email   = "william.png2000@gmail.com"
-    Steam = "W-Floyd"
+# If you want to implement a Content-Security-Policy, add this section
+scriptsrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "https://www.google-analytics.com",
+  "https://cdn.jsdelivr.net/"
+]
+prefetchsrc = ["'self'"]
+# connect-src directive – defines valid targets for to XMLHttpRequest (AJAX), WebSockets or EventSource
+connectsrc = ["'self'", "https://www.google-analytics.com"]
 
-[params.share]
+[taxonomies]
+category = "categories"
+series = "series"
+tag = "tags"
+author = "authors"
 
-[privacy]
-  [privacy.disqus]
-    disable = false
-  [privacy.googleAnalytics]
-    anonymizeIP = true
-    disable = false
-    respectDoNotTrack = true
-    useSessionStorage = true
-  [privacy.instagram]
-    disable = false
-    simple = true
-  [privacy.twitter]
-    disable = false
-    enableDNT = true
-    simple = true
-  [privacy.vimeo]
-    disable = false
-    simple = true
-  [privacy.youtube]
-    disable = false
-    privacyEnhanced = true
+[[params.social]]
+name = "Github"
+icon = "fa fa-2x fa-github"
+weight = 1
+url = "https://github.com/W-Floyd/"
+
+[[params.social]]
+name = "LinkedIn"
+icon = "fa fa-2x fa-linkedin"
+weight = 2
+url = "https://www.linkedin.com/in/william-floyd/"
+
+[[params.social]]
+name = "Email"
+icon = "fa fa-2x fa-envelope"
+weight = 3
+url = "mailto:william.png2000@gmail.com"
+
+[[params.social]]
+name = "RSS"
+icon = "fa fa-2x fa-rss"
+weight = 4
+url = "https://notmy.space/posts/index.xml"
+rel = "alternate"
+type = "application/rss+xml"
+
+[languages.en]
+languageName = ":uk:"
+
+[[languages.en.menu.main]]
+name = "About"
+weight = 1
+url = "about/"
+
+[[languages.en.menu.main]]
+name = "Posts"
+weight = 2
+url = "posts/"

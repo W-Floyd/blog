@@ -18,7 +18,7 @@ tags: [
 ]
 ---
 
-[Part 1](../smart-yogurt-maker-part-01) | Part 2
+[Part 1](/2022/01/smart-yogurt-maker-part-01) | Part 2
 
 ***
 
