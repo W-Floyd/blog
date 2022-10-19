@@ -30,10 +30,6 @@ Create a device to launch a fishing weight. It must:
 * be capable of firing 30 times over the course of 1 hour
 * (for extra credit) be wirelessly controlled
 
-I was assigned as an engineering lead, and as it turned out, completed the majority of the physical project.
-This was a mutual arrangement, however - I bounced ideas off of team members as needed, and provided information needed for the report writing - they completed the report and peripheral tasks, and helped me as I found tasks that could be assigned.
-Being a small project of such singular focus, there was little in the way of division possible on tasks, not without loss of efficiency.
-
 And so it was that we began brainstorming.
 
 ***
