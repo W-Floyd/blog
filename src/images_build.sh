@@ -10,15 +10,14 @@ export PATH
 
 __needed_programs='convert
 identify
-fdp
 bc'
 
-__fatal_error='false'
+export __fatal_error='false'
 
 while read -r __program; do
     if ! which "${__program}" &>/dev/null; then
         echo "Need '${__program}'"
-        __fatal_error='true'
+        export __fatal_error='true'
     fi
 done <<<"${__needed_programs}"
 
@@ -37,13 +36,16 @@ PATH'
 ########################################
 
 __PROCESS_JPEG=true
-__depends__PROCESS_JPEG=(JPEG_RESCALE JPEG_CONVERT_LOSSLESS)
+__depends__PROCESS_JPEG=(JPEG_RESCALE JPEG_CONVERT_LOSSLESS JPEG_TARGET_SIZE)
 # false/auto
 __JPEG_RESCALE=auto
 __depends__JPEG_RESCALE=(JPEG_RESCALE_THRESHOLD)
 # for auto, in KP
 __JPEG_RESCALE_THRESHOLD=2000
 __JPEG_CONVERT_LOSSLESS=false
+__JPEG_TARGET_SIZE=true
+__depends__JPEG_TARGET_SIZE=(JPEG_TARGET_SIZE_BYTES)
+__JPEG_TARGET_SIZE_BYTES='150000'
 
 __PROCESS_PNG=true
 __depends__PROCESS_PNG=(PNG_RESCALE PNG_CONVERT_LOSSLESS)
@@ -56,6 +58,7 @@ __PNG_CONVERT_LOSSLESS=true
 
 __PROCESS_SCRIPT=false
 
+__WEBP_METHOD='6'
 __WEBP_QUALITY='50'
 
 __ENVIRONMENT_LIST='PROCESS_JPEG
@@ -63,10 +66,13 @@ PROCESS_PNG
 PROCESS_SCRIPT
 JPEG_RESCALE
 JPEG_RESCALE_THRESHOLD
+JPEG_TARGET_SIZE
+JPEG_TARGET_SIZE_BYTES
 JPEG_CONVERT_LOSSLESS
 PNG_RESCALE
 PNG_RESCALE_THRESHOLD
 PNG_CONVERT_LOSSLESS
+WEBP_METHOD
 WEBP_QUALITY'
 
 ###############################################################################
@@ -76,8 +82,8 @@ WEBP_QUALITY'
 __fatal_error_handler() {
     if [ "${__fatal_error}" == 'true' ]; then
         echo 'Fatal Error: Exiting'
-        exit
-    fi
+        exit 1
+    fi || exit 1
 }
 
 ########################################
@@ -239,6 +245,11 @@ __unset_unused() {
 __process() {
 
     if [ "${PROCESS_SCRIPT}" == 'true' ]; then
+
+        __process_scripts -r
+
+        __fatal_error_handler
+
         __process_scripts
     fi
 
@@ -289,10 +300,12 @@ __process_generic_image() {
             __img_rescale="${1^^}_RESCALE"
             __img_rescale_threshold="${1^^}_RESCALE_THRESHOLD"
             __img_convert_lossless="${1^^}_CONVERT_LOSSLESS"
+            __img_convert_target_size="${1^^}_TARGET_SIZE"
+            __img_convert_target_size_bytes="${1^^}_TARGET_SIZE_BYTES"
 
             __print_env
 
-            __convert_options=("-auto-orient" "-quality" "${__WEBP_QUALITY}")
+            __convert_options=("-auto-orient" "-quality" "${__WEBP_QUALITY}" "-define" "webp:method=${__WEBP_METHOD}")
 
             if [ "${!__img_convert_lossless}" == 'true' ]; then
                 __convert_options+=("-define" "webp:lossless=true")
@@ -304,6 +317,13 @@ __process_generic_image() {
 
             convert "${__source_file}" ${__convert_options[@]} "${__target}"
 
+            if [ "${!__img_convert_target_size}" == 'true' ] && [ "$(stat -c '%s' "${__target}")" -gt "${!__img_convert_target_size_bytes}" ] && ! [ "${!__img_convert_lossless}" == 'true' ]; then
+                echo "File too large, resizing"
+                rm "${__target}"
+                __convert_options+=("-define" "webp:target-size=${!__img_convert_target_size_bytes}" "-define" "webp:pass=8")
+                convert "${__source_file}" ${__convert_options[@]} "${__target}"
+            fi
+
         fi
 
         unset FILE_HASH
@@ -312,11 +332,20 @@ __process_generic_image() {
 
 }
 
+########################################
+# __process_scripts <-r>
+########################################
+#
+# Process
+# Call this to process scripts, or call
+# with '-r' to check required programs
+#
+########################################
 __process_scripts() {
 
     __unset_unused SCRIPT
 
-    find './src/' -type f \( -iname \*.sh \) | while read -r __source_file; do
+    while read -r __source_file; do
 
         export FILE_HASH="$(
             {
@@ -330,17 +359,36 @@ __process_scripts() {
 
         if ! __check_file "${__source_file}" "$("${__source_file}" -t)"; then
 
-            echo "Running: ${__source_file}"
+            if [ "${1}" == '-r' ]; then
 
-            echo "$(__hash_env)" >"$(__get_hash_file "${__source_file}")"
+                while read -r __program; do
+                    if ! which "${__program}" &>/dev/null; then
+                        echo "$(pwd)${__source_file:1} needs '${__program}'"
+                        export __fatal_error='true'
+                    fi
+                done < <("${__source_file}" -r)
 
-            "${__source_file}"
+            else
 
+                echo "Running: ${__source_file}"
+                echo "$(__hash_env)" >"$(__get_hash_file "${__source_file}")"
+
+                __target_files="$("${__source_file}" -t)"
+
+                "${__source_file}"
+
+                while read -r __file; do
+                    if ! [ -a "${__file}" ]; then
+                        echo "Warning: $(pwd)${__source_file:1} failed to create ${__file}"
+                    fi
+                done <<<"${__target_files}"
+
+            fi
         fi
 
         unset FILE_HASH
 
-    done
+    done < <(find './src/' -type f \( -iname \*.sh \))
 
 }
 
@@ -416,7 +464,7 @@ ${__targets}"
 
 ###############################################################################
 
-__fatal_error_handler
+__fatal_error_handler || exit 1
 
 {
 
