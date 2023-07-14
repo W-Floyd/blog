@@ -8,9 +8,12 @@ export PATH
 
 ###############################################################################
 
-__needed_programs='convert
+__hashfunc='sha256sum'
+
+__needed_programs="${__hashfunc}
+convert
 identify
-bc'
+bc"
 
 export __fatal_error='false'
 
@@ -205,7 +208,7 @@ __print_env() {
 
 __hash_env() {
 
-    __print_env | md5sum - | sed 's/ .*//'
+    __print_env | "${__hashfunc}" - | sed 's/ .*//'
 
 }
 
@@ -286,7 +289,7 @@ __process_generic_image() {
 
     "__find_${1}" | while read -r __source_file; do
 
-        export FILE_HASH="$(md5sum "${__source_file}")"
+        export FILE_HASH="$("${__hashfunc}" "${__source_file}")"
 
         __target="$(sed -e 's|^\./src/|./|' -e 's/[^\.]*$/webp/' <<<"${__source_file}")"
 
@@ -356,12 +359,12 @@ __process_scripts() {
 
         export FILE_HASH="$(
             {
-                md5sum "${__source_file}"
+                "${__hashfunc}" "${__source_file}"
                 "${__source_file}" -d
                 "${__source_file}" -d | sort | while read -r __file; do
-                    md5sum "${__file}"
+                    "${__hashfunc}" "${__file}"
                 done
-            } | sort | md5sum -
+            } | sort | "${__hashfunc}" -
         )"
 
         if ! __check_file "${__source_file}" "$("${__source_file}" -t)"; then

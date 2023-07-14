@@ -3,6 +3,7 @@ digraph {
     center=true
     splines=true
     sep="0.05"
+    start=1
     node [style=filled, shape=record, color="black" fillcolor="tomato" ]
 
     subgraph cluster_key {
