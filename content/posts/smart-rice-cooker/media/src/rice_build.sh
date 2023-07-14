@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ "${1}" == '-r' ]; then
+    echo 'fdp'
+    echo 'sed'
+    exit
+fi
+
 if [ "${1}" == '-d' ]; then
     echo 'src/rice_connections.dot'
     exit
