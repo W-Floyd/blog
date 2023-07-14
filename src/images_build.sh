@@ -45,7 +45,7 @@ __JPEG_RESCALE_THRESHOLD=2000
 __JPEG_CONVERT_LOSSLESS=false
 __JPEG_TARGET_SIZE=true
 __depends__JPEG_TARGET_SIZE=(JPEG_TARGET_SIZE_BYTES)
-__JPEG_TARGET_SIZE_BYTES='150000'
+__JPEG_TARGET_SIZE_BYTES=150000
 
 __PROCESS_PNG=true
 __depends__PROCESS_PNG=(PNG_RESCALE PNG_CONVERT_LOSSLESS)
@@ -55,6 +55,9 @@ __depends__PNG_RESCALE=(PNG_RESCALE_THRESHOLD)
 # for auto, in KP
 __PNG_RESCALE_THRESHOLD=2000
 __PNG_CONVERT_LOSSLESS=true
+__PNG_TARGET_SIZE=false
+__depends__PNG_TARGET_SIZE=(PNG_TARGET_SIZE_BYTES)
+__PNG_TARGET_SIZE_BYTES=200000
 
 __PROCESS_SCRIPT=false
 
@@ -71,6 +74,8 @@ JPEG_TARGET_SIZE_BYTES
 JPEG_CONVERT_LOSSLESS
 PNG_RESCALE
 PNG_RESCALE_THRESHOLD
+PNG_TARGET_SIZE
+PNG_TARGET_SIZE_BYTES
 PNG_CONVERT_LOSSLESS
 WEBP_METHOD
 WEBP_QUALITY'
@@ -246,19 +251,21 @@ __process() {
 
     if [ "${PROCESS_SCRIPT}" == 'true' ]; then
 
-        __process_scripts -r
+        (
+            __process_scripts -r
 
-        __fatal_error_handler
+            __fatal_error_handler
 
-        __process_scripts
+            __process_scripts
+        )
     fi
 
     if [ "${PROCESS_JPEG}" == 'true' ]; then
-        __process_generic_image jpeg
+        (__process_generic_image jpeg)
     fi
 
     if [ "${PROCESS_PNG}" == 'true' ]; then
-        __process_generic_image png
+        (__process_generic_image png)
     fi
 
 }
