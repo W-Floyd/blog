@@ -1,4 +1,4 @@
 FROM klakegg/hugo:onbuild AS hugo
 
-FROM nginx
+FROM nginx:alpine-slim
 COPY --from=hugo /target /usr/share/nginx/html
