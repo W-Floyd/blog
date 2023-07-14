@@ -16,11 +16,8 @@ tags: [
     "Automation",
     "Yogurt"
 ]
+series: ["Smart Yogurt Maker"]
 ---
-
-[Part 1](/2022/01/smart-yogurt-maker-part-01) | Part 2
-
-***
 
 Last time we met, I got my rice cooker reporting temperature and roughly maintaining a set-point, producing my first batch of yogurt.
 Now follows a tale of Accidents, Averages, and Algorithms (sorta).

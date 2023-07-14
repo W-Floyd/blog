@@ -16,11 +16,8 @@ tags: [
     "Automation",
     "Yogurt"
 ]
+series: ["Smart Yogurt Maker"]
 ---
-
-Part 1 | [Part 2](/2022/03/smart-yogurt-maker-part-02)
-
-***
 
 A certain [Rice](/2018/smart-rice-cooker) [Cooker](/2018/dumb-rice-cooker) has been languishing in a box for the last several years - now it is time to revisit it.
 It is a tale of Solder, Software, and Streptococcus thermophilus.
