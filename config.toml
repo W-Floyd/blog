@@ -27,39 +27,15 @@ description = "William Floyd's personal website"
 gravatar = "william.png2000@gmail.com"
 dateFormat = "January 2, 2006"
 since = 2018
-# Right To Left, shift content direction for languagues such as Arabic
-rtl = false
-# Specify light/dark colorscheme
-# Supported values:
-# "auto" (use preference set by browser)
-# "dark" (dark background, light foreground)
-# "light" (light background, dark foreground) (default)
 colorScheme = "auto"
-# Hide the toggle button, along with the associated vertical divider
-hideColorSchemeToggle = false
-# Series see also post count
-maxSeeAlsoItems = 5
-# Custom CSS
-customCSS = []
-# Custom SCSS, file path is relative to Hugo's asset folder (default: {your project root}/assets)
-customSCSS = []
-# Custom JS
-customJS = []
-
-# If you want to use Google Tag Manager(https://analytics.google.com/) for analytics, add this section
-[params.googleTagManager]
-id = "UA-63647911-2"
 
 # If you want to implement a Content-Security-Policy, add this section
 scriptsrc = [
   "'self'",
   "'unsafe-inline'",
-  "https://www.google-analytics.com",
   "https://cdn.jsdelivr.net/"
 ]
 prefetchsrc = ["'self'"]
-# connect-src directive – defines valid targets for to XMLHttpRequest (AJAX), WebSockets or EventSource
-connectsrc = ["'self'", "https://www.google-analytics.com"]
 
 [taxonomies]
 category = "categories"
