@@ -23,8 +23,6 @@ Here are some photos mostly of the final results
 ***
 
 
-[![](media/20190430_053508.webp)](media/src/20190430_053508.jpg)
-
-[![](media/20190430_062452.webp)](media/src/20190430_062452.jpg)
-
-[![](media/20190430_053503.webp)](media/src/20190430_053503.jpg)
+![](media/20190430_053508.webp)
+![](media/20190430_062452.webp)
+![](media/20190430_053503.webp)
