@@ -1,8 +1,6 @@
 ---
 title: "About"
-date: "2018-06-19"
+date: "2023-12-15"
 ---
 
 I am William Floyd, this is my blog.
-
-I am currently a Technical Services Engineering at Epic.
