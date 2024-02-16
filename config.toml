@@ -2,13 +2,15 @@ baseURL = "//notmy.space/"
 languageCode = "en"
 defaultContentLanguage = "en"
 title = "William Floyd"
-theme = "hugo-coder"
+theme = "github.com/W-Floyd/hugo-coder-iconify"
 
 [module]
 [[module.mounts]]
   source = 'content'
   target = 'content'
   excludeFiles = "**/media/src"
+[[module.imports]]
+    path = 'github.com/hugomods/icons/vendors/mdi'
 
 paginate = 20
 
@@ -45,25 +47,25 @@ author = "authors"
 
 [[params.social]]
 name = "Github"
-icon = "fa fa-2x fa-github"
+icon = "github"
 weight = 1
 url = "https://github.com/W-Floyd/"
 
 [[params.social]]
 name = "LinkedIn"
-icon = "fa fa-2x fa-linkedin"
+icon = "linkedin"
 weight = 2
 url = "https://www.linkedin.com/in/william-floyd/"
 
 [[params.social]]
 name = "Email"
-icon = "fa fa-2x fa-envelope"
+icon = "email"
 weight = 3
 url = "mailto:contact@notmy.space"
 
 [[params.social]]
 name = "RSS"
-icon = "fa fa-2x fa-rss"
+icon = "rss"
 weight = 4
 url = "https://notmy.space/posts/index.xml"
 rel = "alternate"
@@ -78,6 +80,11 @@ weight = 1
 url = "about/"
 
 [[languages.en.menu.main]]
-name = "Posts"
+name = "Resume"
 weight = 2
+url = "https://github.com/W-Floyd/misc-job/releases/download/release/William.Floyd.pdf"
+
+[[languages.en.menu.main]]
+name = "Posts"
+weight = 3
 url = "posts/"

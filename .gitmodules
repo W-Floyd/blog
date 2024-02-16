@@ -1,6 +1,6 @@
-[submodule "themes/KeepIt"]
-	path = themes/KeepIt
-	url = https://github.com/Fastbyte01/KeepIt.git
 [submodule "themes/hugo-coder"]
 	path = themes/hugo-coder
-	url = https://github.com/luizdepra/hugo-coder.git
+	url = git@github.com:W-Floyd/hugo-coder-iconify.git
+[submodule "assets/MaterialDesign-SVG"]
+	path = assets/MaterialDesign-SVG
+	url = git@github.com:Templarian/MaterialDesign-SVG.git

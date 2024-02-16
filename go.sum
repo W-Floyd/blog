@@ -1,0 +1,6 @@
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20240129201341-4f3330156529 h1:PJEi8xBVqWrqny2HdiZ2str5lsUtnd8uEbtIgKm2meQ=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20240129201341-4f3330156529/go.mod h1:2QYy4+nngkg5dum3LHzrLqLpdGjpdrHin/5BuaJu2Jk=
+github.com/hugomods/icons v0.6.0 h1:G6RU93okhPPRDh/jqcew9gwkcYpSpg0rCBv4S6yUAFw=
+github.com/hugomods/icons v0.6.0/go.mod h1:cIkSvK6W0q6N4U6n9KGz+QfRWQXAW0INd+1P31gPNGg=
+github.com/hugomods/icons/vendors/mdi v0.3.2 h1:59KlTgBNiKGlPXzaQ6zn+VLYstFb4zABKwlHfzL8ADY=
+github.com/hugomods/icons/vendors/mdi v0.3.2/go.mod h1:yHIDYxNoBV8RCAc4Uordp6rr4GObPrtBAimShBBFdmc=
