@@ -20,7 +20,7 @@ This is an ongoing project to build a custom NAS on the most minimal budget poss
 
 # Use Case
 
-Storing a large (30TB+) amount of infrequently accessed data that must still be immediately accessible (primarily Jellyfin, Nextcloud), with some level of safety.
+Storing a large (30TB+) amount of infrequently accessed data that must still be immediately accessible (primarily Jellyfin), with some level of safety.
 
 Some details about my use case:
 * There will be no external network access except via a single local client mounting the drive and sharing via ZeroTier
@@ -97,3 +97,88 @@ For now, I continue to use these drives because the $/TB is so good, but in futu
 ## Power Draw
 
 6 x HDDs + 6 x Thin Clients + Network Switch + 12V Power Supply, draws about 40W at the wall under regular load (serving files).
+
+# Topology
+
+{{<mermaid>}}
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+        'background': '#00000000',
+        'primaryColor': '#00000000',
+        'primaryTextColor': '#888888',
+        'secondaryColor': '#00000000',
+        'primaryBorderColor': '#888888',
+        'secondaryBorderColor': '#888888',
+        'secondaryTextColor': '#888888',
+        'tertiaryColor': '#00000000',
+        'tertiaryBorderColor': '#888888',
+        'tertiaryTextColor': '#888888',
+        'noteBkgColor': '#00000000',
+        'noteTextColor': '#888888',
+        'noteBorderColor': '#888888',
+        'lineColor': '#888888',
+        'textColor': '#888888',
+        'mainBkg': '#00000000',
+        'errorBkgColor': '#00000000',
+        'errorTextColor': '#888888'
+    }
+  }
+}%%
+graph TB
+
+    subgraph internet["Internet"]
+        me_away["Me when away from home"] & Friends & Family & Fiancé --- caddy
+        subgraph vps["Cloud VPS"]
+            caddy --- vps_zerotier["Zerotier"] & rss
+            subgraph vps_docker["Docker"]
+                caddy["Caddy"]
+                rss["FreshRSS"]
+            end
+        end
+    end
+
+    vps_zerotier ---- zerotier
+
+    subgraph home["Home Network"]
+    
+        z440 ---- me_home["Me at home"]
+
+        subgraph z440["Server (HP Z440)"]
+
+            zerotier["Zerotier"] --- jellyfin  & arr & ha_zerotier
+
+            subgraph docker[Docker]
+                jellyfin["Jellyfin"]
+                arr["*arr Applications"]
+            end
+
+            subgraph vms["VMs"]
+                subgraph ha["Home Assistant"]
+                    ha_zerotier["Zerotier"]
+                end
+            end
+
+            jellyfin & arr --- gluster["Gluster mount"]
+
+            jellyfin & arr --- disk_internal["Internal Disks"]
+
+        end
+
+        ha ---- smart_home_devices["Smart Home Devices"]
+
+        gluster --- switch["GbE Network Switch"]  --- client1 & client2 & client3 & client4 & client5 & client6
+
+        client1[1.wyse] --"USB"--- disk1[Disk 1]
+        client2[2.wyse] --"USB"--- disk2[Disk 2]
+        client3[3.wyse] --"USB"--- disk3[Disk 3]
+        client4[4.wyse] --"USB"--- disk4[Disk 4]
+        client5[5.wyse] --"USB"--- disk5[Disk 5]
+        client6[6.wyse] --"USB"--- disk6[Disk 6]
+
+    end
+
+
+
+{{</mermaid>}}
