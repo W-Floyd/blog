@@ -1,11 +1,15 @@
 #!/bin/bash
 
-sudo docker build -t w-floyd/blog . || {
+docker build -t w-floyd/blog . || {
     echo 'Failure to build'
     exit
 }
 
-sudo docker save w-floyd/blog | bzip2 | pv | ssh "${1}" docker load
-ssh "${1}" docker-compose -f /root/server-config/docker-compose.yml --project-directory /root/server-config up --remove-orphans -d
+docker save w-floyd/blog | bzip2 | pv | ssh "${1}" docker load
+ssh "${1}" \
+    docker-compose \
+    -f /root/server-config/docker-compose.yml \
+    --project-directory /root/server-config \
+    up --remove-orphans -d
 
 exit

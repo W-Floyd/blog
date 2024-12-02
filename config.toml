@@ -82,7 +82,7 @@ url = "about/"
 [[languages.en.menu.main]]
 name = "Resume"
 weight = 2
-url = "https://github.com/W-Floyd/misc-job/releases/download/release/William.Floyd.pdf"
+url = "https://github.com/W-Floyd/misc-job/releases/download/release/William_Floyd.pdf"
 
 [[languages.en.menu.main]]
 name = "Posts"
