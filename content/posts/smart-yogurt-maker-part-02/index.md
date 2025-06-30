@@ -57,7 +57,7 @@ It didn't take much to ensure the automation would turn the heat off in case of 
 The primary issue in using PID for this system is thermal lag.
 While my temperature sensor is accurate for it's location, it cannot account for the temperature gradient in the contents itself.
 It would require a complete model of the system, including factors such as convection rate from the rice cooker housing, specific heat capacity, power draw, ambient temperature, volume of contents, initial temperature of contents, etc.
-All things considered, this is well outside of the scope of this project - this is meant to make yogurt, and I an do with much less.
+All things considered, this is well outside of the scope of this project - this is meant to make yogurt, and I can do with much less.
 
 ## Dirty Shortcut
 
