@@ -1,4 +1,5 @@
 ---
+slug: state-of-now
 title: "The State of Now"
 date: "2020-03-11"
 author: "William Floyd"
