@@ -11,7 +11,8 @@ categories: [
 tags: [
     "NAS",
     "3D Printing",
-    "Gluster"
+    "Gluster",
+    "Homelab"
 ]
 series: ["Ghetto NAS"]
 ---
@@ -20,7 +21,7 @@ This is an ongoing project to build a custom NAS on the most minimal budget poss
 
 # Use Case
 
-Storing a large (30TB+) amount of infrequently accessed data that must still be immediately accessible (primarily Jellyfin), with some level of safety.
+Storing a large (30TB+) amount of infrequently accessed data that must still be immediately accessible (primarily Jellyfin, Nextcloud), with some level of safety.
 
 Some details about my use case:
 * There will be no external network access except via a single local client mounting the drive and sharing via ZeroTier
