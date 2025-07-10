@@ -10,7 +10,7 @@ tags: [
 ]
 ---
 
-See my ongoing [Smart Rice Cooker](../smart-rice-cooker) conversion post for my attempt at making the rice cooker smarter.
+See my ongoing [Smart Rice Cooker](/2018/06/smart-rice-cooker) conversion post for my attempt at making the rice cooker smarter.
 
 ***
 
