@@ -4,7 +4,11 @@ github.com/W-Floyd/hugo-coder-iconify v0.0.0-20240430165218-588e06a82746 h1:409+
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20240430165218-588e06a82746/go.mod h1:2QYy4+nngkg5dum3LHzrLqLpdGjpdrHin/5BuaJu2Jk=
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20241202054008-a454e55210d9 h1:l285Jqk2m1SRl0GfYNcaOj0Z67NXWMikB6lmu6iAb1E=
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20241202054008-a454e55210d9/go.mod h1:2QYy4+nngkg5dum3LHzrLqLpdGjpdrHin/5BuaJu2Jk=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20251020211516-9fd28fd706e7 h1:sscmrNNvo1kszv0ajDgBsrYS/F+1CsfD0PzlRa65jU4=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20251020211516-9fd28fd706e7/go.mod h1:2QYy4+nngkg5dum3LHzrLqLpdGjpdrHin/5BuaJu2Jk=
 github.com/hugomods/icons v0.6.6 h1:gGlafcBDRP7sSID+tgLcWdog+s/QBj8DIfU+h9tZj1U=
 github.com/hugomods/icons v0.6.6/go.mod h1:cIkSvK6W0q6N4U6n9KGz+QfRWQXAW0INd+1P31gPNGg=
 github.com/hugomods/icons/vendors/mdi v0.3.8 h1:Tw4DooGpAHK2Lk+r6UnuWC/NesGPdR0x0U1Ullu2Og8=
 github.com/hugomods/icons/vendors/mdi v0.3.8/go.mod h1:UzARXfBJorEKYC9o+Ap6rsKSiI+UFkNWJjKn+DR2tpA=
+github.com/hugomods/icons/vendors/simple-icons v1.1.1 h1:ZM+Oi+U3glq+WuVMsoplkQpCnRLd6UU416NZCydtPvw=
+github.com/hugomods/icons/vendors/simple-icons v1.1.1/go.mod h1:ZKdcZ++UGSRnEoaVL+MTth91x4NJRIe8aJOD8oAFcRA=

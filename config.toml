@@ -11,6 +11,8 @@ theme = "github.com/W-Floyd/hugo-coder-iconify"
   excludeFiles = "**/media/src"
 [[module.imports]]
     path = 'github.com/hugomods/icons/vendors/mdi'
+[[module.imports]]
+    path = 'github.com/hugomods/icons/vendors/simple-icons'
 
 paginate = 20
 
@@ -66,6 +68,7 @@ url = "mailto:contact@notmy.space"
 [[params.social]]
 name = "SimpleX"
 icon = "simplex"
+iconVendor = "simple-icons"
 weight = 4
 url = "https://smp15.simplex.im/a#WKrWvI-cu2LK9RDYrnIK1a8F8zeEGMoKzTCuwTl2kuM"
 
