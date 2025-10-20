@@ -64,9 +64,15 @@ weight = 3
 url = "mailto:contact@notmy.space"
 
 [[params.social]]
+name = "SimpleX"
+icon = "simplex"
+weight = 4
+url = "https://smp15.simplex.im/a#WKrWvI-cu2LK9RDYrnIK1a8F8zeEGMoKzTCuwTl2kuM"
+
+[[params.social]]
 name = "RSS"
 icon = "rss"
-weight = 4
+weight = 5
 url = "https://notmy.space/posts/index.xml"
 rel = "alternate"
 type = "application/rss+xml"
