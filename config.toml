@@ -1,4 +1,4 @@
-baseURL = "//notmy.space/"
+baseURL = "//w-floyd.com/"
 languageCode = "en"
 defaultContentLanguage = "en"
 title = "William Floyd"
@@ -76,7 +76,7 @@ url = "https://smp15.simplex.im/a#WKrWvI-cu2LK9RDYrnIK1a8F8zeEGMoKzTCuwTl2kuM"
 name = "RSS"
 icon = "rss"
 weight = 5
-url = "https://notmy.space/posts/index.xml"
+url = "https://w-floyd.com/posts/index.xml"
 rel = "alternate"
 type = "application/rss+xml"
 
