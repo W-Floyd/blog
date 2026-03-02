@@ -23,7 +23,7 @@ pygmentsCodeFencesGuessSyntax = true
 enableEmoji = true
 
 [permalinks]
-  posts = "/:year/:month/:filename/"
+  posts = "/:year/:month/:contentbasename/"
 
 [params]
 author = "William Floyd"
