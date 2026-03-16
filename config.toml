@@ -28,7 +28,7 @@ enableEmoji = true
 [params]
 author = "William Floyd"
 description = "William Floyd's personal website"
-gravatar = "william.png2000@gmail.com"
+gravatar = "gravatar@w-floyd.com"
 dateFormat = "January 2, 2006"
 since = 2018
 colorScheme = "auto"
@@ -84,7 +84,7 @@ url = "about/"
 [[languages.en.menu.main]]
 name = "Resume"
 weight = 2
-url = "https://github.com/W-Floyd/misc-job/releases/download/release/William_Floyd.pdf"
+url = "https://resume.w-floyd.com"
 
 [[languages.en.menu.main]]
 name = "Posts"
