@@ -63,7 +63,7 @@ url = "https://www.linkedin.com/in/william-floyd/"
 name = "Email"
 icon = "email"
 weight = 3
-url = "mailto:contact@notmy.space"
+url = "mailto:contact@w-floyd.com"
 
 [[params.social]]
 name = "RSS"
