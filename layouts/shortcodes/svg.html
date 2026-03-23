@@ -1,0 +1,7 @@
+{{ $file_path := .Get 0 }}
+{{ $tooltip := .Get 1 }}
+{{ $full_file_path := (path.Join .Page.File.Dir $file_path) }}
+
+<div title="{{ $tooltip }}">
+    {{ readFile $full_file_path | safeHTML }}
+</div>

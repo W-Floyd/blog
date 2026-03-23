@@ -28,7 +28,7 @@ It is a tale of Solder, Software, and Streptococcus thermophilus.
 
 This story picks up where I left off 3 years ago - the rice cooker has thermistors taped to the bottom of the pot with high temperature fiberglass tape. Specifically, I have 4 of the same thermistor in 2 parallel lines of 2 series resistors, like so.
 
-![Thermistor Diagram][thermistors]
+{{< svg "./media/circuit.svg" "Thermistor Diagram" >}}
 
 This serves to roughly average the resistances, to account for possible hotspots on the pot, while only taking a single ADC pin.
 
@@ -245,5 +245,3 @@ For now, I need to:
 * PID tune the setup for the most common scenario (steady $107^\circ \text{F}$ with the lid shut)
 
 First though, I'm gonna go eat some fresh yogurt...
-
-[thermistors]: media/circuit.svg "Thermistor Diagram]"
