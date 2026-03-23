@@ -10,7 +10,8 @@ source = "content"
 target = "content"
 files = ["! **/media/src"]
 
-paginate = 20
+[pagination]
+pagerSize = 20
 
 pygmentsStyle = "bw"
 pygmentsCodeFences = true
