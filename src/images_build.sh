@@ -1,17 +1,23 @@
 #!/bin/bash
 
+__pathfile='./.path'
+
 ###############################################################################
 
-[ "$(env | /bin/sed -r -e '/^(PWD|SHLVL|_|PATH)=/d')" ] && exec -c $0
+if ! [ -e "${__pathfile}" ]; then
+    echo "${PATH}" >"${__pathfile}"
+    [ "$(env | sed -r -e '/^(PWD|SHLVL|_|PATH)=/d')" ] && exec -c $0
+fi
 
-export PATH
+export PATH="$(cat "${__pathfile}")"
+rm "${__pathfile}"
 
 ###############################################################################
 
 __hashfunc='sha256sum'
 
 __needed_programs="${__hashfunc}
-convert
+magick
 identify
 bc"
 
@@ -39,16 +45,13 @@ PATH'
 ########################################
 
 __PROCESS_JPEG=true
-__depends__PROCESS_JPEG=(JPEG_RESCALE JPEG_CONVERT_LOSSLESS JPEG_TARGET_SIZE)
+__depends__PROCESS_JPEG=(JPEG_RESCALE JPEG_CONVERT_LOSSLESS)
 # false/auto
 __JPEG_RESCALE=auto
 __depends__JPEG_RESCALE=(JPEG_RESCALE_THRESHOLD)
 # for auto, in KP
 __JPEG_RESCALE_THRESHOLD=2000
 __JPEG_CONVERT_LOSSLESS=false
-__JPEG_TARGET_SIZE=true
-__depends__JPEG_TARGET_SIZE=(JPEG_TARGET_SIZE_BYTES)
-__JPEG_TARGET_SIZE_BYTES=150000
 
 __PROCESS_PNG=true
 __depends__PROCESS_PNG=(PNG_RESCALE PNG_CONVERT_LOSSLESS)
@@ -58,30 +61,23 @@ __depends__PNG_RESCALE=(PNG_RESCALE_THRESHOLD)
 # for auto, in KP
 __PNG_RESCALE_THRESHOLD=2000
 __PNG_CONVERT_LOSSLESS=true
-__PNG_TARGET_SIZE=false
-__depends__PNG_TARGET_SIZE=(PNG_TARGET_SIZE_BYTES)
-__PNG_TARGET_SIZE_BYTES=200000
 
 __PROCESS_SCRIPT=false
 
-__WEBP_METHOD='6'
-__WEBP_QUALITY='50'
+__AVIF_QUALITY='45'
+__AVIF_PRESET='placebo'
 
 __ENVIRONMENT_LIST='PROCESS_JPEG
 PROCESS_PNG
 PROCESS_SCRIPT
 JPEG_RESCALE
 JPEG_RESCALE_THRESHOLD
-JPEG_TARGET_SIZE
-JPEG_TARGET_SIZE_BYTES
 JPEG_CONVERT_LOSSLESS
 PNG_RESCALE
 PNG_RESCALE_THRESHOLD
-PNG_TARGET_SIZE
-PNG_TARGET_SIZE_BYTES
 PNG_CONVERT_LOSSLESS
-WEBP_METHOD
-WEBP_QUALITY'
+AVIF_QUALITY
+AVIF_PRESET'
 
 ###############################################################################
 # Functions
@@ -232,7 +228,7 @@ __clear_env() {
 __unset_unused() {
     while read -r __var; do
         #local "${__var}"
-        if [ "${__var}" != "__PROCESS_${1^^}" ]; then
+        if [ "${__var}" != "__PROCESS_$(echo "${1}" | tr '[:lower:]' '[:upper:]')" ]; then
             eval "${__var#__}"='false'
         fi
     done < <(set | grep -E '^__PROCESS_' | sed 's/^\([^=]*\)=.*/\1/')
@@ -291,9 +287,18 @@ __process_generic_image() {
 
         export FILE_HASH="$("${__hashfunc}" "${__source_file}")"
 
-        __target="$(sed -e 's|^\./src/|./|' -e 's/[^\.]*$/webp/' <<<"${__source_file}")"
-
         if ! __check_file "${__source_file}"; then
+
+            __img_rescale="$(echo "${1}" | tr '[:lower:]' '[:upper:]')_RESCALE"
+            __img_rescale_threshold="$(echo "${1}" | tr '[:lower:]' '[:upper:]')_RESCALE_THRESHOLD"
+            __img_convert_lossless="$(echo "${1}" | tr '[:lower:]' '[:upper:]')_CONVERT_LOSSLESS"
+
+            __output_format='avif'
+            if [ "${!__img_convert_lossless}" == 'true' ]; then
+                __output_format='webp'
+            fi
+
+            __target="$(sed -e 's|^\./src/|./|' -e "s/[^\.]*$/${__output_format}/" <<<"${__source_file}")"
 
             echo "Processing: ${__target}"
 
@@ -307,32 +312,21 @@ __process_generic_image() {
                 rm "${__target}"
             fi
 
-            __img_rescale="${1^^}_RESCALE"
-            __img_rescale_threshold="${1^^}_RESCALE_THRESHOLD"
-            __img_convert_lossless="${1^^}_CONVERT_LOSSLESS"
-            __img_convert_target_size="${1^^}_TARGET_SIZE"
-            __img_convert_target_size_bytes="${1^^}_TARGET_SIZE_BYTES"
-
             __print_env
 
-            __convert_options=("-auto-orient" "-quality" "${__WEBP_QUALITY}" "-define" "webp:method=${__WEBP_METHOD}")
+            __convert_options=("-auto-orient")
 
-            if [ "${!__img_convert_lossless}" == 'true' ]; then
+            if [ "${!__img_convert_lossless}" == 'true' ] && [ "${__output_format}" == 'webp' ]; then
                 __convert_options+=("-define" "webp:lossless=true")
+            else
+                __convert_options+=("-quality" "${__AVIF_QUALITY}" -define "heic:preset=${__AVIF_PRESET}")
             fi
 
             if [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]; then
                 __convert_options+=("-resize" "$((__img_rescale_threshold * 1000))@>")
             fi
 
-            convert "${__source_file}" ${__convert_options[@]} "${__target}"
-
-            if [ "${!__img_convert_target_size}" == 'true' ] && [ "$(stat -c '%s' "${__target}")" -gt "${!__img_convert_target_size_bytes}" ] && ! [ "${!__img_convert_lossless}" == 'true' ]; then
-                echo "File too large, resizing"
-                rm "${__target}"
-                __convert_options+=("-define" "webp:target-size=${!__img_convert_target_size_bytes}" "-define" "webp:pass=8")
-                convert "${__source_file}" ${__convert_options[@]} "${__target}"
-            fi
+            magick "${__source_file}" ${__convert_options[@]} "${__target}"
 
         fi
 
@@ -436,7 +430,13 @@ __check_file() {
 
     if [ "${#}" == '0' ]; then
 
-        __targets="$(sed -e 's|^\./src/|./|' -e 's/\(jpeg\|jpg\|png\)$/webp/' <<<"${__source_file}")"
+        __filename="$(basename -- "${__source}")"
+
+        if [ "${__filename##*.}" == 'png' ] && [ "${PNG_CONVERT_LOSSLESS}" == 'true' ]; then
+            __targets="$(sed -e 's|^\./src/|./|' -Ee 's/\.(jpeg|jpg|png)$/.webp/' <<<"${__source_file}")"
+        else
+            __targets="$(sed -e 's|^\./src/|./|' -Ee 's/\.(jpeg|jpg|png)$/.avif/' <<<"${__source_file}")"
+        fi
 
     else
 
