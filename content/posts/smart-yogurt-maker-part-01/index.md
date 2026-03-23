@@ -55,7 +55,7 @@ While this may work for small temperature ranges (approximately $20^\circ \text{
 
 Briefly summarizing [Wikipedia](https://en.wikipedia.org/wiki/Steinhart%E2%80%93Hart_equation), the equation states:
 
-$$\frac{1}{T}=A+B\cdot\ln\{\left(R\right)}+C(\ln \left(R\right))^{3}$$
+$$\frac{1}{T}=A+B\cdot\ln\{\left(R\right)\}+C(\ln \left(R\right))^{3}$$
 
 Which, when using 3 sample points, results in:
 
@@ -111,7 +111,7 @@ R_{(25^\circ \text{C})} &= 117072.68 \Omega \\\\
 $$
 
 As we can see then, the actual $\beta$ value is larger than predicted ($3950\text{K}$ predicted vs. $4203\text{K}$ actual), as is the reference resistance ($100\text{k}\Omega$ predicted vs. $117\text{k}\Omega$ actual).
-In fact, neither of these are even in the commonly stated "$\pm 1 \\%$" range.
+In fact, neither of these are even in the commonly stated "$\pm 1 \\\%$" range.
 Good thing we're calibrating, hey?
 
 # "Back to our regularly scheduled programming"
@@ -247,5 +247,3 @@ For now, I need to:
 First though, I'm gonna go eat some fresh yogurt...
 
 [thermistors]: media/circuit.svg "Thermistor Diagram]"
-
-{{< mathjax >}}

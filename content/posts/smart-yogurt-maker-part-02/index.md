@@ -93,5 +93,3 @@ Completed since last time:
 Left to do now:
 * solder a perfboard version of the circuit
 * add a relay to control the cooker directly
-
-{{< mathjax >}}
