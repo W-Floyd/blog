@@ -2,7 +2,7 @@
 title: "Home Automation at School"
 date: "2021-04-21"
 author: "William Floyd"
-featured_image: "media/20200813_023018.webp"
+featured_image: "media/20200813_023018.avif"
 categories: [
     "Software"
 ]

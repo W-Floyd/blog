@@ -2,7 +2,7 @@
 title: "Ghetto NAS Part 2"
 date: "2024-02-16"
 author: "William Floyd"
-#featured_image: "media/IMG_20220126_225541.webp"
+#featured_image: "media/IMG_20220126_225541.avif"
 categories: [
     "Sys Admin",
     "Hardware",
