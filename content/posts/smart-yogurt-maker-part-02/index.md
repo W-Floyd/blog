@@ -2,7 +2,7 @@
 title: "Smart Yogurt Maker Part 2"
 date: "2022-03-16"
 author: "William Floyd"
-featured_image: "media/IMG_20220126_225541.webp"
+featured_image: "media/IMG_20220126_225541.avif"
 categories: [
     "Development",
     "Hardware",
@@ -35,7 +35,7 @@ At first, all hope was lost - the mess of solidified dairy mocked me from the te
 As I forlornly drained the whey, I figured I'd give it a taste...
 After all, it had been boiled to death, it couldn't possibly hurt me?
 
-![A Dairy Disaster!](media/IMG_20220126_231746.webp)
+![A Dairy Disaster!](media/IMG_20220126_231746.avif)
 
 # Rice Maker $\rightarrow$ Yogurt Maker $\rightarrow$ Cheese Maker?
 
@@ -45,7 +45,7 @@ A rough straining through a cheese cloth yielded something more passable as chee
 My girlfriend confirmed it seems to be very similar to Paneer, though she declined to taste it.
 I ate only a small portion before deciding it wasn't worth the effort...
 
-![Strained](media/IMG_20220127_013502.webp)
+![Strained](media/IMG_20220127_013502.avif)
 
 # Simmer down now!
 

@@ -2,7 +2,7 @@
 title: "Analysis of a 2005 Nissan Altima Remote Keyfob"
 date: "2021-01-08"
 author: "William Floyd"
-featured_image: "media/fob/closed.webp"
+featured_image: "media/fob/closed.avif"
 categories: [
     "Hardware",
     "Electronics",
@@ -30,12 +30,12 @@ I am reluctant to tap into the CAN bus directly, so instead I am going to invest
 
 # The Hardware
 
-![Opened remote](media/fob/opened.webp)
+![Opened remote](media/fob/opened.avif)
 
 While I may analyze the original fob at some point, for the time being I shall work from the aftermarket fob.
-Opening the casing reveals a rather simple circuit ([front](media/fob/pcb_front.webp), [back](media/fob/pcb_back.webp)) - battery contacts, four buttons, a smattering of passives, an oscillator, the main control chip, 8 test points, and an antenna trace running around the perimeter of the PCB.
+Opening the casing reveals a rather simple circuit ([front](media/fob/pcb_front.avif), [back](media/fob/pcb_back.avif)) - battery contacts, four buttons, a smattering of passives, an oscillator, the main control chip, 8 test points, and an antenna trace running around the perimeter of the PCB.
 
-![Closeup](media/fob/closeup.webp)
+![Closeup](media/fob/closeup.avif)
 
 Rather unhelpfully, the control IC is unmarked, so either I'll need to wait until I can look at the original fob to find any clues, or try to find what I need online.
 
@@ -131,9 +131,9 @@ What we know now is that the keyfob does indeed use a rolling code algorithm, th
 
 I do not have access to the original keyfob at this time, so some image searching may be in order.
 Several leads appeared, but the main one was this:
-<!-- ![Different model fob with same compatibility](media/research/alt_1.webp) -->
-![Pre-owned OEM fob](media/research/alt_2.webp)
-<!-- ![Similar model to mine](media/research/alt_3.webp) -->
+<!-- ![Different model fob with same compatibility](media/research/alt_1.avif) -->
+![Pre-owned OEM fob](media/research/alt_2.avif)
+<!-- ![Similar model to mine](media/research/alt_3.avif) -->
 
 None of text appears especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
 As it happens, Microchip is the company in question, producing the widely documented KeeLoq product line ([leaked spec sheet](http://keeloq.narod.ru/decryption.pdf)).

@@ -2,7 +2,7 @@
 title: "Smart Yogurt Maker Part 1"
 date: "2022-01-25"
 author: "William Floyd"
-featured_image: "media/IMG_20220125_113949_cleaned.webp"
+featured_image: "media/IMG_20220125_113949_cleaned.avif"
 categories: [
     "Development",
     "Hardware",
@@ -77,7 +77,7 @@ $$
 
 In my case, I found the points of reference using a setup like so:
 
-![Measuring water temperature and thermistor resistance](media/IMG_20220124_174144.webp)
+![Measuring water temperature and thermistor resistance](media/IMG_20220124_174144.avif)
 
 Do note that in order to reach a full boil (and $100^\circ \text{C}$ on the thermocouple), the lid of the rice cooker was attached.
 
@@ -129,7 +129,7 @@ In the meantime, a Wemos D1 Mini on a breadboard is ready to go (they're cheap a
 I wire it up with a $6.8\text{k}\Omega$ resistor (what I had handy), and away I went.
 The circuit looks something like this, where the two trailing wires connect to the thermistor bank:
 
-![Wired breadboard](media/IMG_20220125_114006_cleaned.webp)
+![Wired breadboard](media/IMG_20220125_114006_cleaned.avif)
 
 To prevent confusion, here is my final working config, then I'll explain.
 
@@ -226,13 +226,13 @@ I am notoriously _not_ picky when it comes to food, but I think it turned out gr
 Filling the rice cooker about halfway with whole milk, I heated it to $180^\circ \text{F}$ for a few minutes (I read I ought to go for longer...), cooled to about $110^\circ \text{F}$, then added a liberal few spoonfuls (think 1/5 volume of milk) of plain Dannon yogurt.
 I let it proof in the rice cooker for 7.5 hours, with the lid sealed.
 
-![First batch, still warm](media/IMG_20220125_105918.webp)
+![First batch, still warm](media/IMG_20220125_105918.avif)
 
 I put the whole rice cooker in the fridge to cool, with the lid sealed.
 Trying it later that same evening, I quite enjoyed it.
 I'll start my next batch from this one, and hopefully it'll be even better.
 
-![Spoonful of the good stuff](media/IMG_20220125_180035.webp)
+![Spoonful of the good stuff](media/IMG_20220125_180035.avif)
 
 # "Next time, on Rice Cooker Adventures"
 
