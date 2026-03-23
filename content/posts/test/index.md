@@ -73,5 +73,3 @@ sequenceDiagram
 $$
 y=mx+b
 $$
-
-{{< mathjax >}}
