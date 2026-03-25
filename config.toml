@@ -34,7 +34,6 @@ posts = "/:year/:month/:contentbasename/"
 [params]
 author = "William Floyd"
 description = "William Floyd's personal website"
-gravatar = "gravatar@w-floyd.com"
 dateFormat = "January 2, 2006"
 since = 2018
 colorScheme = "auto"

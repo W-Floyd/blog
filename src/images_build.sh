@@ -66,6 +66,8 @@ __PROCESS_SCRIPT=false
 
 __AVIF_QUALITY='45'
 __AVIF_PRESET='placebo'
+__AVIF_SIZES=''
+__RESCALE_FILTER='Welsh'
 
 __ENVIRONMENT_LIST='PROCESS_JPEG
 PROCESS_PNG
@@ -77,7 +79,9 @@ PNG_RESCALE
 PNG_RESCALE_THRESHOLD
 PNG_CONVERT_LOSSLESS
 AVIF_QUALITY
-AVIF_PRESET'
+AVIF_PRESET
+AVIF_SIZES
+RESCALE_FILTER'
 
 ###############################################################################
 # Functions
@@ -319,14 +323,20 @@ __process_generic_image() {
             if [ "${!__img_convert_lossless}" == 'true' ] && [ "${__output_format}" == 'webp' ]; then
                 __convert_options+=("-define" "webp:lossless=true")
             else
-                __convert_options+=("-quality" "${__AVIF_QUALITY}" -define "heic:preset=${__AVIF_PRESET}")
+                __convert_options+=("-quality" "${AVIF_QUALITY}" -define "heic:preset=${AVIF_PRESET}")
             fi
 
-            if [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]; then
-                __convert_options+=("-resize" "$((__img_rescale_threshold * 1000))@>")
+            if [ -z "${AVIF_SIZES}" ]; then
+                if [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]; then
+                    __convert_options+=("-resize" "$((__img_rescale_threshold * 1000))@>" "-filter" "${RESCALE_FILTER}")
+                fi
+                magick "${__source_file}" ${__convert_options[@]} "${__target}"
+            else
+                while read -r __size; do
+                    __target="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
+                    magick "${__source_file}" ${__convert_options[@]} "-resize" "${__size}" "${__target}"
+                done < <(echo "${AVIF_SIZES}" | tr ',' '\n')
             fi
-
-            magick "${__source_file}" ${__convert_options[@]} "${__target}"
 
         fi
 
