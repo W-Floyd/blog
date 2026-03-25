@@ -17,6 +17,7 @@
       alt="avatar"
       {{ printf "srcset=%q" (delimit $srcset ", ") | safeHTMLAttr }}
       sizes="(max-width: 768px) 17rem, 20rem"
+      fetchpriority=high
     />
   </div>
 {{ end }}
