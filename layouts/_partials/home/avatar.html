@@ -1,0 +1,25 @@
+{{ if (not (isset .Site.Params "gravatar")) }}
+  {{ $targetSize := float 200 }}
+  {{ $srcset := slice }}
+  {{ $smallest := 0 }}
+  {{ range readDir "/content/media/" }}
+    {{ if (findRE `^avatar-[0-9]+.avif$` .Name) }}
+      {{ $size := float (index (index (findRESubmatch `^avatar-([0-9]+).avif$` .Name) 0) 1) }}
+      {{ $srcset = $srcset | append (printf "media/%s %vx" .Name (div $size $targetSize)) }}
+      {{ if or (lt $size $smallest) (eq $smallest 0) }}
+        {{ $smallest = $size }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  <div class="avatar">
+    <img 
+      src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
+      alt="avatar"
+      {{ printf "srcset=%q" (delimit $srcset ", ") | safeHTMLAttr }}
+      sizes="(max-width: 768px) 17rem, 20rem"
+    />
+  </div>
+{{ end }}
+{{ with .Site.Params.gravatar }}
+  <div class="avatar"><img src="https://gravatar.webp.se/avatar/{{md5 .}}?s=480&d=mp" alt="gravatar"></div>
+{{ end }}
