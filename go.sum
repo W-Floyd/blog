@@ -2,3 +2,5 @@ github.com/Templarian/MaterialDesign-SVG v7.4.47+incompatible h1:w99yYrLvkTj5A9D
 github.com/Templarian/MaterialDesign-SVG v7.4.47+incompatible/go.mod h1:SRSiaLOZazGp4UpKPQRm37h4A3cKLHXaybAqaJ7Lfx8=
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20260319032544-9d3be47a0dc3 h1:SITYw9V5PijXjl7o/TB+1rsLbYmMBLSaouX+AN9OCq4=
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20260319032544-9d3be47a0dc3/go.mod h1:gd/NUQ5dn8znqYhU6iIe5hlxg/ZyreKye16zBkgAxTU=
+github.com/hugomods/shortcodes v0.25.1 h1:JQZ/Kw9aOlFVnDiDgXsSqiu8gLFXAM7tQn+TYr8q2bc=
+github.com/hugomods/shortcodes v0.25.1/go.mod h1:EnVopbZMNI/HeteM3Lp3phBTCRLvPSe7l142qhRFFPY=
