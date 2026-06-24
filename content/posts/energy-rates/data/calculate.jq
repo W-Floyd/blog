@@ -35,52 +35,52 @@ def isHoliday($dateTime):
 # Examples
 # RESIDENTIAL GENERAL USE AND SPACE HEAT - ONE METER: 2RS6A
 def _residential_general_use_and_space_heat_one_meter_2rs6a:
-	. as $dot |
-	(
-		group_by(.month) |
-		map(
-			(first | .month) as $groupMonth |
-			{
-				month: $groupMonth,
-				state: (map(.state) | add)
-			}
-		)
-	) as $monthstates |
-	$dot | map(
-		. as $entry |
-		($monthstates | map(select(.month==$entry.month)) | first | .state) as $thisMonthstate |
-		$entry |
+    . as $dot |
+    (
+        group_by(.month) |
+        map(
+            (first | .month) as $groupMonth |
+            {
+                month: $groupMonth,
+                state: (map(.state) | add)
+            }
+        )
+    ) as $monthstates |
+    $dot | map(
+        . as $entry |
+        ($monthstates | map(select(.month==$entry.month)) | first | .state) as $thisMonthstate |
+        $entry |
         (.month >=6 and .month <= 9) as $isSummer |
         if $isSummer then
-			0.10021
-		else # Winter
-			# That is, the rate is 0.06966 for the first 1000, and 0.06123 for everything past 1000
-			if ($thisMonthstate>1000) then
-				# Calculate the average charge given the 1000 split
-				((($thisMonthstate-1000) * 0.06123) + (1000 * 0.06966)) / $thisMonthstate
-			else
-				0.06966
-			end
-		end |
+            0.10021
+        else # Winter
+            # That is, the rate is 0.06966 for the first 1000, and 0.06123 for everything past 1000
+            if ($thisMonthstate>1000) then
+                # Calculate the average charge given the 1000 split
+                ((($thisMonthstate-1000) * 0.06123) + (1000 * 0.06966)) / $thisMonthstate
+            else
+                0.06966
+            end
+        end |
         $entry + {rate: .}
-	)
+    )
     ;
 # RESIDENTIAL GENERAL USE – ONE METER: 2RS1A
 def _residential_general_use_one_meter_2rs1a:
-	map(
+    map(
         . as $entry |
         (.month >=6 and .month <= 9) as $isSummer |
         if $isSummer then
-			0.10021
-		else # Winter
+            0.10021
+        else # Winter
             0.07735
-		end |
+        end |
         $entry + {rate: .}
-	)
+    )
     ;
 # 2RTOU, With Net Metering 2RTOUN
 def _2rtou_with_net_metering_2rtoun:
-	map(
+    map(
         . as $entry |
         (.month >=6 and .month <= 9) as $isSummer |
         (
@@ -109,10 +109,10 @@ def _2rtou_with_net_metering_2rtoun:
             end
         end |
         $entry + {rate: .}
-	)
+    )
     ;
 def _rtou2_with_net_metering_rtou2n:
-	map(
+    map(
         . as $entry |
         (.month >=6 and .month <= 9) as $isSummer |
         (
@@ -135,7 +135,7 @@ def _rtou2_with_net_metering_rtou2n:
             end
         end |
         $entry + {rate: .}
-	)
+    )
     ;
 def _apply_rate:
     map(
@@ -212,18 +212,18 @@ def _adjust_usage:
     ;
 map(
     . as $dot
-	| .datetime | fromdate
-	| (strftime("%H") | tonumber) as $hour # 0 through 23 |
-	| (strftime("%w") | tonumber) as $weekday # 0 is Sunday, 6 is Saturday |
-	| (strftime("%m") | tonumber) as $month # 1 through 12 |
-	|
+    | .datetime | fromdate
+    | (strftime("%H") | tonumber) as $hour # 0 through 23 |
+    | (strftime("%w") | tonumber) as $weekday # 0 is Sunday, 6 is Saturday |
+    | (strftime("%m") | tonumber) as $month # 1 through 12 |
+    |
     {
         datetime: .,
-		state: $dot.state,
-		hour: $hour,
-		weekday: $weekday,
-		month: $month
-	}
+        state: $dot.state,
+        hour: $hour,
+        weekday: $weekday,
+        month: $month
+    }
 )
 
 # | _fix_outliers
