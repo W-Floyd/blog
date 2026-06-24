@@ -27,7 +27,7 @@ But in the back of my head I still wanted to build some hardware to help with th
 
 ***
 
-![Orange Sherbert Dreams](media/handwired/20190811_004928.avif)
+![Orange Sherbet Dreams](media/handwired/20190811_004928.avif)
 
 This eventually came about in the summer of 2019, when I finally hand-wired a simple 8 knob control surface.
 Truth be told, I actually built two.

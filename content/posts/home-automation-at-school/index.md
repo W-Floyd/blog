@@ -20,7 +20,7 @@ One unique aspect of my setup, however, is that I cannot control the network I m
 There abound dozens of Google Home devices, Chromecasts, and so on, all accessible on the same network - but not from the wired connection that my server/desktop uses.
 
 Here then is my solution: MQTT everything I can.
-From my lights, so light sensor, to coffee maker to desktop software, I bounce it through a MQTT server hosted on a VPS.
+From my lights, to light sensor, to coffee maker to desktop software, I bounce it through a MQTT server hosted on a VPS.
 I use Home Assistant, so automatic discovery is easy on most things, especially ESPHome.
 In fact, I disabled direct Home Assistant connectivity entirely on these devices, which works well enough for me to live with.
 
@@ -104,7 +104,7 @@ I may rename this some day, but why bother.
 It is similar to IOTLink (which is Windows only), and HASS Workstation Service - they are great projects, but this one is mine, even if it is poorly written.
 
 The gist of the software is that most (all?) device types supported by Home Assistant may be implemented using a selection of user defined commands.
-The most prominent examples in my case are in order to enable/disable dark mode on my desktop.
+The most prominent example in my case is to enable/disable dark mode on my desktop.
 I automate this according to ambient light in my room, to better match the aesthetic I want.
 Additionally, I can use it to turn my desktop monitor off, without resorting to using a relay outlet, and even change the color temperature of my system.
 The script I use for this looks like the following:
@@ -240,7 +240,7 @@ For example, to show my system IP, I use the following:
 ```
 
 Some common use cases are built in as well.
-Currently, this includes laptop displays (as lights) and batteries (as sensors), as well as Crypto prices (though the CoinGecko Golang library).
+Currently, this includes laptop displays (as lights) and batteries (as sensors), as well as Crypto prices (through the CoinGecko Golang library).
 These are really easy to call.
 An exhaustive example is quite short:
 
