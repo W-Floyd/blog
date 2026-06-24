@@ -56,7 +56,7 @@ This is where we start to get somewhere.
 
 In essence, the fob emits a wakeup sequence 'A', followed by sequence 'B' repeated as long as the button is pressed.
 The structure of these sequences is also described - sufficient to say, it uses a rolling code system.
-Importantly for my analysis, the encoding method of the signal is given (though interestingly their diagram annotations seems to be incorrect).
+Importantly for my analysis, the encoding method of the signal is given (though interestingly their diagram annotations seem to be incorrect).
 
 With this information in hand, I ordered a cheap RTL-SDR (a Nooelec NESDR Mini 2+).
 
@@ -135,7 +135,7 @@ Several leads appeared, but the main one was this:
 ![Pre-owned OEM fob](media/research/alt_2.avif)
 <!-- ![Similar model to mine](media/research/alt_3.avif) -->
 
-None of text appears especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
+None of the text appears especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
 As it happens, Microchip is the company in question, producing the widely documented KeeLoq product line ([leaked spec sheet](http://keeloq.narod.ru/decryption.pdf)).
 Looking at their product lines, it becomes clear that the original fob uses the HCS361 chip.
 My aftermarket chips must be using a knockoff or unmarked version of this.

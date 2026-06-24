@@ -33,8 +33,8 @@ Some details about my use case:
 
 | Quantity | Item                         | Per Unit Cost | Notes                                                                                         |
 |----------|------------------------------|---------------|-----------------------------------------------------------------------------------------------|
-| 3        | Dell Wyse 3030LT Thin Client | $11           | Ebay - Fairly common, though may run out eventually - other thin clients will no doubt appear |
-| 3        | HGST 10TB He10 510           | $80           | Amazon / Ebay - Very common, can pick these up any day                                        |
+| 3        | Dell Wyse 3030LT Thin Client | $11           | eBay - Fairly common, though may run out eventually - other thin clients will no doubt appear |
+| 3        | HGST 10TB He10 510           | $80           | Amazon / eBay - Very common, can pick these up any day                                        |
 | 3        | ORICO 3.5in to USB enclosure | $25           | Amazon - Could use another, this is what I chose, does the job for me                         |
 | 5        | Ethernet Cables              | $2.5          | Amazon - $12.50 / 5 pack - Or whatever you have lying around                                  |
 | 1        | 8 Port Ethernet Switch       | $13           | Amazon - Or whatever you have lying around                                                    |

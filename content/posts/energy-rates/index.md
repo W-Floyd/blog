@@ -17,7 +17,7 @@ Couldn't find a complete guide for this.
 Install https://github.com/klausj1/homeassistant-statistics
 
 Run like so:
-![alt text](media/dev-tools.webp)
+![The "Export Statistics to file" action in Home Assistant's developer tools, with the export filename, time range, and format fields filled in](media/dev-tools.webp)
 
 Using this as the timestamp string:
 `%Y-%m-%dT%H:%M:00Z`
@@ -36,7 +36,7 @@ cat export_counters.json |
 
 Now you have your power data, ready to process!
 
-This is where things can get as crazy as you like, depending on your afinity for JQ.
+This is where things can get as crazy as you like, depending on your affinity for JQ.
 
 # Simple Route (CSV / Excel)
 

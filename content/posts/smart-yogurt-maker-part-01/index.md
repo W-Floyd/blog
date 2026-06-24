@@ -125,7 +125,7 @@ You know those calculations and equations we did above?
 Unnecessary, all of it. 
 ESPHome supports doing Steinhart-Hart calculations itself, and only needs the three sample points.
 
-In the meantime, a Wemos D1 Mini on a breadboard is ready to go (they're cheap and chearful).
+In the meantime, a Wemos D1 Mini on a breadboard is ready to go (they're cheap and cheerful).
 I wire it up with a $6.8\text{k}\Omega$ resistor (what I had handy), and away I went.
 The circuit looks something like this, where the two trailing wires connect to the thermistor bank:
 

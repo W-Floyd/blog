@@ -86,9 +86,9 @@ With this in mind, I want to move away from multiple storage nodes and consolida
 
 ### Prebuilt
 
-Easiest option, but not my ideal as I want to learn, and know my system wholely.
+Easiest option, but not my ideal as I want to learn, and know my system wholly.
 Hardware is too expensive, no expandability, so I'm not going to do it.
-Good more many people's cases though.
+Good for most people's cases though.
 
 ### Custom built
 

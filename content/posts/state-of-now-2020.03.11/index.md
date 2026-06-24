@@ -19,7 +19,7 @@ As such, perhaps some content should fill this - as of the moment - rather empty
 
 ***
 
-Since my first posts here concerning a certain ill-fated rice cook (a project that I admit to never having brought to fruition), both much and not much has happened.
+Since my first posts here concerning a certain ill-fated rice cooker (a project that I admit to never having brought to fruition), both much and not much has happened.
 I am halfway through the 4th semester of my Mechanical Engineering degree at LeTourneau University, am happily in a relationship with a fellow engineering student (though I may not name her), and have become - at least somewhat - less of a pain to those around me.
 Yet I *feel* that though I have learnt much over what is soon to be 2 years of education, I have at the same time also done nothing of interest.
 The closest I have come yet are perhaps the engineering projects of 2nd and 3rd semesters, though I shudder at the memory.

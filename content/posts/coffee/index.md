@@ -48,7 +48,7 @@ The ordeal of hacking into the thing, and my missteps trying to do so, is rather
 ![D1 Mini](media/20200702_120328.avif)
 
 The brains I added was a Wemos D1 Mini (thanks, Aliexpress!), with a 3.3V<->5V converter between to sense when the coffee maker is on, and also turn on a mosfet to short the button to ground.
-I initially had issues with the coffee maker turning on whenever I plugger the D1 Mini in, but a pulldown resistor solved this.
+I initially had issues with the coffee maker turning on whenever I plugged the D1 Mini in, but a pulldown resistor solved this.
 
 ![External USB Plug](media/20200702_120334.avif)
 
@@ -96,7 +96,7 @@ I can use the coffee maker absolutely as normal, the 'Smart' part of it is optio
 
 ***
 
-The rest of my setup using this coffee maker is somewhat outside the scope of this post, but it includes using Tasker on my phone to run a 'Wakeup' automation on Home Assistant, which will  - along with turning on my bed-head lamp, and switching my monitor on before putting it to sleep - check if I turned on a 'Morning Coffee' user input.
+The rest of my setup using this coffee maker is somewhat outside the scope of this post, but it includes using Tasker on my phone to run a 'Wakeup' automation on Home Assistant, which will - along with turning on my bed-head lamp, and switching my monitor on before putting it to sleep - check if I turned on a 'Morning Coffee' user input.
 If I remembered to prep my coffee the night before, and turned on the switch, I will wake up to a hot cup of coffee (or, the sound of a coffee-in-progress).
 I can also command Alexa and Google Assistant to do my bidding and make me a coffee.
 At least someone does what I want...

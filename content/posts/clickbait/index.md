@@ -24,7 +24,7 @@ The mandate given to us was as follows:
 Create a device to launch a fishing weight. It must:
 
 * be capable of selectively launching 20 and 40 feet
-* weight less than 5 pounds
+* weigh less than 5 pounds
 * cost less than $100
 * be battery powered
 * be capable of firing 30 times over the course of 1 hour
@@ -51,7 +51,7 @@ The usual array of excuses were made by all, and little actual work was accompli
 So it was that we inched ever closer to the deadline.
 Past the basic idea of our launch mechanism, all else was yet to be decided.
 A few calculations were half-heartedly done (kinetic energy, spring constants, etc.), but we all knew we didn't know enough to make any meaningful decisions yet.
-We had some very much unfounded fears concerning battery power, and not enough fears concerning torque - we believed we would be using NEMA 17 motors to tension to leadscrew.
+We had some very much unfounded fears concerning battery power, and not enough fears concerning torque - we believed we would be using NEMA 17 motors to tension the leadscrew.
 Needless to say, this did not turn out to be realistic.
 Nor was it realistic for us to budget a baitcasting reel instead of a much cheaper spincaster.
 
@@ -64,7 +64,7 @@ As the shape of our ungainly creation began to emerge, it was clear progress nee
 Once we coupled our stepper motor to the leadscrew and power tested the unit, it was also clear that change was in order.
 
 So a decision was made: a cheap cordless drill would be pilfered for a battery, motor and chuck.
-A H-Bridge would need to be bought for the drill motor (I [tried to](media/20191025_194859.avif) [make one](media/20191102_144426.avif), but the magic smoke was released...), and a latching system needed to be made.
+An H-Bridge would need to be bought for the drill motor (I [tried to](media/20191025_194859.avif) [make one](media/20191102_144426.avif), but the magic smoke was released...), and a latching system needed to be made.
 
 ***
 
@@ -99,10 +99,10 @@ Remaining at this point was a means of reeling in the line, a means of depressin
 ![Plenty of Torque](media/20191118_032416.avif)
 
 As it turned out, the very same stepper motor that had once tried to turn our leadscrew now instead would be pressed into service reeling in the line.
-Overkill, to be sure, and it's power most wastefully used, it did indeed reliably turn our reel, albeit slowly.
+Overkill, to be sure, and its power most wastefully used, it did indeed reliably turn our reel, albeit slowly.
 The use of such a large pulley was a matter of making it fit the belt size that I had available.
 The next size down was too small, so the pulley had to be enlarged.
-This saved the most time 3D printed as compared to a smaller pulley with other parts changed.
+This saved the most time 3D printing as compared to a smaller pulley with other parts changed.
 
 ***
 
@@ -110,7 +110,7 @@ This saved the most time 3D printed as compared to a smaller pulley with other p
 
 Finally, the mechanics of the project were completed, with each component individually power tested, though not yet in tandem with one another.
 As all of this was coming about, I had also begun getting the electronics in order.
-A limit switch was installed to keep the motor from destroying the machine
+A limit switch was installed to keep the motor from destroying the machine.
 When this switch invariably failed to activate, it resulted in the destruction of the front piece of the machine - at that stage more of a nuisance than a disaster.
 Spares were kept by, and small changes were made so the switch could be mounted elsewhere in a more reliable fashion.
 
@@ -127,18 +127,18 @@ In the above video, the finished product may be seen.
 Finally, presentation day came.
 Not without some small failings, we presented, with acceptable results.
 The largest remaining issue was the fact that the leadscrew would slip the grasp of the chuck after several cycles of the machine.
-While we corrected by hand for the presentation (by re-chucking the leadscrew after each launch), we knew we needed to fit the slippage for good.
+While we corrected by hand for the presentation (by re-chucking the leadscrew after each launch), we knew we needed to fix the slippage for good.
 After all, the final time-lapse of the project would not do with such continual, and blatant, hand-holding.
 
 The solution, it turned out, was free: the end of the leadscrew was notched and tapered on a lathe, allowing the drill chuck to get a firm hold on the metal.
 
 {{<youtube 4iX2adGqZVI>}}
 
-With this solved, the final time-lapse was completed, and a collective sigh of relieve was given.
+With this solved, the final time-lapse was completed, and a collective sigh of relief was given.
 
 ***
 
 Much was learned - how to more properly budget for a project, how to work with a team (something I need to improve on), and how to manage time well.
 All things considered, I found it to be a success - I did not pull an all-nighter for my own project, finishing with a few days to spare (no small thanks to an extended deadline), nor did I stress myself beyond all reason.
 Overall then, I enjoyed the experience of finally bringing a project to completion - this is something I do not often do, try as I might.
-The result, though useless for my own purposes, is something I am proud of, having taught me many things through it's completion.
+The result, though useless for my own purposes, is something I am proud of, having taught me many things through its completion.
