@@ -1,4 +1,4 @@
-FROM hugomods/hugo:exts AS hugo
+FROM hugomods/hugo:ci AS hugo
 COPY . /src
 RUN hugo --minify
 
