@@ -9,6 +9,10 @@ theme = ["github.com/W-Floyd/hugo-coder-iconify"]
 source = "content"
 target = "content"
 files = ["! **/media/src"]
+[[module.mounts]]
+source = "static"
+target = "static"
+files = ["! **/src"]
 [[module.imports]]
 path = 'github.com/hugomods/shortcodes'
 
