@@ -496,7 +496,7 @@ __fatal_error_handler || exit 1
 
 ###############################################################################
 
-find './content/' -type f -iwholename '*/src/.env' | while read -r __file; do
+find './content/' './static/' -type f -iwholename '*/src/.env' | while read -r __file; do
 
     __parent_directory="$(sed 's|src/.env$||' <<<"${__file}")"
 
