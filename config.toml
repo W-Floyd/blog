@@ -1,5 +1,5 @@
 baseURL = "//w-floyd.com/"
-languageCode = "en"
+locale = "en"
 defaultContentLanguage = "en"
 title = "William Floyd"
 theme = ["github.com/W-Floyd/hugo-coder-iconify"]
@@ -33,8 +33,6 @@ pygmentsCodeFencesGuessSyntax = true
           inline = [['\(', '\)'], ['$','$']]
 
 enableEmoji = true
-hideHeadingLinkText = true
-rssFullContent = true
 
 [permalinks]
 posts = "/:year/:month/:contentbasename/"
@@ -45,6 +43,7 @@ description = "William Floyd's personal website"
 dateFormat = "January 2, 2006"
 since = 2018
 colorScheme = "auto"
+rssFullContent = true
 
 # If you want to implement a Content-Security-Policy, add this section
 scriptsrc = ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net/"]
@@ -83,7 +82,7 @@ rel = "alternate"
 type = "application/rss+xml"
 
 [languages.en]
-languageName = ":uk:"
+label = ":uk:"
 
 [[languages.en.menu.main]]
 name = "About"
