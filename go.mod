@@ -4,6 +4,6 @@ go 1.26.1
 
 require (
 	github.com/Templarian/MaterialDesign-SVG v7.4.47+incompatible // indirect
-	github.com/W-Floyd/hugo-coder-iconify v0.0.0-20260624142007-4db984a1e8f1 // indirect
+	github.com/W-Floyd/hugo-coder-iconify v0.0.0-20260625150739-e418f9739173 // indirect
 	github.com/hugomods/shortcodes v0.25.1 // indirect
 )
