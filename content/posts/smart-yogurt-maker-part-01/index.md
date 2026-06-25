@@ -111,7 +111,7 @@ R_{(25^\circ \text{C})} &= 117072.68 \Omega \\\\
 $$
 
 As we can see then, the actual $\beta$ value is larger than predicted ($3950\text{K}$ predicted vs. $4203\text{K}$ actual), as is the reference resistance ($100\text{k}\Omega$ predicted vs. $117\text{k}\Omega$ actual).
-In fact, neither of these are even in the commonly stated "$\pm 1 \\\%$" range.
+In fact, neither of these are even in the commonly stated "$\pm 1 \%$" range.
 Good thing we're calibrating, hey?
 
 # "Back to our regularly scheduled programming"
