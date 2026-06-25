@@ -33,6 +33,8 @@ pygmentsCodeFencesGuessSyntax = true
           inline = [['\(', '\)'], ['$','$']]
 
 enableEmoji = true
+hideHeadingLinkText = true
+rssFullContent = true
 
 [permalinks]
 posts = "/:year/:month/:contentbasename/"
