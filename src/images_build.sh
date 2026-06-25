@@ -443,9 +443,19 @@ __check_file() {
         __filename="$(basename -- "${__source}")"
 
         if [ "${__filename##*.}" == 'png' ] && [ "${PNG_CONVERT_LOSSLESS}" == 'true' ]; then
-            __targets="$(sed -e 's|^\./src/|./|' -Ee 's/\.(jpeg|jpg|png)$/.webp/' <<<"${__source_file}")"
+            __output_format='webp'
         else
-            __targets="$(sed -e 's|^\./src/|./|' -Ee 's/\.(jpeg|jpg|png)$/.avif/' <<<"${__source_file}")"
+            __output_format='avif'
+        fi
+
+        if [ -z "${AVIF_SIZES}" ]; then
+            __targets="$(sed -e 's|^\./src/|./|' -Ee "s/\.(jpeg|jpg|png)$/.${__output_format}/" <<<"${__source_file}")"
+        else
+            __targets="$(
+                while read -r __size; do
+                    sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}"
+                done < <(echo "${AVIF_SIZES}" | tr ',' '\n')
+            )"
         fi
 
     else
