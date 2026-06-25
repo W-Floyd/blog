@@ -2,3 +2,4 @@
 /resources/
 /static/images/generated/
 /static/images/reduced/
+*.DS_Store
