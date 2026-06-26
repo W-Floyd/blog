@@ -2,7 +2,7 @@
 title: "Smart Yogurt Maker Part 1"
 date: "2022-01-25"
 author: "William Floyd"
-featured_image: "media/IMG_20220125_113949_cleaned.avif"
+featured_image: "media/IMG_20220125_113949_cleaned-1280.avif"
 categories: [
     "Development",
     "Hardware",
@@ -77,14 +77,12 @@ $$
 
 In my case, I found the points of reference using a setup like so:
 
-![Measuring water temperature and thermistor resistance](media/IMG_20220124_174144.avif)
-
+{{< image src="media/IMG_20220124_174144.avif" alt="Measuring water temperature and thermistor resistance" >}}
 Do note that in order to reach a full boil (and $100^\circ \text{C}$ on the thermocouple), the lid of the rice cooker was attached.
 
 While I could show the calculations, and they wouldn't be difficult, I'll be honest: I used an [online calculator](https://www.thinksrs.com/downloads/programs/therm%20calc/ntccalibrator/ntccalculator.html).
 
-![Calculator results](media/calc.webp)
-
+{{< image src="media/calc.webp" alt="Calculator results" >}}
 Using the measurements:
 
 $$
@@ -129,8 +127,7 @@ In the meantime, a Wemos D1 Mini on a breadboard is ready to go (they're cheap a
 I wire it up with a $6.8\text{k}\Omega$ resistor (what I had handy), and away I went.
 The circuit looks something like this, where the two trailing wires connect to the thermistor bank:
 
-![Wired breadboard](media/IMG_20220125_114006_cleaned.avif)
-
+{{< image src="media/IMG_20220125_114006_cleaned.avif" alt="Wired breadboard" >}}
 To prevent confusion, here is my final working config, then I'll explain.
 
 ```yaml
@@ -212,8 +209,7 @@ $$
 
 Further tuning is required, but this held well overnight - mostly...
 
-![First overnight test](media/log.webp)
-
+{{< image src="media/log.webp" alt="First overnight test" >}}
 I did change the set point from $105^\circ\text{F}$ to $107^\circ\text{F}$ halfway through, as well as tweaked some of the PID tuning.
 The concerning spike at 9:00 is marked by a momentary loss of connection with the ESP board - my automation failed to account for a loss of connection and so allowed the heat to continue rising.
 Thankfully, this was a short-lived event, but it is concerning nonetheless, and will require testing of my automation to prove that power loss tends towards a "safer" outcome.
@@ -226,14 +222,12 @@ I am notoriously _not_ picky when it comes to food, but I think it turned out gr
 Filling the rice cooker about halfway with whole milk, I heated it to $180^\circ \text{F}$ for a few minutes (I read I ought to go for longer...), cooled to about $110^\circ \text{F}$, then added a liberal few spoonfuls (think 1/5 volume of milk) of plain Dannon yogurt.
 I let it proof in the rice cooker for 7.5 hours, with the lid sealed.
 
-![First batch, still warm](media/IMG_20220125_105918.avif)
-
+{{< image src="media/IMG_20220125_105918.avif" alt="First batch, still warm" >}}
 I put the whole rice cooker in the fridge to cool, with the lid sealed.
 Trying it later that same evening, I quite enjoyed it.
 I'll start my next batch from this one, and hopefully it'll be even better.
 
-![Spoonful of the good stuff](media/IMG_20220125_180035.avif)
-
+{{< image src="media/IMG_20220125_180035.avif" alt="Spoonful of the good stuff" >}}
 # "Next time, on Rice Cooker Adventures"
 
 Now that I have a temperature controllable rice-cooker, and the ability to remotely start, stop, and modify set points, I may try other foods.
