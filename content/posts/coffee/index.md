@@ -2,7 +2,7 @@
 title: "DIY 'Smart' Coffee Maker"
 date: "2020-07-05"
 author: "William Floyd"
-featured_image: "media/20200702_120123.avif"
+featured_image: "media/20200702_120123-1280.avif"
 categories: [
     "Hardware",
     "Electronics",
@@ -27,30 +27,30 @@ I got so far as adding a sleek new brand name model to my Amazon cart, but thank
 Instead, I opted to swing by the local Goodwill the next day, to see what secondhand options might be available.
 As luck would have it, I found a no-frills, single button coffee maker for the princely sum of $4, and I was on my merry way.
 
-![The Spoils of Goodwill](media/20200610_204856.avif)
+{{< image src="media/20200610_204856.avif" alt="The Spoils of Goodwill" >}}
 
 ***
 
 Later that evening, opening the black box up (thankfully I had the correct triangular screwdriver head), I found very easily hackable innards.
 
-![Poor lighting is the worst...](media/20200610_205351.avif)
+{{< image src="media/20200610_205351.avif" alt="Poor lighting is the worst..." >}}
 
-The control board ([front](media/20200610_205847.avif), [back](media/20200610_205841.avif)) is very simple - two buttons in parallel, an LED, and a couple resistors.
+The control board ([front](media/20200610_205847-3024.avif), [back](media/20200610_205841-3024.avif)) is very simple - two buttons in parallel, an LED, and a couple resistors.
 I'm not quite sure what the logic is upstream (it un/latches on each press), but the buttons short to ground, and this is something I can work with.
 The control board has wires for ground, signal, and 5V, in that order.
 
 The ordeal of hacking into the thing, and my missteps trying to do so, is rather boring really, but it produced this:
 
-![Interception!](media/20200702_120309.avif)
+{{< image src="media/20200702_120309.avif" alt="Interception!" >}}
 
-![Perfboard](media/20200702_120302.avif)
+{{< image src="media/20200702_120302.avif" alt="Perfboard" >}}
 
-![D1 Mini](media/20200702_120328.avif)
+{{< image src="media/20200702_120328.avif" alt="D1 Mini" >}}
 
 The brains I added was a Wemos D1 Mini (thanks, Aliexpress!), with a 3.3V<->5V converter between to sense when the coffee maker is on, and also turn on a mosfet to short the button to ground.
 I initially had issues with the coffee maker turning on whenever I plugged the D1 Mini in, but a pulldown resistor solved this.
 
-![External USB Plug](media/20200702_120334.avif)
+{{< image src="media/20200702_120334.avif" alt="External USB Plug" >}}
 
 I also opted for an external USB plug - this allows me to possibly reflash this without opening the enclosure, and also meant I did not need to splice into the mains line inside, which I was reluctant to do.
 

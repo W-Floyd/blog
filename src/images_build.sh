@@ -79,7 +79,7 @@ __RESCALE_FILTER='Welsh'
 # The `ssimulacra2` binary is a required dependency of this script.
 # Default-on globally at 75 (high quality); a .env opts out with
 # AVIF_SSIMULACRA2='' to fall back to the fixed AVIF_QUALITY.
-__AVIF_SSIMULACRA2='75'
+__AVIF_SSIMULACRA2='65'
 __AVIF_QUALITY_MIN='30'
 __AVIF_QUALITY_MAX='85'
 
