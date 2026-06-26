@@ -41,6 +41,12 @@ _
 OLDPWD
 PATH'
 
+# Max concurrent per-image size encodes. Each AVIF variant runs its own
+# SSIMULACRA2 binary search (the bottleneck); the search is sequential but the
+# sizes are independent, so they run in parallel up to this bound. Not part of
+# the env hash (a runtime perf knob, doesn't affect output).
+__avif_jobs="$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4)"
+
 ########################################
 # Default Options
 ########################################
@@ -498,12 +504,23 @@ __process_generic_image() {
                     magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__target}"
                 fi
             else
+                # Sizes are independent: run their searches/encodes in parallel,
+                # bounded to __avif_jobs (sliding window; bash-3.2-safe wait).
+                __pids=()
                 while read -r __size; do
-                    __target="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
-                    __q="$(__avif_quality "${__source_file}" "${__size}>")"
-                    echo "  ${__target} q=${__q}"
-                    magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__target}"
+                    (
+                        __vtarget="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
+                        __vq="$(__avif_quality "${__source_file}" "${__size}>")"
+                        echo "  ${__vtarget} q=${__vq}"
+                        magick "${__source_file}" -auto-orient -quality "${__vq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vtarget}"
+                    ) &
+                    __pids+=("${!}")
+                    if [ "${#__pids[@]}" -ge "${__avif_jobs}" ]; then
+                        wait "${__pids[0]}"
+                        __pids=("${__pids[@]:1}")
+                    fi
                 done < <(__effective_sizes "${__source_file}")
+                wait
             fi
 
         fi
