@@ -2,7 +2,7 @@
 title: "Clickbait - The Automatic Fishing Caster"
 date: "2020-03-13"
 author: "William Floyd"
-featured_image: "media/20191120_224129-1280.avif"
+featuredImage: "media/20191120_224129-1280.avif"
 categories: [
     "Hardware",
     "Engineering",
