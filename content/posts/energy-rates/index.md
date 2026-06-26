@@ -17,7 +17,7 @@ Couldn't find a complete guide for this.
 Install https://github.com/klausj1/homeassistant-statistics
 
 Run like so:
-![The "Export Statistics to file" action in Home Assistant's developer tools, with the export filename, time range, and format fields filled in](media/dev-tools.webp)
+{{< image src="media/dev-tools.webp" alt=`The "Export Statistics to file" action in Home Assistant's developer tools, with the export filename, time range, and format fields filled in` >}}
 
 Using this as the timestamp string:
 `%Y-%m-%dT%H:%M:00Z`
