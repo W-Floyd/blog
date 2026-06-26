@@ -69,6 +69,24 @@ __AVIF_PRESET='placebo'
 __AVIF_SIZES=''
 __RESCALE_FILTER='Welsh'
 
+# Named width ladder, exported only while a .env is being sourced so a .env can
+# opt into the responsive set without repeating the numbers:
+#   AVIF_SIZES="${SIZES_DEFAULT}"
+# A single ladder serves both content-column and full-width images: it brackets
+# the display sizes of both across pixel densities, the per-image `sizes`
+# attribute decides which rungs are actually fetched, and __effective_sizes
+# drops rungs at/above each image's native width (folding them into the always-
+# emitted native variant), so the list self-trims and is safe everywhere.
+#
+# It is the union of two intents, so coverage is tight at every density:
+#   - device/viewport widths (full-width images): 400 640 960 1280 1920 2560 3840
+#   - content-column multiples (860px col x .5/1/1.5/2/2.5/3): 432 864 1296 1728 2160 2592
+# The two 1280/1296 and 2560/2592 near-pairs are kept deliberately (device vs
+# content-multiple); the few extra KB are intentional for exact coverage.
+__SIZES_DEFAULT='400,432,640,864,960,1280,1296,1728,1920,2160,2560,2592,3840'
+
+__SIZE_LADDERS='SIZES_DEFAULT'
+
 __ENVIRONMENT_LIST='PROCESS_JPEG
 PROCESS_PNG
 PROCESS_SCRIPT
@@ -109,6 +127,14 @@ __set_env() {
         __varname="$(sed 's/^/__/' <<<"${__line}")"
         export "${__line}=${!__varname}"
     done <<<"${__ENVIRONMENT_LIST}"
+
+    # Expose named ladders for reference inside the .env. They are not part of
+    # __ENVIRONMENT_LIST, so the cleanup pass below unsets them afterwards and
+    # they never enter the env hash (only the resolved AVIF_SIZES value does).
+    while read -r __line; do
+        __varname="$(sed 's/^/__/' <<<"${__line}")"
+        export "${__line}=${!__varname}"
+    done <<<"${__SIZE_LADDERS}"
 
     if [ "${#}" -gt 0 ]; then
         set -o allexport
@@ -281,6 +307,59 @@ __find_png() {
     find './src/' -type f \( -iname \*.png \)
 }
 
+########################################
+# __effective_sizes <source>
+########################################
+#
+# Effective Sizes
+# Given AVIF_SIZES and a source image, echoes the widths to actually emit:
+# every requested width smaller than the source's native width, plus always a
+# single native-width entry (the 100% variant). Requested widths at or above
+# native collapse into that one native entry, so there's no upscaling and no
+# duplicate native-size files. A full-resolution variant is always produced so
+# the served `media/` dir alone can satisfy a "view full image" link — the
+# `src/` originals are not served. Both __process and __check_file use this so
+# the emitted file set and the "is it current?" prediction stay in sync.
+#
+########################################
+
+__effective_sizes() {
+
+    local __native __size __dims __w __h __orient
+
+    # Use the auto-oriented width: conversion applies -auto-orient, so a photo
+    # with a rotating EXIF orientation (5-8) has its width/height swapped in the
+    # output. Reading the stored width here would mislabel and, with a wide
+    # ladder, duplicate the native variant.
+    __dims="$(identify -format '%w %h %[orientation]\n' "${1}" 2>/dev/null | head -n1)"
+    __w="${__dims%% *}"
+    __h="$(echo "${__dims}" | cut -d' ' -f2)"
+    __orient="${__dims##* }"
+
+    case "${__orient}" in
+        LeftTop | RightTop | RightBottom | LeftBottom) __native="${__h}" ;;
+        *) __native="${__w}" ;;
+    esac
+
+    if [ -z "${__native}" ]; then
+        echo "${AVIF_SIZES}" | tr ',' '\n' | sed '/^$/d'
+        return
+    fi
+
+    while read -r __size; do
+        if [ -z "${__size}" ]; then
+            continue
+        fi
+        if [ "${__size}" -lt "${__native}" ]; then
+            echo "${__size}"
+        fi
+    done < <(echo "${AVIF_SIZES}" | tr ',' '\n')
+
+    # Always emit the native (100%) width.
+    echo "${__native}"
+
+}
+
 __process_generic_image() {
 
     __set_env './src/.env'
@@ -334,8 +413,8 @@ __process_generic_image() {
             else
                 while read -r __size; do
                     __target="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
-                    magick "${__source_file}" ${__convert_options[@]} "-resize" "${__size}" "${__target}"
-                done < <(echo "${AVIF_SIZES}" | tr ',' '\n')
+                    magick "${__source_file}" ${__convert_options[@]} "-resize" "${__size}>" "${__target}"
+                done < <(__effective_sizes "${__source_file}")
             fi
 
         fi
@@ -454,7 +533,7 @@ __check_file() {
             __targets="$(
                 while read -r __size; do
                     sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}"
-                done < <(echo "${AVIF_SIZES}" | tr ',' '\n')
+                done < <(__effective_sizes "${__source_file}")
             )"
         fi
 
