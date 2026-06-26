@@ -2,7 +2,7 @@
 title: "Smart Yogurt Maker Part 2"
 date: "2022-03-16"
 author: "William Floyd"
-featured_image: "media/IMG_20220126_225541.avif"
+featured_image: "media/IMG_20220126_225541-1280.avif"
 categories: [
     "Development",
     "Hardware",
@@ -35,8 +35,7 @@ At first, all hope was lost - the mess of solidified dairy mocked me from the te
 As I forlornly drained the whey, I figured I'd give it a taste...
 After all, it had been boiled to death, it couldn't possibly hurt me?
 
-![A Dairy Disaster!](media/IMG_20220126_231746.avif)
-
+{{< image src="media/IMG_20220126_231746.avif" alt="A Dairy Disaster!" >}}
 # Rice Maker $\rightarrow$ Yogurt Maker $\rightarrow$ Cheese Maker?
 
 I had in fact made cheese.
@@ -45,8 +44,7 @@ A rough straining through a cheese cloth yielded something more passable as chee
 My girlfriend confirmed it seems to be very similar to Paneer, though she declined to taste it.
 I ate only a small portion before deciding it wasn't worth the effort...
 
-![Strained](media/IMG_20220127_013502.avif)
-
+{{< image src="media/IMG_20220127_013502.avif" alt="Strained" >}}
 # Simmer down now!
 
 Clearly, it was time to get my automation in order.
@@ -68,8 +66,7 @@ If the value is between 0.6 and 0.95, it will turn it on, wait 750 milliseconds,
 This ensures when attempting to hold a setpoint that the thermal lag in the system will catch up.
 These values are found purely by experimentation, but yield sub $1^\circ F$ variation easily.
 
-![A slice of history](media/Screenshot%20from%202022-03-17%2009-48-36.webp)
-
+{{< image src="media/Screenshot from 2022-03-17 09-48-36.webp" alt="A slice of history" >}}
 ## P~~ID~~ Settings
 
 Given some changes to the PID integration I am using, as well as further testing, these are now my PID settings:
