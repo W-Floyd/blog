@@ -480,7 +480,10 @@ __process_generic_image() {
                 __lossless=true
             fi
 
-            if [ -z "${AVIF_SIZES}" ]; then
+            # The size ladder applies only to lossy AVIF. Lossless WebP always
+            # emits a single full-size image (with optional auto-rescale), as do
+            # AVIF outputs when no AVIF_SIZES ladder is configured.
+            if [ "${__lossless}" == 'true' ] || [ -z "${AVIF_SIZES}" ]; then
                 __resize=''
                 __resize_opts=()
                 if [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]; then
@@ -488,7 +491,7 @@ __process_generic_image() {
                     __resize_opts=("-resize" "${__resize}" "-filter" "${RESCALE_FILTER}")
                 fi
                 if [ "${__lossless}" == 'true' ]; then
-                    magick "${__source_file}" -auto-orient -define "webp:lossless=true" "${__resize_opts[@]}" "${__target}"
+                    magick "${__source_file}" -auto-orient -quality 100 -define "webp:lossless=true" -define "webp:method=6" "${__resize_opts[@]}" "${__target}"
                 else
                     __q="$(__avif_quality "${__source_file}" "${__resize}")"
                     echo "  q=${__q}"
@@ -497,13 +500,9 @@ __process_generic_image() {
             else
                 while read -r __size; do
                     __target="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
-                    if [ "${__lossless}" == 'true' ]; then
-                        magick "${__source_file}" -auto-orient -define "webp:lossless=true" "-resize" "${__size}>" "${__target}"
-                    else
-                        __q="$(__avif_quality "${__source_file}" "${__size}>")"
-                        echo "  ${__target} q=${__q}"
-                        magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__target}"
-                    fi
+                    __q="$(__avif_quality "${__source_file}" "${__size}>")"
+                    echo "  ${__target} q=${__q}"
+                    magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__target}"
                 done < <(__effective_sizes "${__source_file}")
             fi
 
@@ -617,7 +616,8 @@ __check_file() {
             __output_format='avif'
         fi
 
-        if [ -z "${AVIF_SIZES}" ]; then
+        # Sized targets only for lossy AVIF; lossless WebP is always single.
+        if [ -z "${AVIF_SIZES}" ] || [ "${__output_format}" == 'webp' ]; then
             __targets="$(sed -e 's|^\./src/|./|' -Ee "s/\.(jpeg|jpg|png)$/.${__output_format}/" <<<"${__source_file}")"
         else
             __targets="$(
