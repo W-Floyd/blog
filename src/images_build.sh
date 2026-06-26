@@ -47,6 +47,19 @@ PATH'
 # the env hash (a runtime perf knob, doesn't affect output).
 __avif_jobs="$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4)"
 
+# Starting-quality model for the SSIMULACRA2 search: q ~= a + b*ln(width),
+# fit by least squares over a corpus of prior encodes (see q_regression.py).
+# The normal ladder targets a fixed score so q is nearly flat (b ~= 0); the -hq
+# ladder needs more bits at larger widths so q climbs with ln(width). These
+# only seed the search — it still verifies every candidate against the true
+# SSIMULACRA2 target, so the chosen q (and every output byte) is independent of
+# them. Like __avif_jobs, a pure perf knob: kept out of __ENVIRONMENT_LIST so
+# it never enters the env hash and a re-fit doesn't invalidate existing files.
+__avif_seed_a='48.6'
+__avif_seed_b='-0.84'
+__avif_seed_hq_a='51.6'
+__avif_seed_hq_b='4.43'
+
 ########################################
 # Default Options
 ########################################
@@ -396,7 +409,61 @@ __effective_sizes() {
 }
 
 ########################################
-# __avif_quality <source> <resize-spec-or-empty>
+# __avif_probe <quality>
+########################################
+#
+# AVIF Probe
+# Encodes __src at the given quality (honouring __resize) and scores the
+# decoded result against __ref with SSIMULACRA2. Returns 0 (success) iff the
+# score meets __target. Reads __src/__resize/__ta/__tp/__ref/__target from its
+# caller via bash dynamic scoping, so it only takes the quality to try.
+#
+########################################
+
+__avif_probe() {
+
+    local __q="${1}" __score
+
+    if [ -n "${__resize}" ]; then
+        magick "${__src}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" -resize "${__resize}" "${__ta}"
+    else
+        magick "${__src}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__ta}"
+    fi
+    magick "${__ta}" "${__tp}"
+    __score="$(ssimulacra2 "${__ref}" "${__tp}")"
+    awk "BEGIN{exit !(${__score} >= ${__target})}"
+
+}
+
+########################################
+# __avif_seed <width> <variant>
+########################################
+#
+# AVIF Seed
+# Predicts a starting quality for the given output width and variant
+# (normal|hq) from the q ~= a + b*ln(width) model. Clamped by the caller. Pure
+# guess: the search verifies it, so a stale model only costs a few extra probes.
+#
+########################################
+
+__avif_seed() {
+
+    local __w="${1}" __variant="${2}" __a __b
+
+    if [ "${__variant}" == 'hq' ]; then
+        __a="${__avif_seed_hq_a}"
+        __b="${__avif_seed_hq_b}"
+    else
+        __a="${__avif_seed_a}"
+        __b="${__avif_seed_b}"
+    fi
+
+    awk "BEGIN{printf \"%d\", ${__a} + ${__b} * log(${__w}) + 0.5}"
+
+}
+
+########################################
+# __avif_quality <source> <resize-spec-or-empty> [<target>] [<qmax>] [<variant>]
 ########################################
 #
 # AVIF Quality
@@ -412,14 +479,14 @@ __effective_sizes() {
 
 __avif_quality() {
 
-    local __src="${1}" __resize="${2}" __target="${3:-${AVIF_SSIMULACRA2}}" __qmax="${4:-${AVIF_QUALITY_MAX}}"
+    local __src="${1}" __resize="${2}" __target="${3:-${AVIF_SSIMULACRA2}}" __qmax="${4:-${AVIF_QUALITY_MAX}}" __variant="${5:-normal}"
 
     if [ -z "${__target}" ]; then
         echo "${AVIF_QUALITY}"
         return
     fi
 
-    local __dir __ref __ta __tp __lo __hi __mid __best __score
+    local __dir __ref __ta __tp __lo __hi __mid __best __width __seed __step __p
     __dir="$(mktemp -d)"
     __ref="${__dir}/ref.png"
     __ta="${__dir}/t.avif"
@@ -431,20 +498,67 @@ __avif_quality() {
         magick "${__src}" -auto-orient "${__ref}"
     fi
 
-    __lo="${AVIF_QUALITY_MIN}"
-    __hi="${__qmax}"
-    __best="${__qmax}"
+    # Seed the search at the model's predicted quality for this reference's
+    # actual width (read off the resized reference, so area/rescale specs and
+    # full-size encodes all resolve correctly), clamped into the search range.
+    __width="$(identify -format '%w' "${__ref}" 2>/dev/null)"
+    [ -z "${__width}" ] && __width=1280
+    __seed="$(__avif_seed "${__width}" "${__variant}")"
+    [ "${__seed}" -lt "${AVIF_QUALITY_MIN}" ] && __seed="${AVIF_QUALITY_MIN}"
+    [ "${__seed}" -gt "${__qmax}" ] && __seed="${__qmax}"
 
+    # Exponential (gallop) search from the seed. The score is monotonic in
+    # quality, so probing the seed tells us which way the lowest-passing quality
+    # lies; we then double the step outward until we bracket it, and binary-
+    # search the (small) remaining gap. This returns the exact same quality the
+    # old midpoint binary search would have — only the probes taken differ — so
+    # outputs and .hash files are unchanged; a good seed just trials fewer.
+    __best="${__qmax}"
+    if __avif_probe "${__seed}"; then
+        # Seed meets the target: the lowest passing quality is at or below it.
+        __best="${__seed}"
+        __lo="${AVIF_QUALITY_MIN}"
+        __hi=$((__seed - 1))
+        __step=1
+        while [ "${__lo}" -le "${__hi}" ]; do
+            __p=$((__seed - __step))
+            [ "${__p}" -lt "${AVIF_QUALITY_MIN}" ] && __p="${AVIF_QUALITY_MIN}"
+            if __avif_probe "${__p}"; then
+                __best="${__p}"
+                __hi=$((__p - 1))
+                [ "${__p}" -eq "${AVIF_QUALITY_MIN}" ] && break
+                __step=$((__step * 2))
+            else
+                __lo=$((__p + 1))
+                break
+            fi
+        done
+    else
+        # Seed misses: the lowest passing quality (if any) is above it.
+        __lo=$((__seed + 1))
+        __hi="${__qmax}"
+        __step=1
+        while [ "${__lo}" -le "${__hi}" ]; do
+            __p=$((__seed + __step))
+            [ "${__p}" -gt "${__qmax}" ] && __p="${__qmax}"
+            if __avif_probe "${__p}"; then
+                __best="${__p}"
+                __hi=$((__p - 1))
+                break
+            else
+                __lo=$((__p + 1))
+                # Even qmax misses: nothing meets the target, keep best=qmax
+                # (matching the old search) and skip the binary pass.
+                [ "${__p}" -eq "${__qmax}" ] && { __lo=1; __hi=0; break; }
+                __step=$((__step * 2))
+            fi
+        done
+    fi
+
+    # Binary-search whatever gap the gallop left bracketed.
     while [ "${__lo}" -le "${__hi}" ]; do
         __mid=$(((__lo + __hi) / 2))
-        if [ -n "${__resize}" ]; then
-            magick "${__src}" -auto-orient -quality "${__mid}" -define "heic:preset=${AVIF_PRESET}" -resize "${__resize}" "${__ta}"
-        else
-            magick "${__src}" -auto-orient -quality "${__mid}" -define "heic:preset=${AVIF_PRESET}" "${__ta}"
-        fi
-        magick "${__ta}" "${__tp}"
-        __score="$(ssimulacra2 "${__ref}" "${__tp}")"
-        if awk "BEGIN{exit !(${__score} >= ${__target})}"; then
+        if __avif_probe "${__mid}"; then
             __best="${__mid}"
             __hi=$((__mid - 1))
         else
@@ -517,7 +631,7 @@ __process_generic_image() {
                     magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__target}"
                     if [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
                         __thq="${__target%.avif}-hq.avif"
-                        __qhq="$(__avif_quality "${__source_file}" "${__resize}" "${AVIF_HQ_SSIMULACRA2}" 99)"
+                        __qhq="$(__avif_quality "${__source_file}" "${__resize}" "${AVIF_HQ_SSIMULACRA2}" 99 hq)"
                         echo "  ${__thq} q=${__qhq}"
                         magick "${__source_file}" -auto-orient -quality "${__qhq}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__thq}"
                     fi
@@ -536,7 +650,7 @@ __process_generic_image() {
                         magick "${__source_file}" -auto-orient -quality "${__vq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vtarget}"
                         if [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
                             __vhq="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-hq-${__size}.${__output_format}/" <<<"${__source_file}")"
-                            __vqhq="$(__avif_quality "${__source_file}" "${__size}>" "${AVIF_HQ_SSIMULACRA2}" 99)"
+                            __vqhq="$(__avif_quality "${__source_file}" "${__size}>" "${AVIF_HQ_SSIMULACRA2}" 99 hq)"
                             echo "  ${__vhq} q=${__vqhq}"
                             magick "${__source_file}" -auto-orient -quality "${__vqhq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vhq}"
                         fi
