@@ -89,6 +89,17 @@ __AVIF_SSIMULACRA2='65'
 __AVIF_QUALITY_MIN='30'
 __AVIF_QUALITY_MAX='85'
 
+# High-quality companion. When non-empty, every AVIF output also gets a `-hq`
+# sibling (<stem>-hq-<width>.avif / <stem>-hq.avif) encoded to this higher
+# SSIMULACRA2 target — a high-quality version for full-resolution viewing,
+# kept separate from the bandwidth-tuned ladder. The -hq search uses a quality
+# ceiling of 99 (the normal AVIF_QUALITY_MAX is too low to reach this); 100 is
+# avoided because libheif/AOM switches to lossless mode there, which conflicts
+# with the chroma-deltaq the placebo preset enables and aborts the encode. 85 is
+# "artifacts very hard to spot even at full size"; above ~85 the curve gets
+# steep for little perceptual gain.
+__AVIF_HQ_SSIMULACRA2='85'
+
 # Named width ladder, exported only while a .env is being sourced so a .env can
 # opt into the responsive set without repeating the numbers:
 #   AVIF_SIZES="${SIZES_DEFAULT}"
@@ -122,6 +133,7 @@ AVIF_SIZES
 AVIF_SSIMULACRA2
 AVIF_QUALITY_MIN
 AVIF_QUALITY_MAX
+AVIF_HQ_SSIMULACRA2
 RESCALE_FILTER'
 
 ###############################################################################
@@ -400,12 +412,13 @@ __effective_sizes() {
 
 __avif_quality() {
 
-    if [ -z "${AVIF_SSIMULACRA2}" ]; then
+    local __src="${1}" __resize="${2}" __target="${3:-${AVIF_SSIMULACRA2}}" __qmax="${4:-${AVIF_QUALITY_MAX}}"
+
+    if [ -z "${__target}" ]; then
         echo "${AVIF_QUALITY}"
         return
     fi
 
-    local __src="${1}" __resize="${2}"
     local __dir __ref __ta __tp __lo __hi __mid __best __score
     __dir="$(mktemp -d)"
     __ref="${__dir}/ref.png"
@@ -419,8 +432,8 @@ __avif_quality() {
     fi
 
     __lo="${AVIF_QUALITY_MIN}"
-    __hi="${AVIF_QUALITY_MAX}"
-    __best="${AVIF_QUALITY_MAX}"
+    __hi="${__qmax}"
+    __best="${__qmax}"
 
     while [ "${__lo}" -le "${__hi}" ]; do
         __mid=$(((__lo + __hi) / 2))
@@ -431,7 +444,7 @@ __avif_quality() {
         fi
         magick "${__ta}" "${__tp}"
         __score="$(ssimulacra2 "${__ref}" "${__tp}")"
-        if awk "BEGIN{exit !(${__score} >= ${AVIF_SSIMULACRA2})}"; then
+        if awk "BEGIN{exit !(${__score} >= ${__target})}"; then
             __best="${__mid}"
             __hi=$((__mid - 1))
         else
@@ -500,12 +513,20 @@ __process_generic_image() {
                     magick "${__source_file}" -auto-orient -quality 100 -define "webp:lossless=true" -define "webp:method=6" "${__resize_opts[@]}" "${__target}"
                 else
                     __q="$(__avif_quality "${__source_file}" "${__resize}")"
-                    echo "  q=${__q}"
+                    echo "  ${__target} q=${__q}"
                     magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__target}"
+                    if [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
+                        __thq="${__target%.avif}-hq.avif"
+                        __qhq="$(__avif_quality "${__source_file}" "${__resize}" "${AVIF_HQ_SSIMULACRA2}" 99)"
+                        echo "  ${__thq} q=${__qhq}"
+                        magick "${__source_file}" -auto-orient -quality "${__qhq}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__thq}"
+                    fi
                 fi
             else
                 # Sizes are independent: run their searches/encodes in parallel,
                 # bounded to __avif_jobs (sliding window; bash-3.2-safe wait).
+                # Largest first (descending) so the longest jobs start earliest,
+                # minimizing makespan instead of trailing behind small ones.
                 __pids=()
                 while read -r __size; do
                     (
@@ -513,13 +534,19 @@ __process_generic_image() {
                         __vq="$(__avif_quality "${__source_file}" "${__size}>")"
                         echo "  ${__vtarget} q=${__vq}"
                         magick "${__source_file}" -auto-orient -quality "${__vq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vtarget}"
+                        if [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
+                            __vhq="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-hq-${__size}.${__output_format}/" <<<"${__source_file}")"
+                            __vqhq="$(__avif_quality "${__source_file}" "${__size}>" "${AVIF_HQ_SSIMULACRA2}" 99)"
+                            echo "  ${__vhq} q=${__vqhq}"
+                            magick "${__source_file}" -auto-orient -quality "${__vqhq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vhq}"
+                        fi
                     ) &
                     __pids+=("${!}")
                     if [ "${#__pids[@]}" -ge "${__avif_jobs}" ]; then
                         wait "${__pids[0]}"
                         __pids=("${__pids[@]:1}")
                     fi
-                done < <(__effective_sizes "${__source_file}")
+                done < <(__effective_sizes "${__source_file}" | sort -rn)
                 wait
             fi
 
@@ -642,6 +669,12 @@ __check_file() {
                     sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}"
                 done < <(__effective_sizes "${__source_file}")
             )"
+        fi
+
+        # Each AVIF target also has a -hq sibling when high-quality is enabled.
+        if [ "${__output_format}" == 'avif' ] && [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
+            __targets="${__targets}
+$(sed -E 's/(-[0-9]+)?\.avif$/-hq\1.avif/' <<<"${__targets}")"
         fi
 
     else
