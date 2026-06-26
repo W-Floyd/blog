@@ -1,0 +1,150 @@
+{{- /*
+  Responsive image. Resolves a single logical source to the best available
+  set of files, in priority order:
+
+    1. Pre-generated sized variants from the `images_build.sh` pipeline
+       (`<stem>-<width>.{avif,webp}` siblings) — emits a width-descriptor
+       srcset + sizes so the browser picks the optimal file.
+    2. A single pre-generated output (`<stem>.{avif,webp}`) — emits a plain img.
+    3. Build-time generation — if the source itself is a processable resource
+       and no pre-generated files exist, Hugo resizes it to `widths` (AVIF).
+
+  Discovery uses a filename walk of the source directory (like the avatar
+  partial), so the pipeline's output is used as-is with no extra config.
+
+  src      required. Path to the source/base image, relative to the page
+           (e.g. "media/avatar.jpg" or "media/photo.avif"). The extension is
+           only used to locate the file; matching is by stem.
+  alt      optional. Alt text.
+  sizes    optional. `sizes` attribute. Default "100vw".
+  class    optional. Class on the <img>.
+  loading  optional. "lazy" (default) or "eager".
+  fetchpriority
+           optional. e.g. "high".
+  sizes    optional. Rarely needed — defaults to the theme's content layout
+           (full width on mobile, capped at the content column on desktop), so
+           you don't have to describe it per image. (We can't use sizes="auto"
+           here: body images are styled max-width:100% with no explicit width,
+           which makes auto-sizing pick a too-small candidate.) Override only
+           for unusual layouts (e.g. a floated thumbnail).
+  widths   optional. Space-separated widths for the build-time fallback.
+           Default "200 400 600 800".
+*/ -}}
+{{- $src := .Get "src" | default (.Get 0) -}}
+{{- $alt := .Get "alt" | default "" -}}
+{{- $class := .Get "class" -}}
+{{- $loading := .Get "loading" | default "lazy" -}}
+{{- /* Default matches the theme: html font-size is 62.5% (1rem = 10px), and
+       .container is 90rem with 2rem side padding, so the content column tops
+       out at (90 - 4) * 10 = 860px; padding is 40px. Below 768px images go
+       full-bleed width. Expressed in px (not rem) because the column width is a
+       fixed px once resolved, and font-relative units in `sizes` are unreliable
+       with the preload scanner. Coupled to the theme's 90rem/62.5%. */ -}}
+{{- $sizes := .Get "sizes" | default "(max-width: 768px) 100vw, min(100vw - 40px, 860px)" -}}
+{{- $fetchpriority := .Get "fetchpriority" -}}
+{{- /* link: wrap the image in an anchor to the largest (100%) variant, so a
+       click — or right-click "Open link in new tab" — opens the full-res file.
+       (Right-click "Open image" still uses the displayed variant; that's a
+       browser limitation.) "true" (default) / "false". */ -}}
+{{- $link := not (in (slice "false" "0" "") (.Get "link" | default "true")) -}}
+
+{{- $dir := path.Dir $src -}}
+{{- $stem := strings.TrimSuffix (path.Ext $src) (path.Base $src) -}}
+{{- $reStem := replaceRE `[.\[\](){}+*?^$|\\]` "\\${0}" $stem -}}
+
+{{- /* On-disk directory, relative to project root, for the filename walk. */ -}}
+{{- $pageDir := "" -}}
+{{- with .Page.File -}}{{- $pageDir = .Dir -}}{{- end -}}
+{{- $scanDir := path.Join "/content" $pageDir $dir -}}
+
+{{- $set := slice -}}
+{{- $fallbackName := "" -}}
+{{- $min := 0 -}}
+{{- $single := "" -}}
+{{- range (readDir $scanDir) -}}
+  {{- $m := findRESubmatch (printf `^%s-([0-9]+)\.(avif|webp)$` $reStem) .Name -}}
+  {{- if $m -}}
+    {{- $w := int (index (index $m 0) 1) -}}
+    {{- $set = $set | append (dict "name" .Name "w" $w) -}}
+    {{- if or (eq $min 0) (lt $w $min) -}}
+      {{- $min = $w -}}
+      {{- $fallbackName = .Name -}}
+    {{- end -}}
+  {{- else if findRE (printf `^%s\.(avif|webp)$` $reStem) .Name -}}
+    {{- $single = .Name -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Resolve each file to a published URL: prefer a page resource (which
+       guarantees publishing), else fall back to a page-relative path. */ -}}
+{{- $srcset := slice -}}
+{{- $primary := "" -}}
+{{- $full := "" -}}
+{{- $maxW := 0 -}}
+
+{{- if $set -}}
+  {{- /* 1. sized variants -> width-descriptor srcset. Use each file's real
+         pixel width when it's a page resource (so a shrink-only pipeline that
+         doesn't upscale stays honest); dedupe identical widths; smallest is
+         the fallback src, largest is the full-res link target. */ -}}
+  {{- $seen := slice -}}
+  {{- $minW := 0 -}}
+  {{- range $set -}}
+    {{- $rel := path.Join $dir .name -}}
+    {{- $u := "" -}}{{- $w := .w -}}
+    {{- with $.Page.Resources.GetMatch $rel -}}
+      {{- $u = .RelPermalink -}}{{- $w = .Width -}}
+    {{- else -}}
+      {{- $u = path.Join $.Page.RelPermalink $rel -}}
+    {{- end -}}
+    {{- if not (in $seen $w) -}}
+      {{- $seen = $seen | append $w -}}
+      {{- $srcset = $srcset | append (printf "%s %dw" $u $w) -}}
+      {{- if or (eq $minW 0) (lt $w $minW) -}}{{- $minW = $w -}}{{- $primary = $u -}}{{- end -}}
+      {{- if gt $w $maxW -}}{{- $maxW = $w -}}{{- $full = $u -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- else if $single -}}
+  {{- /* 2. single pre-generated output */ -}}
+  {{- $rel := path.Join $dir $single -}}
+  {{- with $.Page.Resources.GetMatch $rel -}}{{- $primary = .RelPermalink -}}{{- else -}}{{- $primary = path.Join $.Page.RelPermalink $rel -}}{{- end -}}
+  {{- $full = $primary -}}
+{{- else -}}
+  {{- /* 3. build-time generation from the source resource */ -}}
+  {{- $img := $.Page.Resources.GetMatch $src | default (resources.Get $src) -}}
+  {{- with $img -}}
+    {{- range (split ($.Get "widths" | default "200 400 600 800") " ") -}}
+      {{- $w := int . -}}
+      {{- if and (gt $w 0) (le $w $img.Width) -}}
+        {{- $r := $img.Resize (printf "%dx avif" $w) -}}
+        {{- $srcset = $srcset | append (printf "%s %dw" $r.RelPermalink $w) -}}
+        {{- if or (eq $min 0) (lt $w $min) -}}{{- $min = $w -}}{{- $primary = $r.RelPermalink -}}{{- end -}}
+        {{- if gt $w $maxW -}}{{- $maxW = $w -}}{{- $full = $r.RelPermalink -}}{{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if not $primary -}}{{- $primary = $img.RelPermalink -}}{{- end -}}
+    {{- /* Guarantee a served 100% variant: if the ladder topped out below
+           native width, generate a native-width AVIF in the output dir and
+           link to that. We never link the source — `src/` is not served. */ -}}
+    {{- if and $link (gt $img.Width $maxW) -}}
+      {{- $native := $img.Resize (printf "%dx avif" $img.Width) -}}
+      {{- $maxW = $img.Width -}}{{- $full = $native.RelPermalink -}}
+    {{- end -}}
+  {{- else -}}
+    {{- warnf "image: no file found for %q (scanned %s)" $src $scanDir -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if $primary -}}
+{{- $img := printf `<img src=%q alt=%q%s%s loading=%q decoding="async"%s />`
+      $primary $alt
+      (cond (gt (len $srcset) 0) (printf ` srcset=%q sizes=%q` (delimit $srcset ", ") $sizes) "")
+      (cond (ne $class "") (printf ` class=%q` $class) "")
+      $loading
+      (cond (ne $fetchpriority "") (printf ` fetchpriority=%q` $fetchpriority) "") -}}
+{{- if and $link $full -}}
+<a href="{{ $full }}" target="_blank" rel="noopener" class="image-full">{{ $img | safeHTML }}</a>
+{{- else -}}
+{{ $img | safeHTML }}
+{{- end -}}
+{{- end -}}
