@@ -2,7 +2,7 @@
 title: "Analysis of a 2005 Nissan Altima Remote Keyfob"
 date: "2021-01-08"
 author: "William Floyd"
-featuredImage: "media/fob/closed-1280.avif"
+featuredImage: "media/fob/closed.avif"
 categories: [
     "Hardware",
     "Electronics",
