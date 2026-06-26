@@ -23,6 +23,4 @@ Here are some photos mostly of the final results
 ***
 
 
-![](media/20190430_053508.avif)
-![](media/20190430_062452.avif)
-![](media/20190430_053503.avif)
+{{< scroll-crossfade images="media/20190430_053508.avif, media/20190430_062452.avif, media/20190430_053503.avif" fit="contain" >}}
