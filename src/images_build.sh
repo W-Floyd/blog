@@ -19,7 +19,8 @@ __hashfunc='sha256sum'
 __needed_programs="${__hashfunc}
 magick
 identify
-bc"
+bc
+ssimulacra2"
 
 export __fatal_error='false'
 
@@ -69,6 +70,19 @@ __AVIF_PRESET='placebo'
 __AVIF_SIZES=''
 __RESCALE_FILTER='Welsh'
 
+# Perceptual-quality targeting. When AVIF_SSIMULACRA2 is non-empty, each AVIF
+# output is encoded at the *lowest* quality (binary-searched in
+# [AVIF_QUALITY_MIN, AVIF_QUALITY_MAX]) whose decoded result scores at least
+# this SSIMULACRA2 value against the losslessly-resized source. This overrides
+# the fixed AVIF_QUALITY and keeps perceived quality constant across images and
+# sizes (a fixed quality number drifts with content and encoder version).
+# The `ssimulacra2` binary is a required dependency of this script.
+# Default-on globally at 75 (high quality); a .env opts out with
+# AVIF_SSIMULACRA2='' to fall back to the fixed AVIF_QUALITY.
+__AVIF_SSIMULACRA2='75'
+__AVIF_QUALITY_MIN='30'
+__AVIF_QUALITY_MAX='85'
+
 # Named width ladder, exported only while a .env is being sourced so a .env can
 # opt into the responsive set without repeating the numbers:
 #   AVIF_SIZES="${SIZES_DEFAULT}"
@@ -99,6 +113,9 @@ PNG_CONVERT_LOSSLESS
 AVIF_QUALITY
 AVIF_PRESET
 AVIF_SIZES
+AVIF_SSIMULACRA2
+AVIF_QUALITY_MIN
+AVIF_QUALITY_MAX
 RESCALE_FILTER'
 
 ###############################################################################
@@ -360,6 +377,67 @@ __effective_sizes() {
 
 }
 
+########################################
+# __avif_quality <source> <resize-spec-or-empty>
+########################################
+#
+# AVIF Quality
+# Echoes the AVIF quality to encode at. Without AVIF_SSIMULACRA2 set, this is
+# just the fixed AVIF_QUALITY. With it set, binary-searches
+# [AVIF_QUALITY_MIN, AVIF_QUALITY_MAX] for the lowest quality whose decoded
+# output scores at least the target SSIMULACRA2 value against the source
+# resized the same way (a lossless PNG reference), i.e. the smallest file that
+# still meets the perceptual bar. <resize-spec> is the magick -resize argument
+# the real encode will use (e.g. "800>"), or empty for no resize.
+#
+########################################
+
+__avif_quality() {
+
+    if [ -z "${AVIF_SSIMULACRA2}" ]; then
+        echo "${AVIF_QUALITY}"
+        return
+    fi
+
+    local __src="${1}" __resize="${2}"
+    local __dir __ref __ta __tp __lo __hi __mid __best __score
+    __dir="$(mktemp -d)"
+    __ref="${__dir}/ref.png"
+    __ta="${__dir}/t.avif"
+    __tp="${__dir}/t.png"
+
+    if [ -n "${__resize}" ]; then
+        magick "${__src}" -auto-orient -resize "${__resize}" "${__ref}"
+    else
+        magick "${__src}" -auto-orient "${__ref}"
+    fi
+
+    __lo="${AVIF_QUALITY_MIN}"
+    __hi="${AVIF_QUALITY_MAX}"
+    __best="${AVIF_QUALITY_MAX}"
+
+    while [ "${__lo}" -le "${__hi}" ]; do
+        __mid=$(((__lo + __hi) / 2))
+        if [ -n "${__resize}" ]; then
+            magick "${__src}" -auto-orient -quality "${__mid}" -define "heic:preset=${AVIF_PRESET}" -resize "${__resize}" "${__ta}"
+        else
+            magick "${__src}" -auto-orient -quality "${__mid}" -define "heic:preset=${AVIF_PRESET}" "${__ta}"
+        fi
+        magick "${__ta}" "${__tp}"
+        __score="$(ssimulacra2 "${__ref}" "${__tp}")"
+        if awk "BEGIN{exit !(${__score} >= ${AVIF_SSIMULACRA2})}"; then
+            __best="${__mid}"
+            __hi=$((__mid - 1))
+        else
+            __lo=$((__mid + 1))
+        fi
+    done
+
+    rm -rf "${__dir}"
+    echo "${__best}"
+
+}
+
 __process_generic_image() {
 
     __set_env './src/.env'
@@ -397,23 +475,35 @@ __process_generic_image() {
 
             __print_env
 
-            __convert_options=("-auto-orient")
-
+            __lossless=false
             if [ "${!__img_convert_lossless}" == 'true' ] && [ "${__output_format}" == 'webp' ]; then
-                __convert_options+=("-define" "webp:lossless=true")
-            else
-                __convert_options+=("-quality" "${AVIF_QUALITY}" -define "heic:preset=${AVIF_PRESET}")
+                __lossless=true
             fi
 
             if [ -z "${AVIF_SIZES}" ]; then
+                __resize=''
+                __resize_opts=()
                 if [ "${!__img_rescale}" == 'auto' ] && [ "$(identify -format '(%w*%h)/1000\n' "${__source_file}" | bc)" -gt "${!__img_rescale_threshold}" ]; then
-                    __convert_options+=("-resize" "$((__img_rescale_threshold * 1000))@>" "-filter" "${RESCALE_FILTER}")
+                    __resize="$((__img_rescale_threshold * 1000))@>"
+                    __resize_opts=("-resize" "${__resize}" "-filter" "${RESCALE_FILTER}")
                 fi
-                magick "${__source_file}" ${__convert_options[@]} "${__target}"
+                if [ "${__lossless}" == 'true' ]; then
+                    magick "${__source_file}" -auto-orient -define "webp:lossless=true" "${__resize_opts[@]}" "${__target}"
+                else
+                    __q="$(__avif_quality "${__source_file}" "${__resize}")"
+                    echo "  q=${__q}"
+                    magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__target}"
+                fi
             else
                 while read -r __size; do
                     __target="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
-                    magick "${__source_file}" ${__convert_options[@]} "-resize" "${__size}>" "${__target}"
+                    if [ "${__lossless}" == 'true' ]; then
+                        magick "${__source_file}" -auto-orient -define "webp:lossless=true" "-resize" "${__size}>" "${__target}"
+                    else
+                        __q="$(__avif_quality "${__source_file}" "${__size}>")"
+                        echo "  ${__target} q=${__q}"
+                        magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__target}"
+                    fi
                 done < <(__effective_sizes "${__source_file}")
             fi
 
