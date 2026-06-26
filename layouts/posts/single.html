@@ -54,8 +54,9 @@
       {{ partial "toc.html" . }}
 
       <div class="post-content">
-        {{ if .Params.featuredImage }}
-          <img src="{{ .Params.featuredImage | relURL }}" alt="Featured image"/>
+        {{ with .Params.featuredImage }}
+          {{ $img := $.Resources.GetMatch . }}
+          <img src="{{ with $img }}{{ .RelPermalink }}{{ else }}{{ . | relURL }}{{ end }}" alt="Featured image"/>
         {{ end }}
         <i>Views and opinions of the author are independent of employers past or present. Duh...</i>
         <hr>

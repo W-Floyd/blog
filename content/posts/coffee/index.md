@@ -2,7 +2,7 @@
 title: "DIY 'Smart' Coffee Maker"
 date: "2020-07-05"
 author: "William Floyd"
-featured_image: "media/20200702_120123-1280.avif"
+featuredImage: "media/20200702_120123-1280.avif"
 categories: [
     "Hardware",
     "Electronics",

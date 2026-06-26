@@ -2,7 +2,7 @@
 title: "Smart Yogurt Maker Part 2"
 date: "2022-03-16"
 author: "William Floyd"
-featured_image: "media/IMG_20220126_225541-1280.avif"
+featuredImage: "media/IMG_20220126_225541-1280.avif"
 categories: [
     "Development",
     "Hardware",
