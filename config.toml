@@ -1,4 +1,4 @@
-baseURL = "//w-floyd.com/"
+baseURL = "https://w-floyd.com/"
 locale = "en"
 defaultContentLanguage = "en"
 title = "William Floyd"
