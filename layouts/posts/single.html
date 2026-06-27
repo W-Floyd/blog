@@ -45,6 +45,7 @@
           {{ with .GetTerms "categories" }}{{ partial "taxonomy/categories.html" . }}{{ end }}
           {{ with .GetTerms "tags" }}{{ partial "taxonomy/tags.html" . }}{{ end }}
         </div>
+        {{/* LOCAL: pull in KaTeX styles only on pages that rendered math. */}}
         {{ if .Page.Store.Get "hasMath" }}
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.40/dist/katex.min.css"
             integrity="sha384-mON/ih42JsLUsSfSt0ZgICEtv3P1FSm/qGKVl2cfuvShhc8Q91I7HhJFWtoKlq3k" crossorigin="anonymous">
@@ -55,22 +56,17 @@
 
       <div class="post-content">
         {{ with .Params.featuredImage }}
-          {{ $r := partial "responsive-image.html" (dict "page" $ "src" . "widths" "400 800 1200 1720" "genNative" true) }}
-          {{ $url := $r.primary }}
-          {{ $srcset := $r.srcset }}
-          {{ $full := $r.full }}
-          {{ if not $url }}
-            {{ $parsed := urls.Parse . }}
-            {{ $url = cond (ne $parsed.Scheme "") . (. | relURL) }}
-          {{ end }}
-          {{ $full = $full | default $url }}
-          {{/* Featured image lives in the centered content column (caps at 860px;
-               see the image shortcode), so size it to that rather than 100vw.
-               Any `-hq` companion is carried as data-* for the HQ/HD toggle. */}}
-          <a href="{{ $full }}"{{ with $r.hqFull }} data-hq-href="{{ . }}"{{ end }} target="_blank" rel="noopener" class="image-full" title="View full size">
-            <img src="{{ $url }}"{{ with $srcset }} srcset="{{ delimit . ", " }}" sizes="(max-width: 768px) 100vw, min(100vw - 40px, 860px)"{{ end }}{{ with $r.hqPrimary }} data-hq-src="{{ . }}"{{ end }}{{ with $r.hqSrcset }} {{ printf `data-hq-srcset=%q` (delimit . ", ") | safeHTMLAttr }}{{ end }} alt="Featured image"/>
-          </a>
+          {{/* Featured image lives in the centered content column, so it uses
+               responsive-img's default sizes (caps at 860px) rather than 100vw,
+               and no loading attr (eager — it's the above-fold LCP). srcset is
+               deferred (data-srcset) so the preload scanner fetches only the
+               small src: coder.js promotes it for med/hi and keeps it small for
+               low (no wasted large fetch). The builder also carries any `-hq`
+               companion as data-* for the quality toggle. */}}
+          {{ $r := partial "responsive-img.html" (dict "page" $ "src" . "alt" "Featured image" "widths" "400 800 1200 1720" "deferSrcset" true) }}
+          <a href="{{ $r.full }}"{{ with $r.hqFull }} data-hq-href="{{ . }}"{{ end }} target="_blank" rel="noopener" class="image-full" title="View full size">{{ $r.img | safeHTML }}</a>
         {{ end }}
+        {{/* LOCAL: standing disclaimer above every post's body. */}}
         <i>Views and opinions of the author are independent of employers past or present. Duh...</i>
         <hr>
         {{ .Content }}
