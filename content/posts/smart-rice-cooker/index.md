@@ -184,6 +184,4 @@ Examples might be cancelling an infinite temperature holding cycle (e.g rice war
 
 ## Dependency Graph
 
-![Dependency Connections][connections]
-
-[connections]: media/connections.svg "Dependency Connections"
+{{< svg "./media/connections.svg" "Dependency Connections" >}}
