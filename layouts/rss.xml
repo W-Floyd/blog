@@ -1,0 +1,58 @@
+{{- /*
+  Mirrors Hugo's built-in feed. When the site param `rssFullContent` is true,
+  each item's <description> carries the whole `.Content` (full-text feed);
+  otherwise it falls back to `.Summary`, matching Hugo's default.
+
+  Deferred images (crossfade frames, featured images) emit a <noscript> with a
+  duplicate <img> fallback (see responsive-img.html). A browser with JS hides
+  that noscript, but feed readers render its contents alongside the live <img>,
+  doubling every such image. The live <img> already carries a usable src, so we
+  strip <noscript> blocks from the feed content.
+
+  Math rendered by transform.ToMath emits presentation MathML wrapped in
+  <semantics> alongside an <annotation encoding="application/x-tex"> holding the
+  raw LaTeX source. Feed readers that don't fully support MathML show that
+  annotation's LaTeX text next to the rendered glyphs, so every equation appears
+  twice (see issue #1). The annotation is redundant in a feed, so we strip it —
+  the on-page HTML keeps it for accessibility and copy-as-TeX.
+*/ -}}
+{{- $pctx := . -}}
+{{- if .IsHome -}}{{ $pctx = .Site }}{{- end -}}
+{{- $pages := slice -}}
+{{- if or $.IsHome $.IsSection -}}
+{{- $pages = $pctx.RegularPages -}}
+{{- else -}}
+{{- $pages = $pctx.Pages -}}
+{{- end -}}
+{{- $limit := .Site.Config.Services.RSS.Limit -}}
+{{- if ge $limit 1 -}}
+{{- $pages = $pages | first $limit -}}
+{{- end -}}
+{{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ if eq .Title .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{ . }} on {{ end }}{{ .Site.Title }}{{ end }}</title>
+    <link>{{ .Permalink }}</link>
+    <description>Recent content {{ if ne .Title .Site.Title }}{{ with .Title }}in {{ . }} {{ end }}{{ end }}on {{ .Site.Title }}</description>
+    <generator>Hugo</generator>
+    {{- with .Site.Language.Locale }}<language>{{ . }}</language>{{ end }}
+    {{- with .Site.Params.author }}<managingEditor>{{ . }}</managingEditor>{{ end }}
+    {{- with .Site.Params.author }}<webMaster>{{ . }}</webMaster>{{ end }}
+    {{- with .Site.Copyright }}<copyright>{{ . }}</copyright>{{ end }}
+    {{- if not .Date.IsZero }}<lastBuildDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ end }}
+    {{- with .OutputFormats.Get "rss" }}{{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType | safeHTML }}{{ end }}
+    {{- range $pages }}
+    <item>
+      <title>{{ .Title }}</title>
+      <link>{{ .Permalink }}</link>
+      <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      {{- with .Site.Params.author }}<author>{{ . }}</author>{{ end }}
+      <guid>{{ .Permalink }}</guid>
+      {{- $content := cond .Site.Params.rssFullContent .Content .Summary -}}
+      {{- $content = replaceRE `(?s)<noscript>.*?</noscript>` "" $content -}}
+      {{- $content = replaceRE `(?s)<annotation encoding="application/x-tex">.*?</annotation>` "" $content -}}
+      <description>{{ $content | transform.XMLEscape | safeHTML }}</description>
+    </item>
+    {{- end }}
+  </channel>
+</rss>
