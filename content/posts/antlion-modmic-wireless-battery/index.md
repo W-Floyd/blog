@@ -38,7 +38,7 @@ Unfortunately there's no space to choose a larger size.
 
 {{< image src="media/DSC_6005.avif" alt="The new LP502030 pouch cell, its white label reading 3.7V 250mAh 0.9Wh, with a two-pin JST connector on the end of its leads" >}}
 
-Mine came with a JST plug, snipped off (don't cut the wires at the same time!).
+Mine came with a JST plug, so I snipped it off (don't cut the wires at the same time!).
 The old cell comes off by desoldering its two leads and working a piece of cardstock underneath to release the double-sided tape without damaging the old cell.
 The replacement goes in the same way - leads soldered to the same pads, and taped down in the same spot.
 Screw it together the same way it came apart.
