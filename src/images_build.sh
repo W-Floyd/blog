@@ -6,7 +6,7 @@ __pathfile='./.path'
 
 if ! [ -e "${__pathfile}" ]; then
     echo "${PATH}" >"${__pathfile}"
-    [ "$(env | sed -r -e '/^(PWD|SHLVL|_|PATH)=/d')" ] && exec -c $0
+    [ "$(env | sed -r -e '/^(PWD|SHLVL|_|PATH)=/d')" ] && exec -c "$0" "$@"
 fi
 
 export PATH="$(cat "${__pathfile}")"
@@ -15,6 +15,59 @@ rm "${__pathfile}"
 ###############################################################################
 
 __hashfunc='sha256sum'
+
+########################################
+# Options (plain shell variables)
+########################################
+#
+# These are deliberately NOT exported and NOT in __ENVIRONMENT_LIST: the env
+# hash written to each .hash file is taken from `printenv`, so anything exported
+# here would change every hash and force a full re-encode of the whole site.
+#
+__dry_run='false'
+__prune='true'
+__reference_gate='true'
+
+__usage() {
+    cat <<'EOF'
+Usage: images_build.sh [options]
+
+Generates the served image set from every */src/ directory that carries a .env.
+
+Under ./content/, generation is gated on references: an image is only built if
+something in the site actually points at it, and generated files that nothing
+points at any more are deleted. ./static/ is always built in full and never
+pruned (favicons and the like are referenced by the theme, not by posts).
+
+Options:
+  -n, --dry-run   Report what would be generated and deleted; change nothing.
+      --no-prune  Generate as usual, but delete nothing.
+      --no-gate   Ignore references entirely: build everything, prune nothing
+                  (the pre-reference-gating behaviour).
+  -h, --help      This text.
+EOF
+}
+
+while [ "${#}" -gt 0 ]; do
+    case "${1}" in
+        -n | --dry-run) __dry_run='true' ;;
+        --no-prune) __prune='false' ;;
+        --no-gate)
+            __reference_gate='false'
+            __prune='false'
+            ;;
+        -h | --help)
+            __usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: ${1}"
+            __usage
+            exit 1
+            ;;
+    esac
+    shift
+done
 
 __needed_programs="${__hashfunc}
 magick
@@ -314,6 +367,172 @@ __unset_unused() {
     __resolve_env
 }
 
+###############################################################################
+# Reference gating
+###############################################################################
+#
+# Only images something actually points at are worth encoding or keeping. The
+# reference corpus is every file that can name an image:
+#
+#   content/**/*.{md,html}   posts and pages (excluding */src/, which holds the
+#                            sources and generator scripts themselves — a
+#                            script mentioning its own output is not a
+#                            reference to it)
+#   layouts/**               site templates, e.g. _partials/home/avatar.html,
+#                            which builds "media/avatar-<width>.avif" at render
+#                            time
+#   config.toml              params naming site images
+#
+# A source is referenced when the corpus contains its *page-relative stem* —
+# `media/demo/DSC_3587` for content/posts/web-nice-things/media/src/DSC_3587.JPG
+# — followed by a non-word character. Matching on the stem rather than on whole
+# filenames deliberately catches every way a reference is written:
+#
+#   {{< image src="media/photo.avif" >}}        the logical name
+#   ![alt](media/photo-4032.avif)               a ladder rung by name
+#   {{< filesize "media/photo-hq-5568.avif" >}} an -hq rung
+#   print "media/avatar-" $w ".avif"            a name built in a template
+#
+# and it is one-sided: an unrelated match keeps files that could have been
+# dropped, it never drops files that are in use.
+#
+# Theme templates are not scanned (they live in the module cache and address
+# site images through params, which config.toml covers). If a future template
+# reaches for a content image by a name assembled from pieces too small to
+# match, that image needs a mention in the corpus — or run with --no-gate.
+#
+
+########################################
+# __build_reference_corpus
+########################################
+#
+# Build Reference Corpus
+# Concatenates the corpus into one temp file, once per run. Percent-escapes are
+# decoded so a markdown link's `media/Screenshot%20from%202022.webp` matches the
+# space in the real filename.
+#
+########################################
+
+__build_reference_corpus() {
+
+    __reference_corpus="$(mktemp)"
+
+    {
+        find './content/' -type f \( -iname '*.md' -o -iname '*.html' \) ! -path '*/src/*' -exec cat {} +
+        find './layouts/' -type f -exec cat {} +
+        cat './config.toml'
+
+        # A generator script's declared dependencies are references too, and they
+        # reach across units: make-quality-comparison.sh composites another
+        # post's generated ../../smart-yogurt-maker-part-01/media/…-4032.avif
+        # rungs. Without these, an image used only as a script input would be
+        # pruned and the script would break on the next run.
+        find './content/' -type f -iwholename '*/src/*.sh' | while IFS= read -r __script; do
+            (
+                cd "$(dirname "${__script}")/../" || exit 0
+                "./src/$(basename "${__script}")" -d
+            )
+        done
+    } 2>/dev/null | sed 's/%20/ /g' >"${__reference_corpus}"
+
+}
+
+########################################
+# __page_prefix <output directory>
+########################################
+#
+# Page Prefix
+# Echoes the path of an output directory relative to the page that owns it, i.e.
+# the prefix references are written with. Walks up to the nearest page bundle
+# (a directory holding index.md / _index.md), stopping at ./content for images
+# owned by the site root rather than by a post.
+#
+#   ./content/posts/web-nice-things/media/demo -> media/demo
+#   ./content/media                            -> media
+#
+########################################
+
+__page_prefix() {
+
+    local __dir="${1%/}" __root
+
+    __root="${__dir}"
+
+    while [ "${__root}" != './content' ] && [ "${__root}" != '.' ] && [ "${__root}" != '/' ]; do
+        if [ -e "${__root}/index.md" ] || [ -e "${__root}/_index.md" ]; then
+            break
+        fi
+        __root="$(dirname "${__root}")"
+    done
+
+    if [ "${__dir}" == "${__root}" ]; then
+        echo ''
+    else
+        echo "${__dir#"${__root}"/}"
+    fi
+
+}
+
+########################################
+# __reference <path>
+########################################
+#
+# Reference
+# Echoes the page-relative, extension-stripped name a given path is referred to
+# by. Takes either a source under ./src/ or an output path in the current
+# directory; both reduce to the same reference.
+#
+#   ./src/fob/pcb_back.jpg -> media/fob/pcb_back
+#   ./photo.avif           -> media/lossless/photo
+#
+########################################
+
+__reference() {
+
+    local __path="${1#./}"
+
+    __path="${__path#src/}"
+    __path="${__path%.*}"
+
+    if [ -n "${__current_page_prefix}" ]; then
+        echo "${__current_page_prefix}/${__path}"
+    else
+        echo "${__path}"
+    fi
+
+}
+
+########################################
+# __is_referenced <path>
+########################################
+#
+# Is Referenced
+# True when the corpus points at the given source/output path. Always true
+# outside the gate (./static/, or --no-gate), so callers need no special case.
+#
+########################################
+
+__is_referenced() {
+
+    local __ref __escaped
+
+    if [ "${__reference_gate}" != 'true' ] || [ "${__gate_directory}" != 'true' ]; then
+        return 0
+    fi
+
+    __ref="$(__reference "${1}")"
+
+    # Escape ERE metacharacters in the stem; filenames here contain dots,
+    # brackets and spaces. `/` is left alone (escaping it is undefined in ERE).
+    __escaped="$(printf '%s' "${__ref}" | sed 's/[][\\.^$*+?(){}|]/\\&/g')"
+
+    # Trailing non-word boundary so `media/photo` does not match `media/photo2`
+    # while still matching `media/photo.avif`, `media/photo-800.avif` and the
+    # template-built `media/photo-`.
+    grep -qE "${__escaped}([^A-Za-z0-9_]|\$)" "${__reference_corpus}"
+
+}
+
 ########################################
 # __process <.env>
 ########################################
@@ -343,6 +562,11 @@ __process() {
 
     if [ "${PROCESS_PNG}" == 'true' ]; then
         (__process_generic_image png)
+    fi
+
+    # Last, so it sees the sources the script pass may just have written.
+    if [ "${__prune}" == 'true' ] && [ "${__gate_directory}" == 'true' ]; then
+        (__prune_outputs)
     fi
 
 }
@@ -577,7 +801,14 @@ __process_generic_image() {
 
     __unset_unused "${1}"
 
-    "__find_${1}" | while read -r __source_file; do
+    "__find_${1}" | while IFS= read -r __source_file; do
+
+        # Nothing points at it: don't spend an encode on it. __prune_outputs
+        # clears out anything it produced on an earlier run.
+        if ! __is_referenced "${__source_file}"; then
+            echo "Unreferenced, skipping: ${__source_file}"
+            continue
+        fi
 
         export FILE_HASH="$("${__hashfunc}" "${__source_file}")"
 
@@ -593,6 +824,12 @@ __process_generic_image() {
             fi
 
             __target="$(sed -e 's|^\./src/|./|' -e "s/[^\.]*$/${__output_format}/" <<<"${__source_file}")"
+
+            if [ "${__dry_run}" == 'true' ]; then
+                echo "Would process: ${__target}"
+                unset FILE_HASH
+                continue
+            fi
 
             echo "Processing: ${__target}"
 
@@ -681,11 +918,54 @@ __process_generic_image() {
 # with '-r' to check required programs
 #
 ########################################
+########################################
+# __script_is_referenced <script>
+########################################
+#
+# Script Is Referenced
+# True when a generator script is worth running: any of its declared targets is
+# referenced, or any target lands in ./src/ (making it a source for the image
+# passes, whose own gating then decides — e.g. make-quality-comparison.sh writes
+# PNGs into src/ that the PNG pass turns into the served WebPs).
+#
+########################################
+
+__script_is_referenced() {
+
+    local __target
+
+    if [ "${__reference_gate}" != 'true' ] || [ "${__gate_directory}" != 'true' ]; then
+        return 0
+    fi
+
+    while IFS= read -r __target; do
+        if [ -z "${__target}" ]; then
+            continue
+        fi
+        case "${__target}" in
+            ./src/* | src/*) return 0 ;;
+        esac
+        if __is_referenced "${__target}"; then
+            return 0
+        fi
+    done < <("${1}" -t)
+
+    return 1
+
+}
+
 __process_scripts() {
 
     __unset_unused SCRIPT
 
-    while read -r __source_file; do
+    while IFS= read -r __source_file; do
+
+        if ! __script_is_referenced "${__source_file}"; then
+            if [ "${1}" != '-r' ]; then
+                echo "Unreferenced, skipping: ${__source_file}"
+            fi
+            continue
+        fi
 
         export FILE_HASH="$(
             {
@@ -707,6 +987,10 @@ __process_scripts() {
                         export __fatal_error='true'
                     fi
                 done < <("${__source_file}" -r)
+
+            elif [ "${__dry_run}" == 'true' ]; then
+
+                echo "Would run: ${__source_file}"
 
             else
 
@@ -733,6 +1017,146 @@ __process_scripts() {
 }
 
 ########################################
+# __prune_outputs
+########################################
+#
+# Prune Outputs
+# Deletes generated files in this unit's output directories that the current
+# sources and references no longer account for: outputs of a source nothing
+# points at any more, leftovers of a source that has been deleted or renamed,
+# ladder rungs from a since-narrowed AVIF_SIZES, and .hash files whose source is
+# gone or unreferenced (so re-referencing later rebuilds cleanly).
+#
+# It works by *whitelist*, never by guessing which names look generated: the
+# expected set is exactly __predict_targets for every referenced source plus the
+# declared targets of every referenced script, and a candidate is deleted only if
+# it is absent from that set. Reversing this — reducing a filename back to a stem
+# by stripping -hq/-<width> — is ambiguous for a source that itself ends in
+# -<digits>, and would risk deleting a live file.
+#
+# Deliberately narrow, so nothing outside the pipeline's own output can be hit:
+#   - Candidates come only from output directories mirroring a directory in
+#     ./src/, at depth 1 (so a nested unit with its own src/.env is left to its
+#     own pass), and only with an extension this pipeline emits.
+#   - Anything under ./src/ is a source and is never deleted; only its .hash
+#     bookkeeping is.
+#   - Declared targets of an unreferenced script are added as candidates
+#     whatever their extension, since the script alone accounts for them.
+#
+########################################
+
+__prune_outputs() {
+
+    local __expected __candidates __source __script __target __directory __mirror
+
+    __expected="$(mktemp)"
+    __candidates="$(mktemp)"
+
+    # Expected: every output of every referenced source.
+    while IFS= read -r __source; do
+        if [ -n "${__source}" ] && __is_referenced "${__source}"; then
+            __predict_targets "${__source}" >>"${__expected}"
+        fi
+    done < <(
+        __find_jpeg
+        __find_png
+    )
+
+    # Expected: declared targets of referenced scripts. Unreferenced scripts
+    # instead contribute their targets as candidates.
+    while IFS= read -r __script; do
+        if [ -z "${__script}" ]; then
+            continue
+        fi
+        if __script_is_referenced "${__script}"; then
+            "${__script}" -t >>"${__expected}"
+        else
+            "${__script}" -t >>"${__candidates}"
+        fi
+    done < <(find './src/' -type f \( -iname \*.sh \))
+
+    # Candidates: pipeline-format files in the output directories mirroring
+    # ./src/'s own directory tree.
+    while IFS= read -r __directory; do
+
+        __mirror=".${__directory#./src}"
+        __mirror="${__mirror%/}"
+        [ -z "${__mirror}" ] && __mirror='.'
+
+        if ! [ -d "${__mirror}" ]; then
+            continue
+        fi
+
+        # A nested directory carrying its own src/.env is a separate unit; its
+        # own pass prunes it. (The current unit's own directory is exempt: it is
+        # the one holding the src/.env being processed.)
+        if [ "${__mirror}" != '.' ] && [ -e "${__mirror}/src/.env" ]; then
+            continue
+        fi
+
+        find "${__mirror}" -maxdepth 1 -type f \( -iname \*.avif -o -iname \*.webp \) >>"${__candidates}"
+
+    done < <(find './src' -type d)
+
+    # Delete candidates the expected set does not account for.
+    while IFS= read -r __target; do
+
+        if [ -z "${__target}" ] || ! [ -e "${__target}" ]; then
+            continue
+        fi
+
+        if grep -Fxq "${__target}" "${__expected}"; then
+            continue
+        fi
+
+        if [ "${__dry_run}" == 'true' ]; then
+            echo "Would delete: ${__target}"
+        else
+            echo "Deleting: ${__target}"
+            rm -f "${__target}"
+        fi
+
+    done < <(sort -u "${__candidates}")
+
+    # Stale bookkeeping: a .hash whose source is gone or unreferenced.
+    while IFS= read -r __target; do
+
+        if [ -z "${__target}" ]; then
+            continue
+        fi
+
+        __source="${__target%.hash}"
+
+        if [ -e "${__source}" ]; then
+            # A script's own name is never referenced; ask what it produces.
+            case "${__source}" in
+                *.sh)
+                    if __script_is_referenced "${__source}"; then
+                        continue
+                    fi
+                    ;;
+                *)
+                    if __is_referenced "${__source}"; then
+                        continue
+                    fi
+                    ;;
+            esac
+        fi
+
+        if [ "${__dry_run}" == 'true' ]; then
+            echo "Would delete: ${__target}"
+        else
+            echo "Deleting: ${__target}"
+            rm -f "${__target}"
+        fi
+
+    done < <(find './src/' -type f -name \*.hash)
+
+    rm -f "${__expected}" "${__candidates}"
+
+}
+
+########################################
 # __get_hash_file <file>
 ########################################
 #
@@ -743,6 +1167,57 @@ __process_scripts() {
 
 __get_hash_file() {
     echo "${1}.hash"
+}
+
+########################################
+# __predict_targets <source>
+########################################
+#
+# Predict Targets
+# Echoes every output filename a given source produces under the current
+# environment. The single source of truth for the emitted file set: __check_file
+# asks it whether everything is present, and __prune_outputs asks it which files
+# in a directory are meant to be there — so a file the pipeline would emit can
+# never be mistaken for an orphan.
+#
+########################################
+
+__predict_targets() {
+
+    local __source="${1}" __filename __extension __output_format __targets
+
+    __filename="$(basename -- "${__source}")"
+    __extension="$(echo "${__filename##*.}" | tr '[:upper:]' '[:lower:]')"
+
+    # Lossless conversion is per input type; anything else is lossy AVIF.
+    __output_format='avif'
+    if [ "${__extension}" == 'png' ] && [ "${PNG_CONVERT_LOSSLESS}" == 'true' ]; then
+        __output_format='webp'
+    elif [ "${__extension}" == 'jpg' ] || [ "${__extension}" == 'jpeg' ]; then
+        if [ "${JPEG_CONVERT_LOSSLESS}" == 'true' ]; then
+            __output_format='webp'
+        fi
+    fi
+
+    # Sized targets only for lossy AVIF; lossless WebP is always single.
+    if [ -z "${AVIF_SIZES}" ] || [ "${__output_format}" == 'webp' ]; then
+        __targets="$(sed -e 's|^\./src/|./|' -Ee "s/\.[^\.]*$/.${__output_format}/" <<<"${__source}")"
+    else
+        __targets="$(
+            while IFS= read -r __size; do
+                sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source}"
+            done < <(__effective_sizes "${__source}")
+        )"
+    fi
+
+    # Each AVIF target also has a -hq sibling when high-quality is enabled.
+    if [ "${__output_format}" == 'avif' ] && [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
+        __targets="${__targets}
+$(sed -E 's/(-[0-9]+)?\.avif$/-hq\1.avif/' <<<"${__targets}")"
+    fi
+
+    sed '/^$/d' <<<"${__targets}"
+
 }
 
 ########################################
@@ -766,30 +1241,7 @@ __check_file() {
 
     if [ "${#}" == '0' ]; then
 
-        __filename="$(basename -- "${__source}")"
-
-        if [ "${__filename##*.}" == 'png' ] && [ "${PNG_CONVERT_LOSSLESS}" == 'true' ]; then
-            __output_format='webp'
-        else
-            __output_format='avif'
-        fi
-
-        # Sized targets only for lossy AVIF; lossless WebP is always single.
-        if [ -z "${AVIF_SIZES}" ] || [ "${__output_format}" == 'webp' ]; then
-            __targets="$(sed -e 's|^\./src/|./|' -Ee "s/\.(jpeg|jpg|png)$/.${__output_format}/" <<<"${__source_file}")"
-        else
-            __targets="$(
-                while read -r __size; do
-                    sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}"
-                done < <(__effective_sizes "${__source_file}")
-            )"
-        fi
-
-        # Each AVIF target also has a -hq sibling when high-quality is enabled.
-        if [ "${__output_format}" == 'avif' ] && [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
-            __targets="${__targets}
-$(sed -E 's/(-[0-9]+)?\.avif$/-hq\1.avif/' <<<"${__targets}")"
-        fi
+        __targets="$(__predict_targets "${__source}")"
 
     else
 
@@ -839,9 +1291,23 @@ __fatal_error_handler || exit 1
 
 ###############################################################################
 
-find './content/' './static/' -type f -iwholename '*/src/.env' | while read -r __file; do
+__build_reference_corpus
+
+trap 'rm -f "${__reference_corpus}"' EXIT
+
+find './content/' './static/' -type f -iwholename '*/src/.env' | while IFS= read -r __file; do
 
     __parent_directory="$(sed 's|src/.env$||' <<<"${__file}")"
+
+    # Reference gating covers ./content/ only. ./static/ holds site assets
+    # (favicons, the pinned-tab SVG) that the theme's head partials reference by
+    # paths assembled outside this repo, so it is always built in full.
+    case "${__file}" in
+        ./content/*) __gate_directory='true' ;;
+        *) __gate_directory='false' ;;
+    esac
+
+    __current_page_prefix="$(__page_prefix "${__parent_directory}")"
 
     __set_env "${__file}"
 
