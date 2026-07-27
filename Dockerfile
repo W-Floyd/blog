@@ -1,4 +1,4 @@
-FROM ghcr.io/gohugoio/hugo:v0.163.3 AS hugo
+FROM ghcr.io/gohugoio/hugo:v0.164.0 AS hugo
 COPY --chown=hugo:hugo . /src
 WORKDIR /src
 RUN hugo --minify
