@@ -1,6 +1,0 @@
-[submodule "themes/hugo-coder"]
-	path = themes/hugo-coder
-	url = git@github.com:W-Floyd/hugo-coder-iconify.git
-[submodule "assets/MaterialDesign-SVG"]
-	path = assets/MaterialDesign-SVG
-	url = git@github.com:Templarian/MaterialDesign-SVG.git
