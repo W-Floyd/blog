@@ -12,6 +12,13 @@
 # exact pixel data is what gets encoded to WebP and AVIF — so all three columns
 # describe the same image, not three different resizes of a source.
 #
+# Fairness also means each column runs its encoder as hard as it will go. The PNG
+# used to be a plain ImageMagick write while WebP got `-z 9` and AVIF `-s 0`,
+# which quietly stacked the comparison against PNG: running oxipng with Zopfli
+# over it takes 12-42% off these samples. WebP still wins every category, but by
+# noticeably less, and a comparison is only worth quoting if every format is
+# given its best shot.
+#
 # Outputs land in media/lossless/ (NOT src/), so the build's PNG pass leaves
 # them alone and the .png stays a real PNG rather than being turned into WebP.
 #
@@ -68,7 +75,7 @@ __deps() {
 
 case "${1:-}" in
     -r)
-        printf '%s\n' magick cwebp avifenc
+        printf '%s\n' magick cwebp avifenc oxipng
         exit
         ;;
     -d)
@@ -102,6 +109,11 @@ for s in "${SAMPLES[@]}"; do
     # 1. Canonical lossless PNG sample (the shared input for all three columns).
     #    -strip drops metadata so the comparison is pixels, not embedded EXIF.
     magick "${src}" ${ops} -strip "${png}"
+
+    #    Then optimise it as hard as the other two columns are optimised. This is
+    #    lossless recompression only -- the pixels the WebP and AVIF encoders see
+    #    below are unchanged, so all three columns still describe one image.
+    oxipng -o max --zopfli --zi 255 --ziwi 50 --strip safe -a -q "${png}"
 
     # 2. WebP lossless (VP8L), maximum effort.
     cwebp -quiet -lossless -z 9 "${png}" -o "${webp}"

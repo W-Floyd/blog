@@ -116,13 +116,15 @@ It updates live, so flip the quality toggle to and watch the image totals change
 ### Lossless
 
 `PNG` is great too, and likewise universally supported, but also inefficient.
-Again, yes, you can optimize (`zopflipng`, etc), but also again, better codec.
+Again, yes, you can optimize (`oxipng`, etc), but also again, better codec.
 This time, it *is* `WEBP`.
 Similarly, it's well supported.[^caniuse_webp]
 
 #### Not everything is a photo
 
 To help flavor the choice for WEBP for lossless images, here's an example:
+
+Every column is its format's best effort on identical pixels: one canonical PNG is rendered first and handed to each encoder, `cwebp -z 9` and `avifenc -s 0` are both at maximum, and the PNG column is itself run through `oxipng` with Zopfli (which is dog slow, even worse than any other optimizer we see here).
 
 | Content | PNG | WebP (lossless) | AVIF (lossless) |
 | --- | ---: | ---: | ---: |
@@ -132,6 +134,8 @@ To help flavor the choice for WEBP for lossless images, here's an example:
 | UI capture | {{< filesize "media/lossless/ui.png" >}} | **{{< filesize "media/lossless/ui.webp" >}}** | {{< filesize "media/lossless/ui.avif" >}} |
 
 `WEBP`'s lossless mode wins every category, so the build routes photographs to lossy AVIF and everything else to lossless WebP.
+WebP's lossless mode, `VP8L`, shares almost nothing with its lossy path, while AVIF has no equivalent.
+AVIF's own working group says so, having weighed a reversible-transform fix worth 7–15% and declined it as not worth a spec extension.[^avif_lossless]
 
 ## Quick maffs
 
@@ -155,4 +159,5 @@ One wrinkle, `transform.ToMath` includes an `<annotation>` holding the original 
 [^jpeg_xl]: `JPEG-XL` is neat but has limited browser support.
 [^caniuse_webp]: https://caniuse.com/webp
 [^caniuse_srcset]: https://caniuse.com/srcset
+[^avif_lossless]: Still open as [av1-avif#111](https://github.com/AOMediaCodec/av1-avif/issues/111), where the format's own contributors concede that "the AV1 lossless compression mode has not been as finely tuned as the lossy modes" and that LZ77-style coding suits this content better. [av1-avif#89](https://github.com/AOMediaCodec/av1-avif/issues/89) says "deciding we don't care about lossless", "since a purpose-designed codec for lossless like WebP-LL […] can usually outperform a hybrid block based codec like AV1".
 [^caniuse_mathml]: https://caniuse.com/mathml
