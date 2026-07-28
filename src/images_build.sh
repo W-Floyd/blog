@@ -39,11 +39,22 @@ something in the site actually points at it, and generated files that nothing
 points at any more are deleted. ./static/ is always built in full and never
 pruned (favicons and the like are referenced by the theme, not by posts).
 
+AVIF encoding is libaom via avifenc at AVIF_SPEED, with chroma subsampling chosen
+per source (photographs 4:2:0, screenshots and plots 4:4:4) and Exif/XMP dropped
+while any colour profile is kept. Each output's quality is binary-searched for its
+SSIMULACRA2 target; every encode is logged to src/encode-log.tsv and the search's
+seed model is re-fitted from that log on every encode, and at the start and end of
+the run, so it converges in fewer probes over time. The log is disposable; the
+fitted src/q-model.env is committed.
+
 Options:
   -n, --dry-run   Report what would be generated and deleted; change nothing.
       --no-prune  Generate as usual, but delete nothing.
       --no-gate   Ignore references entirely: build everything, prune nothing
                   (the pre-reference-gating behaviour).
+      --refit-interval N
+                  Re-fit the quality-seed model every N encodes during the build
+                  (default 1 — every encode; 0 for start/end of build only).
   -h, --help      This text.
 EOF
 }
@@ -55,6 +66,10 @@ while [ "${#}" -gt 0 ]; do
         --no-gate)
             __reference_gate='false'
             __prune='false'
+            ;;
+        --refit-interval)
+            shift
+            __refit_interval_override="${1}"
             ;;
         -h | --help)
             __usage
@@ -72,6 +87,7 @@ done
 __needed_programs="${__hashfunc}
 magick
 identify
+avifenc
 bc
 ssimulacra2"
 
@@ -100,6 +116,34 @@ PATH'
 # the env hash (a runtime perf knob, doesn't affect output).
 __avif_jobs="$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4)"
 
+# Self-optimisation. Every encode is appended to __encode_log, and at the end of
+# a run q_regression.py re-fits the seed model from it and rewrites
+# __seed_model, which the next run reads back — so the search starts closer to
+# the answer the more this site is built.
+#
+# The raw log is disposable and gitignored (it grows without bound and is
+# machine-local); the fitted model is four numbers and is committed, so a fresh
+# clone inherits a converged search instead of relearning it.
+#
+# Neither file can change an output byte: they only choose where the search
+# starts, and every candidate is still verified against the real SSIMULACRA2
+# target. Both are plain shell variables, never exported — the .hash fingerprint
+# comes from `printenv`, so exporting them would invalidate every cached encode.
+__encode_log='src/encode-log.tsv'
+__seed_model='src/q-model.env'
+
+# Refit cadence, in new encodes. 1 means every single encode re-fits the model,
+# which is what the measurements support: a refit is ~30ms (~53ms at a 20k-row
+# log), almost all of it Python startup, against ~37s for the encode that
+# triggers it — 0.08%. Refits are also lock-guarded, so when a dozen encodes
+# finish at once only one fits and the rest skip for ~3ms.
+#
+# The payoff is that the search adapts continuously instead of in steps: every
+# output learns from every output before it, including ones still being encoded
+# in sibling subshells, since __avif_seed re-reads the model per output.
+# 0 disables mid-build refits (the start- and end-of-build ones still happen).
+__refit_interval="${__refit_interval_override:-1}"
+
 # Starting-quality model for the SSIMULACRA2 search: q ~= a + b*ln(width),
 # fit by least squares over a corpus of prior encodes (see q_regression.py).
 # The normal ladder targets a fixed score so q is nearly flat (b ~= 0); the -hq
@@ -112,6 +156,35 @@ __avif_seed_a='48.6'
 __avif_seed_b='-0.84'
 __avif_seed_hq_a='51.6'
 __avif_seed_hq_b='4.43'
+
+# Per-subsampling seeds, filled in by the fitted model when it has enough data for
+# a mode. 4:2:0 photographs and 4:4:4 screenshots sit on different curves — on this
+# corpus the normal-variant intercept differs by ~15 quality points — so one line
+# through both starts the 4:4:4 searches far from the answer. Empty means "no fit
+# for this mode yet"; __avif_seed then falls back to the pair above.
+__avif_seed_420_a=''
+__avif_seed_420_b=''
+__avif_seed_444_a=''
+__avif_seed_444_b=''
+__avif_seed_hq_420_a=''
+__avif_seed_hq_420_b=''
+__avif_seed_hq_444_a=''
+__avif_seed_hq_444_b=''
+
+# First-step slopes for the secant search, in SSIMULACRA2 points per quality
+# point, measured by sweeping quality on one photograph and one screenshot:
+#
+#   photo 4:2:0 near score 65 (q50-60)   1.0 - 1.5
+#   photo 4:2:0 near score 85 (q80-90)   0.33 - 0.45
+#   screenshot 4:4:4, whole range        0.19 - 0.29
+#
+# Only the *first* step uses these; from the second probe on, the search uses the
+# secant through this image's own two measurements, which beats any table. Being
+# wrong here costs a probe, never an output byte.
+__avif_slope_normal='1.2'
+__avif_slope_hq='0.4'
+__avif_slope_444_normal='0.25'
+__avif_slope_444_hq='0.2'
 
 ########################################
 # Default Options
@@ -138,9 +211,36 @@ __PNG_CONVERT_LOSSLESS=true
 __PROCESS_SCRIPT=false
 
 __AVIF_QUALITY='45'
-__AVIF_PRESET='placebo'
 __AVIF_SIZES=''
 __RESCALE_FILTER='Welsh'
+
+# Encoder effort, passed to `avifenc -s`: 0 is slowest and smallest, 10 fastest
+# and largest. Measured on a 1280px photo at a fixed SSIMULACRA2 target, speed 0
+# is ~13% smaller than speed 6 and ~15% smaller than what ImageMagick/libheif
+# produced, at roughly 10x the encode time. This replaced AVIF_PRESET, which set
+# `heic:preset=placebo` — a define ImageMagick silently ignores (identical bytes
+# with the preset unset, or set to a nonsense value), so it never bought
+# anything.
+__AVIF_SPEED='0'
+
+# Chroma subsampling: 420 halves the chroma planes, 444 keeps them full. 420 is
+# right for photographs, where the loss is invisible; 444 is right for
+# screenshots, plots and UI captures, where hard coloured edges and small text
+# sit exactly where 420 blurs. Measured on a Grafana capture: 444 reached the
+# same SSIMULACRA2 in ~6% fewer bytes *and* held the edges better, so for
+# synthetic content it wins on both axes.
+#
+# 'auto' decides per source, because directories here are mixed — a post can hold
+# both photographs and a screenshot of a spreadsheet. '420' or '444' forces one.
+__AVIF_SUBSAMPLING='auto'
+
+# How 'auto' decides: the share of the image occupied by its single most common
+# colour. Screenshots have a flat background and score high (measured here:
+# 66-97%); photographs have none and score low (2.5-4%). An order of magnitude
+# of daylight between the two, so the threshold is not delicate. Unique-colour
+# count was tried first and is useless — dark photos have as few colours as a
+# screenshot does.
+__AVIF_SUBSAMPLING_THRESHOLD='25'
 
 # Perceptual-quality targeting. When AVIF_SSIMULACRA2 is non-empty, each AVIF
 # output is encoded at the *lowest* quality (binary-searched in
@@ -194,7 +294,9 @@ PNG_RESCALE
 PNG_RESCALE_THRESHOLD
 PNG_CONVERT_LOSSLESS
 AVIF_QUALITY
-AVIF_PRESET
+AVIF_SPEED
+AVIF_SUBSAMPLING
+AVIF_SUBSAMPLING_THRESHOLD
 AVIF_SIZES
 AVIF_SSIMULACRA2
 AVIF_QUALITY_MIN
@@ -633,29 +735,354 @@ __effective_sizes() {
 }
 
 ########################################
+# __avif_subsampling <source>
+########################################
+#
+# AVIF Subsampling
+# Echoes 420 or 444 for a given source. With AVIF_SUBSAMPLING set to 420 or 444
+# that value is returned unchanged; 'auto' classifies the source by the share of
+# it covered by its single most common colour (see AVIF_SUBSAMPLING_THRESHOLD).
+#
+# The probe is point-resampled down first: interpolation would invent colours and
+# destroy the very signal being measured, while point sampling leaves a flat
+# background flat. Called once per source, not once per ladder rung.
+#
+########################################
+
+__avif_subsampling() {
+
+    local __src="${1}" __top __px
+
+    if [ "${AVIF_SUBSAMPLING}" != 'auto' ]; then
+        echo "${AVIF_SUBSAMPLING}"
+        return
+    fi
+
+    # Most common colour's pixel count, over a 500x500 point-sampled copy.
+    __top="$(magick "${__src}" -filter point -resize '500x500>' -format %c histogram:info:- 2>/dev/null |
+        sort -rn | head -n1 | awk '{print $1}')"
+    __px="$(magick "${__src}" -filter point -resize '500x500>' -format '%[fx:w*h]' info: 2>/dev/null)"
+
+    if [ -z "${__top}" ] || [ -z "${__px}" ] || [ "${__px}" -eq 0 ]; then
+        echo '420'
+        return
+    fi
+
+    awk -v t="${__top}" -v p="${__px}" -v thr="${AVIF_SUBSAMPLING_THRESHOLD}" \
+        'BEGIN{print (100*t/p >= thr) ? "444" : "420"}'
+
+}
+
+########################################
+# __log_encode <output> <width> <variant> <target> <quality> <probes>
+########################################
+#
+# Log Encode
+# Appends one row describing a finished encode. Written from parallel subshells,
+# so it is a single short append — atomic in practice on every filesystem this
+# runs on. The header is written once, when the file is created.
+#
+# Columns carry the encoder config (subsampling, speed) because a quality number
+# only means something relative to them: mixing configs in one fit would produce
+# a model that fits neither.
+#
+########################################
+
+__log_encode() {
+
+    local __out="${1}" __width="${2}" __variant="${3}" __target="${4}"
+    local __quality="${5}" __probes="${6}" __score="${7:-}" __bytes
+
+    if [ -z "${__encode_log_abs}" ]; then
+        return
+    fi
+
+    if ! [ -e "${__encode_log_abs}" ]; then
+        printf 'ts\tpath\tvariant\twidth\ttarget\tquality\tbytes\tprobes\tsubsampling\tspeed\tscore\n' \
+            >>"${__encode_log_abs}"
+    fi
+
+    __bytes="$(wc -c <"${__out}" 2>/dev/null | tr -d ' ')"
+
+    # The achieved score is recorded, not only the quality: it is what
+    # separates "clamped at the ceiling but passed by a hair" from
+    # "clamped and never got there", which quality alone cannot express.
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "${__out#./}" "${__variant}" "${__width}" \
+        "${__target}" "${__quality}" "${__bytes:-0}" "${__probes}" \
+        "${__source_subsampling:-${AVIF_SUBSAMPLING}}" "${AVIF_SPEED}" "${__score}" \
+        >>"${__encode_log_abs}"
+
+    __maybe_refit
+
+}
+
+########################################
+# __maybe_refit
+########################################
+#
+# Maybe Refit
+# Re-fits the seed model mid-build once enough new encodes have accumulated.
+# Called from __log_encode, so it runs inside whichever encode subshell finished
+# last — which makes the concurrency the interesting part:
+#
+#   - A mkdir lock keeps one refit running at a time; losers skip rather than
+#     queue, since the next encode will trigger one anyway.
+#   - The row count at the last refit lives in a file, not a variable, because
+#     subshells cannot hand state back to the parent.
+#   - q_regression.py writes the model via temp + rename, so an encode reading
+#     seeds never sees a half-written file.
+#
+########################################
+
+__maybe_refit() {
+
+    local __rows __last __lock __fit
+
+    if [ "${__have_python}" != 'true' ] || [ "${__refit_interval}" -le 0 ]; then
+        return
+    fi
+
+    __rows="$(wc -l <"${__encode_log_abs}" 2>/dev/null | tr -d ' ')"
+    if [ -z "${__rows}" ]; then
+        return
+    fi
+
+    __last=0
+    if [ -e "${__refit_state}" ]; then
+        __last="$(tr -d ' \n' <"${__refit_state}" 2>/dev/null)"
+        [ -z "${__last}" ] && __last=0
+    fi
+
+    if [ "$((__rows - __last))" -lt "${__refit_interval}" ]; then
+        return
+    fi
+
+    __lock="${__encode_log_abs}.lock"
+    if ! mkdir "${__lock}" 2>/dev/null; then
+        return
+    fi
+
+    echo "${__rows}" >"${__refit_state}"
+
+    # In --quiet mode q_regression.py prints only when the coefficients actually
+    # changed, so refitting after every encode stays silent until the model moves.
+    __fit="$(python3 "${__repo_root}/q_regression.py" \
+        --log "${__encode_log_abs}" --config "${__AVIF_SPEED}" \
+        --emit "${__seed_model_abs}" --quiet 2>&1)"
+
+    # To stderr, and as a single echo: this runs inside the command substitution
+    # that captures __avif_make's chosen quality, so a stray stdout write would be
+    # parsed as part of the quality number, and parallel encodes would interleave
+    # half-lines.
+    if [ -n "${__fit}" ]; then
+        echo "  seed model: ${__fit}" >&2
+    fi
+
+    rmdir "${__lock}" 2>/dev/null
+
+}
+
+########################################
+# __load_seed_model
+########################################
+#
+# Load Seed Model
+# Reads the committed coefficients over the built-in defaults. Parsed key by key
+# against a whitelist rather than sourced, so a corrupt or hostile model file
+# cannot run code or export anything into the env hash.
+#
+########################################
+
+__load_seed_model() {
+
+    local __line __key __value
+
+    if ! [ -e "${__seed_model_abs}" ]; then
+        return
+    fi
+
+    while IFS='=' read -r __key __value; do
+        case "${__key}" in
+            AVIF_SEED_A) __avif_seed_a="${__value}" ;;
+            AVIF_SEED_B) __avif_seed_b="${__value}" ;;
+            AVIF_SEED_HQ_A) __avif_seed_hq_a="${__value}" ;;
+            AVIF_SEED_HQ_B) __avif_seed_hq_b="${__value}" ;;
+            AVIF_SEED_420_A) __avif_seed_420_a="${__value}" ;;
+            AVIF_SEED_420_B) __avif_seed_420_b="${__value}" ;;
+            AVIF_SEED_444_A) __avif_seed_444_a="${__value}" ;;
+            AVIF_SEED_444_B) __avif_seed_444_b="${__value}" ;;
+            AVIF_SEED_HQ_420_A) __avif_seed_hq_420_a="${__value}" ;;
+            AVIF_SEED_HQ_420_B) __avif_seed_hq_420_b="${__value}" ;;
+            AVIF_SEED_HQ_444_A) __avif_seed_hq_444_a="${__value}" ;;
+            AVIF_SEED_HQ_444_B) __avif_seed_hq_444_b="${__value}" ;;
+        esac
+    done <"${__seed_model_abs}"
+
+}
+
+########################################
+# __refit_seed_model
+########################################
+#
+# Refit Seed Model
+# Re-fits the seed model from the accumulated log and rewrites the committed
+# coefficients. Runs once, at the end of a build that produced encodes. Fits only
+# rows matching the config just used, and q_regression.py declines to fit a
+# variant with too few points, so a one-image build cannot wreck the model.
+#
+########################################
+
+__refit_seed_model() {
+
+    local __label="${1:-this build}"
+
+    if [ "${__dry_run}" == 'true' ] || ! [ -e "${__encode_log_abs}" ]; then
+        return
+    fi
+
+    if ! which python3 &>/dev/null; then
+        echo 'Note: python3 not found; skipping seed-model refit.'
+        return
+    fi
+
+    echo
+    echo "Refitting quality-seed model from ${__label}:"
+    # __AVIF_SPEED, not AVIF_SPEED: this runs after __clear_env, and filtering on
+    # an unset variable silently matches nothing. A .env that overrides AVIF_SPEED
+    # keeps its rows out of this fit, which is correct — a quality number only
+    # means something relative to the speed it was found at.
+    python3 "${__repo_root}/q_regression.py" \
+        --log "${__encode_log_abs}" \
+        --config "${__AVIF_SPEED}" \
+        --emit "${__seed_model_abs}" 2>&1 | sed 's/^/  /'
+
+}
+
+########################################
+# __avif_reference <source> <resize-spec-or-empty> <filter-or-empty> <output png>
+########################################
+#
+# AVIF Reference
+# Renders the exact pixels an AVIF output is made from: auto-oriented, resized to
+# the target width, everything but the colour profile stripped, written
+# losslessly. Both the quality search and the final encode work from this one
+# file, so the pixels scored are the pixels shipped, and a resize happens once
+# per output rather than once per probe.
+#
+# Only Exif/XMP/8BIM are dropped (`+profile '!icc,*'`); an ICC profile is kept
+# and travels into the AVIF. Some sources here carry a display profile, so a
+# blanket `-strip` would silently reinterpret their colour. Exif is dropped
+# because it is pure passenger weight — 77KB per output on one of this site's
+# photo sets, up to 94% of a small ladder rung — and because camera Exif carries
+# serial numbers and GPS.
+#
+########################################
+
+__avif_reference() {
+
+    local __src="${1}" __resize="${2}" __filter="${3}" __out="${4}"
+    local __opts=()
+
+    if [ -n "${__resize}" ]; then
+        __opts=("-resize" "${__resize}")
+        if [ -n "${__filter}" ]; then
+            __opts+=("-filter" "${__filter}")
+        fi
+    fi
+
+    magick "${__src}" -auto-orient "${__opts[@]}" +profile '!icc,*' "${__out}"
+
+}
+
+########################################
+# __avif_encode <reference png> <quality> <output>
+########################################
+#
+# AVIF Encode
+# The single place an AVIF is produced. libaom via avifenc rather than
+# ImageMagick/libheif: it is the only front end here that exposes encoder effort
+# (`-s`) and subsampling, and libheif's ignored preset left every encode at its
+# default speed. Range is pinned to full to match what the pipeline has always
+# emitted. The reference is already stripped, so --ignore-exif/--ignore-xmp are
+# belt and braces for source formats magick hands through differently.
+#
+########################################
+
+__avif_encode() {
+
+    local __err
+
+    # avifenc has no quiet flag, so its progress chatter is dropped — but its
+    # stderr is captured rather than discarded and surfaced on failure. Silently
+    # swallowing it once turned a bad flag into a cascade of "file not found" and
+    # empty SSIMULACRA2 scores several layers away.
+    __err="$(avifenc \
+        -y "${__source_subsampling:-420}" -r full \
+        -q "${2}" -s "${AVIF_SPEED}" \
+        --ignore-exif --ignore-xmp \
+        "${1}" "${3}" 2>&1 >/dev/null)"
+
+    if ! [ -s "${3}" ]; then
+        echo "Error: avifenc failed for ${3}" >&2
+        [ -n "${__err}" ] && sed 's/^/  /' <<<"${__err}" >&2
+        return 1
+    fi
+
+}
+
+########################################
+# __avif_slope <variant>
+########################################
+#
+# AVIF Slope
+# Echoes the expected SSIMULACRA2 gain per quality point for this source, used
+# for the secant search's opening step. Picked by variant and by the source's
+# resolved subsampling, since a 4:4:4 screenshot's curve is roughly five times
+# flatter than a photograph's near the normal target.
+#
+########################################
+
+__avif_slope() {
+
+    local __variant="${1}" __name
+
+    if [ "${__source_subsampling:-420}" == '444' ]; then
+        __name="__avif_slope_444_${__variant}"
+    else
+        __name="__avif_slope_${__variant}"
+    fi
+
+    echo "${!__name:-1.0}"
+
+}
+
+########################################
 # __avif_probe <quality>
 ########################################
 #
 # AVIF Probe
-# Encodes __src at the given quality (honouring __resize) and scores the
-# decoded result against __ref with SSIMULACRA2. Returns 0 (success) iff the
-# score meets __target. Reads __src/__resize/__ta/__tp/__ref/__target from its
-# caller via bash dynamic scoping, so it only takes the quality to try.
+# Encodes __ref at the given quality and scores the decoded result against it
+# with SSIMULACRA2. Returns 0 (success) iff the score meets __target. Reads
+# __ref/__ta/__tp/__target from its caller via bash dynamic scoping, so it only
+# takes the quality to try.
 #
 ########################################
 
 __avif_probe() {
 
-    local __q="${1}" __score
+    local __q="${1}"
 
-    if [ -n "${__resize}" ]; then
-        magick "${__src}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" -resize "${__resize}" "${__ta}"
-    else
-        magick "${__src}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__ta}"
-    fi
+    __probes=$((__probes + 1))
+    __avif_encode "${__ref}" "${__q}" "${__ta}"
     magick "${__ta}" "${__tp}"
-    __score="$(ssimulacra2 "${__ref}" "${__tp}")"
-    awk "BEGIN{exit !(${__score} >= ${__target})}"
+
+    # The score is left in __last_score for the caller. It used to be collapsed
+    # straight into a pass/fail here, which threw away the one number that says
+    # *how far* the probe missed — and so left the search stepping blind.
+    __last_score="$(ssimulacra2 "${__ref}" "${__tp}")"
+
+    awk "BEGIN{exit !(${__last_score} >= ${__target})}"
 
 }
 
@@ -674,12 +1101,26 @@ __avif_seed() {
 
     local __w="${1}" __variant="${2}" __a __b
 
+    # Pick up any refit that landed since the last output, including one written
+    # by a sibling encode subshell.
+    __load_seed_model
+
+    local __prefix='__avif_seed_'
     if [ "${__variant}" == 'hq' ]; then
-        __a="${__avif_seed_hq_a}"
-        __b="${__avif_seed_hq_b}"
+        __prefix='__avif_seed_hq_'
+    fi
+
+    # Prefer the fit for this source's subsampling; fall back to the combined one
+    # when that mode has not accumulated enough encodes to fit on its own.
+    local __sub_a="${__prefix}${__source_subsampling:-}_a"
+    local __sub_b="${__prefix}${__source_subsampling:-}_b"
+    if [ -n "${__source_subsampling:-}" ] && [ -n "${!__sub_a}" ]; then
+        __a="${!__sub_a}"
+        __b="${!__sub_b}"
     else
-        __a="${__avif_seed_a}"
-        __b="${__avif_seed_b}"
+        local __gen_a="${__prefix}a" __gen_b="${__prefix}b"
+        __a="${!__gen_a}"
+        __b="${!__gen_b}"
     fi
 
     awk "BEGIN{printf \"%d\", ${__a} + ${__b} * log(${__w}) + 0.5}"
@@ -687,108 +1128,178 @@ __avif_seed() {
 }
 
 ########################################
-# __avif_quality <source> <resize-spec-or-empty> [<target>] [<qmax>] [<variant>]
+# __avif_make <source> <resize-spec-or-empty> <filter-or-empty> <output>
+#             [<target>] [<qmax>] [<variant>]
 ########################################
 #
-# AVIF Quality
-# Echoes the AVIF quality to encode at. Without AVIF_SSIMULACRA2 set, this is
-# just the fixed AVIF_QUALITY. With it set, binary-searches
-# [AVIF_QUALITY_MIN, AVIF_QUALITY_MAX] for the lowest quality whose decoded
-# output scores at least the target SSIMULACRA2 value against the source
-# resized the same way (a lossless PNG reference), i.e. the smallest file that
-# still meets the perceptual bar. <resize-spec> is the magick -resize argument
-# the real encode will use (e.g. "800>"), or empty for no resize.
+# AVIF Make
+# Produces one AVIF output and echoes the quality it was encoded at. Without
+# AVIF_SSIMULACRA2 set that quality is just AVIF_QUALITY. With it set, the
+# quality is binary-searched in [AVIF_QUALITY_MIN, AVIF_QUALITY_MAX] for the
+# lowest one whose decoded result scores at least the target SSIMULACRA2 value
+# against the losslessly-resized source, i.e. the smallest file that still meets
+# the perceptual bar.
+#
+# Search and final encode share one reference render (see __avif_reference), so
+# the scored pixels are the shipped pixels and the resize is done once rather
+# than once per probe.
+#
+# NOTE: the quality numbers here are libaom's via avifenc, which are NOT the
+# libheif numbers this pipeline used before — a given number means a different
+# quantizer. Only the SSIMULACRA2 targets are stable across that change, which is
+# the point of targeting a score rather than a number. The __avif_seed model was
+# fitted against libheif and is now merely a starting guess; re-run
+# q_regression.py over the new encodes to make the search converge in fewer
+# probes again.
 #
 ########################################
 
-__avif_quality() {
+__avif_make() {
 
-    local __src="${1}" __resize="${2}" __target="${3:-${AVIF_SSIMULACRA2}}" __qmax="${4:-${AVIF_QUALITY_MAX}}" __variant="${5:-normal}"
-
-    if [ -z "${__target}" ]; then
-        echo "${AVIF_QUALITY}"
-        return
-    fi
+    local __src="${1}" __resize="${2}" __filter="${3}" __out="${4}"
+    local __target="${5:-${AVIF_SSIMULACRA2}}" __qmax="${6:-${AVIF_QUALITY_MAX}}" __variant="${7:-normal}"
 
     local __dir __ref __ta __tp __lo __hi __mid __best __width __seed __step __p
+    local __probes=0 __last_score=""
     __dir="$(mktemp -d)"
     __ref="${__dir}/ref.png"
     __ta="${__dir}/t.avif"
     __tp="${__dir}/t.png"
 
-    if [ -n "${__resize}" ]; then
-        magick "${__src}" -auto-orient -resize "${__resize}" "${__ref}"
-    else
-        magick "${__src}" -auto-orient "${__ref}"
+    __avif_reference "${__src}" "${__resize}" "${__filter}" "${__ref}"
+
+    if [ -z "${__target}" ]; then
+        __avif_encode "${__ref}" "${AVIF_QUALITY}" "${__out}"
+        __log_encode "${__out}" "$(identify -format '%w' "${__ref}" 2>/dev/null)" \
+            "${__variant}" 'fixed' "${AVIF_QUALITY}" 0 ''
+        rm -rf "${__dir}"
+        echo "${AVIF_QUALITY}"
+        return
     fi
 
     # Seed the search at the model's predicted quality for this reference's
     # actual width (read off the resized reference, so area/rescale specs and
     # full-size encodes all resolve correctly), clamped into the search range.
+    # Read the reference's real width, retrying once: on a loaded machine
+    # ImageMagick occasionally fails even a trivial identify, and this used to
+    # fall back to a hard-coded 1280. That silently seeded the search for the
+    # wrong size and, worse, wrote 1280 into the log as training data -- one
+    # 3840px hq output was recorded as a 1280px one needing q=99, exactly the
+    # kind of row that poisons a fit. Nothing is invented now: an unreadable
+    # width means no seed (mid-range instead) and width 0 in the log, which
+    # q_regression.py skips.
     __width="$(identify -format '%w' "${__ref}" 2>/dev/null)"
-    [ -z "${__width}" ] && __width=1280
-    __seed="$(__avif_seed "${__width}" "${__variant}")"
+    if [ -z "${__width}" ]; then
+        __width="$(identify -format '%w' "${__ref}" 2>/dev/null)"
+    fi
+    if [ -z "${__width}" ]; then
+        echo "Warning: could not read reference width for ${__out}; seeding mid-range" >&2
+        __width=0
+    fi
+    if [ "${__width}" -gt 0 ]; then
+        __seed="$(__avif_seed "${__width}" "${__variant}")"
+    else
+        __seed=$(((AVIF_QUALITY_MIN + __qmax) / 2))
+    fi
     [ "${__seed}" -lt "${AVIF_QUALITY_MIN}" ] && __seed="${AVIF_QUALITY_MIN}"
     [ "${__seed}" -gt "${__qmax}" ] && __seed="${__qmax}"
 
-    # Exponential (gallop) search from the seed. The score is monotonic in
-    # quality, so probing the seed tells us which way the lowest-passing quality
-    # lies; we then double the step outward until we bracket it, and binary-
-    # search the (small) remaining gap. This returns the exact same quality the
-    # old midpoint binary search would have — only the probes taken differ — so
-    # outputs and .hash files are unchanged; a good seed just trials fewer.
-    __best="${__qmax}"
-    if __avif_probe "${__seed}"; then
-        # Seed meets the target: the lowest passing quality is at or below it.
-        __best="${__seed}"
-        __lo="${AVIF_QUALITY_MIN}"
-        __hi=$((__seed - 1))
-        __step=1
-        while [ "${__lo}" -le "${__hi}" ]; do
-            __p=$((__seed - __step))
-            [ "${__p}" -lt "${AVIF_QUALITY_MIN}" ] && __p="${AVIF_QUALITY_MIN}"
-            if __avif_probe "${__p}"; then
-                __best="${__p}"
-                __hi=$((__p - 1))
-                [ "${__p}" -eq "${AVIF_QUALITY_MIN}" ] && break
-                __step=$((__step * 2))
-            else
-                __lo=$((__p + 1))
-                break
-            fi
-        done
-    else
-        # Seed misses: the lowest passing quality (if any) is above it.
-        __lo=$((__seed + 1))
-        __hi="${__qmax}"
-        __step=1
-        while [ "${__lo}" -le "${__hi}" ]; do
-            __p=$((__seed + __step))
-            [ "${__p}" -gt "${__qmax}" ] && __p="${__qmax}"
-            if __avif_probe "${__p}"; then
-                __best="${__p}"
-                __hi=$((__p - 1))
-                break
-            else
-                __lo=$((__p + 1))
-                # Even qmax misses: nothing meets the target, keep best=qmax
-                # (matching the old search) and skip the binary pass.
-                [ "${__p}" -eq "${__qmax}" ] && { __lo=1; __hi=0; break; }
-                __step=$((__step * 2))
-            fi
-        done
-    fi
+    # Damped secant search for the lowest quality meeting the target.
+    #
+    # The score is monotonic in quality, so this is a root-find on
+    # (score(q) - target), and each probe reports not just pass/fail but how far
+    # off it was. Dividing that miss by the local slope gives the step, which is
+    # what a doubling gallop cannot do: the slope varies enormously by content
+    # and target. Measured on this corpus, near SSIMULACRA2 65 a photograph moves
+    # ~1.2 score points per quality point, near 85 only ~0.4, and a 4:4:4
+    # screenshot ~0.2 — so the same +1 step is a sensible nudge in one case and a
+    # near-no-op in another, which is why 4:4:4 searches were the most expensive.
+    #
+    # After two probes the slope comes from this image's own pair (a true secant)
+    # rather than the table, so content-specific behaviour is picked up within a
+    # single search.
+    #
+    # A bracket of (highest failing, lowest passing) is maintained throughout and
+    # every proposal is clamped inside it, so this cannot diverge or oscillate;
+    # if a proposal repeats a probed quality the bracket is bisected instead. The
+    # search ends when the bracket is adjacent — which *proves* minimality, and is
+    # the same answer the old gallop returned, so outputs and .hash files are
+    # unchanged. Only the number of probes differs.
+    local __lo_fail=$((AVIF_QUALITY_MIN - 1))
+    local __hi_pass=$((__qmax + 1))
+    local __prev_q='' __prev_s='' __iter=0 __slope __next __best_score=''
 
-    # Binary-search whatever gap the gallop left bracketed.
-    while [ "${__lo}" -le "${__hi}" ]; do
-        __mid=$(((__lo + __hi) / 2))
-        if __avif_probe "${__mid}"; then
-            __best="${__mid}"
-            __hi=$((__mid - 1))
+    __best="${__qmax}"
+    __q="${__seed}"
+
+    while [ "${__iter}" -lt 20 ]; do
+
+        __iter=$((__iter + 1))
+
+        if __avif_probe "${__q}"; then
+            __hi_pass="${__q}"
+            __best="${__q}"
+            __best_score="${__last_score}"
         else
-            __lo=$((__mid + 1))
+            __lo_fail="${__q}"
         fi
+
+        # Adjacent bracket: __hi_pass passes, the quality below it fails. Done.
+        if [ "$((__hi_pass - __lo_fail))" -le 1 ]; then
+            break
+        fi
+
+        # Boundaries: the floor already passes, or the ceiling still fails. The
+        # latter keeps __best at __qmax, matching the previous search.
+        if [ "${__hi_pass}" -le "${AVIF_QUALITY_MIN}" ] || [ "${__lo_fail}" -ge "${__qmax}" ]; then
+            break
+        fi
+
+        # Slope: this image's own secant once two probes disagree, otherwise the
+        # measured default for this variant and subsampling. A non-positive
+        # secant means noise rather than signal, so fall back to the table.
+        __slope="$(__avif_slope "${__variant}")"
+        if [ -n "${__prev_q}" ] && [ "${__prev_q}" != "${__q}" ]; then
+            __slope="$(awk -v s1="${__prev_s}" -v s2="${__last_score}" \
+                -v q1="${__prev_q}" -v q2="${__q}" -v fb="${__slope}" \
+                'BEGIN{d=(s2-s1)/(q2-q1); print (d > 0.01) ? d : fb}')"
+        fi
+
+        # Damped so a convex curve does not overshoot, and always at least one
+        # step in the direction of the miss.
+        __next="$(awk -v q="${__q}" -v s="${__last_score}" -v t="${__target}" -v m="${__slope}" \
+            'BEGIN{
+                d = 0.8 * (t - s) / m;
+                if (d > 0 && d < 1) d = 1;
+                if (d < 0 && d > -1) d = -1;
+                printf "%d", q + (d > 0 ? d + 0.5 : d - 0.5);
+            }')"
+
+        # Keep the proposal strictly inside the bracket.
+        [ "${__next}" -le "${__lo_fail}" ] && __next=$((__lo_fail + 1))
+        [ "${__next}" -ge "${__hi_pass}" ] && __next=$((__hi_pass - 1))
+
+        # A repeat would waste a probe; bisect what is left instead.
+        if [ "${__next}" -eq "${__q}" ]; then
+            __next=$(((__lo_fail + __hi_pass) / 2))
+            if [ "${__next}" -eq "${__q}" ]; then
+                break
+            fi
+        fi
+
+        __prev_q="${__q}"
+        __prev_s="${__last_score}"
+        __q="${__next}"
+
     done
+
+    # Encode the deliverable at the quality the search settled on. The last probe
+    # is not necessarily the winning one, so this is a real encode rather than a
+    # copy of whatever __ta happens to hold.
+    __avif_encode "${__ref}" "${__best}" "${__out}"
+
+    __log_encode "${__out}" "${__width}" "${__variant}" "${__target}" "${__best}" \
+        "${__probes}" "${__best_score}"
 
     rm -rf "${__dir}"
     echo "${__best}"
@@ -813,6 +1324,12 @@ __process_generic_image() {
         export FILE_HASH="$("${__hashfunc}" "${__source_file}")"
 
         if ! __check_file "${__source_file}"; then
+
+            # Classify once per source rather than per ladder rung: the probe
+            # reads a histogram, and every rung of one source gets the same
+            # answer anyway. Plain variable, so the parallel encode subshells
+            # below inherit it without it reaching the env hash.
+            __source_subsampling="$(__avif_subsampling "${__source_file}")"
 
             __img_rescale="$(echo "${1}" | tr '[:lower:]' '[:upper:]')_RESCALE"
             __img_rescale_threshold="$(echo "${1}" | tr '[:lower:]' '[:upper:]')_RESCALE_THRESHOLD"
@@ -861,16 +1378,14 @@ __process_generic_image() {
                     __resize_opts=("-resize" "${__resize}" "-filter" "${RESCALE_FILTER}")
                 fi
                 if [ "${__lossless}" == 'true' ]; then
-                    magick "${__source_file}" -auto-orient -quality 100 -define "webp:lossless=true" -define "webp:method=6" "${__resize_opts[@]}" "${__target}"
+                    magick "${__source_file}" -auto-orient -quality 100 -define "webp:lossless=true" -define "webp:method=6" "${__resize_opts[@]}" +profile '!icc,*' "${__target}"
                 else
-                    __q="$(__avif_quality "${__source_file}" "${__resize}")"
+                    __q="$(__avif_make "${__source_file}" "${__resize}" "${RESCALE_FILTER}" "${__target}")"
                     echo "  ${__target} q=${__q}"
-                    magick "${__source_file}" -auto-orient -quality "${__q}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__target}"
                     if [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
                         __thq="${__target%.avif}-hq.avif"
-                        __qhq="$(__avif_quality "${__source_file}" "${__resize}" "${AVIF_HQ_SSIMULACRA2}" 99 hq)"
+                        __qhq="$(__avif_make "${__source_file}" "${__resize}" "${RESCALE_FILTER}" "${__thq}" "${AVIF_HQ_SSIMULACRA2}" 99 hq)"
                         echo "  ${__thq} q=${__qhq}"
-                        magick "${__source_file}" -auto-orient -quality "${__qhq}" -define "heic:preset=${AVIF_PRESET}" "${__resize_opts[@]}" "${__thq}"
                     fi
                 fi
             else
@@ -881,15 +1396,16 @@ __process_generic_image() {
                 __pids=()
                 while read -r __size; do
                     (
+                        # No -filter here, matching every rung generated to date:
+                        # the ladder has always used magick's default resampling,
+                        # and RESCALE_FILTER applies to the auto-rescale path only.
                         __vtarget="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-${__size}.${__output_format}/" <<<"${__source_file}")"
-                        __vq="$(__avif_quality "${__source_file}" "${__size}>")"
+                        __vq="$(__avif_make "${__source_file}" "${__size}>" '' "${__vtarget}")"
                         echo "  ${__vtarget} q=${__vq}"
-                        magick "${__source_file}" -auto-orient -quality "${__vq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vtarget}"
                         if [ -n "${AVIF_HQ_SSIMULACRA2}" ]; then
                             __vhq="$(sed -e 's|^\./src/|./|' -e "s/\.[^\.]*$/-hq-${__size}.${__output_format}/" <<<"${__source_file}")"
-                            __vqhq="$(__avif_quality "${__source_file}" "${__size}>" "${AVIF_HQ_SSIMULACRA2}" 99 hq)"
+                            __vqhq="$(__avif_make "${__source_file}" "${__size}>" '' "${__vhq}" "${AVIF_HQ_SSIMULACRA2}" 99 hq)"
                             echo "  ${__vhq} q=${__vqhq}"
-                            magick "${__source_file}" -auto-orient -quality "${__vqhq}" -define "heic:preset=${AVIF_PRESET}" "-resize" "${__size}>" "${__vhq}"
                         fi
                     ) &
                     __pids+=("${!}")
@@ -1291,9 +1807,37 @@ __fatal_error_handler || exit 1
 
 ###############################################################################
 
+# Absolute paths for the self-optimisation files: processing pushd's into each
+# unit directory, so relative paths would land wherever the loop happens to be.
+__repo_root="$(pwd)"
+__encode_log_abs="${__repo_root}/${__encode_log}"
+__seed_model_abs="${__repo_root}/${__seed_model}"
+__refit_state="${__encode_log_abs}.refit-at"
+
+# The score column arrived after this log already had rows. Bring the header up to
+# date so the fitter can see the new field; existing rows simply end one column
+# short, which the parser tolerates because score is last.
+if [ -e "${__encode_log_abs}" ] && ! head -n1 "${__encode_log_abs}" | grep -q 'score'; then
+    awk 'NR==1 {print $0 "\tscore"; next} {print}' "${__encode_log_abs}" \
+        >"${__encode_log_abs}.migrating" &&
+        mv "${__encode_log_abs}.migrating" "${__encode_log_abs}"
+fi
+
+__have_python='false'
+if which python3 &>/dev/null; then
+    __have_python='true'
+fi
+
+# Refit before doing anything, so this run starts from every encode ever logged
+# rather than from whatever the committed model last captured — a previous run
+# that was interrupted after its last mid-build refit leaves data behind
+# otherwise. Then load whatever that produced.
+__refit_seed_model 'the accumulated log'
+__load_seed_model
+
 __build_reference_corpus
 
-trap 'rm -f "${__reference_corpus}"' EXIT
+trap 'rm -f "${__reference_corpus}"; rmdir "${__encode_log_abs}.lock" 2>/dev/null' EXIT
 
 find './content/' './static/' -type f -iwholename '*/src/.env' | while IFS= read -r __file; do
 
@@ -1322,6 +1866,10 @@ find './content/' './static/' -type f -iwholename '*/src/.env' | while IFS= read
 done
 
 ###############################################################################
+
+# Final refit over everything this build produced, including the encodes that
+# landed after the last mid-build refit.
+__refit_seed_model
 
 popd &>/dev/null
 
