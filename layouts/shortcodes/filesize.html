@@ -1,0 +1,30 @@
+{{- /*
+  Print the on-disk size of a file in the current page bundle, resolved at build
+  time so figures never go stale. First arg is the path relative to the page
+  (same convention as the image shortcode), e.g. "media/demo/DSC_3587-1280.avif".
+  Optional second arg picks the unit: "B", "KB", or "MB" (default: auto).
+*/ -}}
+{{- $file_path := .Get 0 -}}
+{{- $unit := .Get 1 | default "auto" -}}
+{{- $full := path.Join .Page.File.Dir $file_path -}}
+{{- if fileExists $full -}}
+  {{- $b := (os.Stat $full).Size -}}
+  {{- $out := "" -}}
+  {{- if eq $unit "B" -}}
+    {{- $out = printf "%d B" $b -}}
+  {{- else if eq $unit "KB" -}}
+    {{- $out = printf "%.0f KB" (div (float $b) 1024.0) -}}
+  {{- else if eq $unit "MB" -}}
+    {{- $out = printf "%.1f MB" (div (float $b) 1048576.0) -}}
+  {{- else if lt $b 1024 -}}
+    {{- $out = printf "%d B" $b -}}
+  {{- else if lt $b 1048576 -}}
+    {{- $out = printf "%.0f KB" (div (float $b) 1024.0) -}}
+  {{- else -}}
+    {{- $out = printf "%.1f MB" (div (float $b) 1048576.0) -}}
+  {{- end -}}
+  {{- $out -}}
+{{- else -}}
+  {{- warnf "filesize: file not found %q (page %q)" $full .Page.File.Path -}}
+  {{- errorf "filesize: file not found %q" $full -}}
+{{- end -}}

@@ -1,0 +1,280 @@
+{{- /*
+  Live page-weight readout, using the Resource Timing API to report what this
+  page actually pulled over the wire.
+
+  This is the one place on the site that ships JavaScript, and it does so
+  deliberately: post-compression transfer bytes are knowable *only* at runtime.
+  A build-time count can be exact about bytes on disk (see the `filesize`
+  shortcode) but cannot know gzip/brotli, and cannot know which `srcset` rung a
+  given client chose — which is the number the post is actually about.
+
+  Scoped to whichever page uses the shortcode; nothing is added to any other
+  page, and there is no external request.
+
+  Images are summed by what is *currently displayed*, not by everything ever
+  fetched. The quality toggle swaps whole ladders, and a naive cumulative sum
+  would both climb without bound and bill you for variants no longer on screen.
+  So sizes are learned per URL from Resource Timing and kept, but the total is
+  computed over the set of URLs the DOM is showing right now — which means
+  toggling LOW/MED/HI moves the figure up *and* down, as it should.
+*/ -}}
+<div class="pageweight" data-pageweight>
+  <noscript>
+    <p><em>This readout needs JavaScript — post-compression transfer sizes are
+    only observable at runtime. Everything else on this page is precomputed at
+    build time.</em></p>
+  </noscript>
+  <div class="pageweight-scroll">
+    <table hidden data-pageweight-table>
+      <thead>
+        <tr>
+          <th scope="col">Asset</th>
+          <th scope="col" style="text-align:right">Transferred</th>
+          <th scope="col" style="text-align:right">Uncompressed</th>
+        </tr>
+      </thead>
+      <tbody data-pageweight-rows></tbody>
+      <tfoot>
+        <tr>
+          <th scope="row">Currently loaded <span data-pageweight-count></span></th>
+          <td style="text-align:right" data-pageweight-wire></td>
+          <td style="text-align:right" data-pageweight-raw></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="pageweight-note" hidden data-pageweight-note aria-live="polite"></p>
+</div>
+<style>
+  /* Wide content scrolls in its own box rather than making the page scroll. */
+  .pageweight-scroll { overflow-x: auto; }
+  .pageweight table { width: 100%; font-size: .9em; }
+  .pageweight .pw-group th { padding-top: .9em; }
+  .pageweight .pw-asset th { font-weight: normal; }
+  .pageweight .pw-asset code { font-size: .95em; word-break: break-all; }
+  .pageweight-note { font-size: .85em; opacity: .75; }
+</style>
+<script>
+(function () {
+  'use strict';
+
+  var root = document.currentScript.previousElementSibling;
+  while (root && !root.hasAttribute('data-pageweight')) root = root.previousElementSibling;
+  if (!root || !window.performance || !performance.getEntriesByType) return;
+
+  var table = root.querySelector('[data-pageweight-table]');
+  var rowsEl = root.querySelector('[data-pageweight-rows]');
+  var noteEl = root.querySelector('[data-pageweight-note]');
+
+  var GROUPS = ['Document', 'Images', 'CSS', 'Fonts', 'JavaScript', 'Other'];
+  var IMAGE_EXT = /^(avif|webp|png|jpe?g|gif|svg|ico)$/;
+
+  function ext(url) {
+    var path = String(url).split('?')[0].split('#')[0];
+    return (path.split('/').pop().split('.').pop() || '').toLowerCase();
+  }
+
+  function classify(entry) {
+    var e = ext(entry.name);
+    if (IMAGE_EXT.test(e)) return 'Images';
+    if (e === 'css') return 'CSS';
+    if (/^(woff2?|ttf|otf|eot)$/.test(e)) return 'Fonts';
+    if (/^(js|mjs)$/.test(e)) return 'JavaScript';
+    // Extensionless or unusual URLs: fall back to how the browser fetched it.
+    if (entry.initiatorType === 'img') return 'Images';
+    if (entry.initiatorType === 'link' || entry.initiatorType === 'css') return 'CSS';
+    if (entry.initiatorType === 'script') return 'JavaScript';
+    return 'Other';
+  }
+
+  function bytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(0) + ' KB';
+    return (n / 1048576).toFixed(2) + ' MB';
+  }
+
+  // URL -> {group, wire, raw}. Learned once per URL and kept, so toggling back
+  // to a previously-fetched ladder can still be costed even though the second
+  // visit produces no new network request.
+  var known = Object.create(null);
+  // Bytes for variants that were fetched but are not currently displayed.
+  var strandedWire = 0;
+
+  function learn(entry) {
+    if (known[entry.name]) return;
+    // A cache hit, or a cross-origin response without Timing-Allow-Origin,
+    // reports transferSize 0. decodedBodySize still gives the real payload.
+    known[entry.name] = {
+      group: classify(entry),
+      wire: entry.transferSize || 0,
+      raw: entry.decodedBodySize || 0
+    };
+  }
+
+  // The set of image URLs the page is showing right now. currentSrc is the rung
+  // the browser actually selected for this viewport and pixel density, which is
+  // the whole reason this cannot be precomputed.
+  function shownImages() {
+    var urls = Object.create(null);
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      // Skip anything not actually laid out — a hidden variant is not a cost
+      // you are currently paying to display.
+      if (!img.getClientRects().length && !img.complete) continue;
+      if (img.offsetWidth === 0 && img.offsetHeight === 0) continue;
+      var url = img.currentSrc || img.src;
+      if (url) urls[url] = true;
+    }
+    return urls;
+  }
+
+  // Display label for one asset: the path within the site, which is more use
+  // than a bare filename when a dozen rungs share a stem.
+  function label(url) {
+    if (url === ' document') return 'this page (HTML)';
+    try {
+      var u = new URL(url, location.href);
+      var text = decodeURIComponent(u.pathname);
+      if (u.origin !== location.origin) text = u.host + text;
+      return text;
+    } catch (e) {
+      return url;
+    }
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function render() {
+    var buckets = Object.create(null);
+    GROUPS.forEach(function (g) { buckets[g] = []; });
+
+    var shown = shownImages();
+    var pending = 0;
+
+    // Non-image resources are listed once each: they are not swappable, so
+    // "fetched" and "in use" are the same thing for them.
+    Object.keys(known).forEach(function (url) {
+      var r = known[url];
+      if (r.group === 'Images') return;
+      (buckets[r.group] || buckets.Other).push({ url: url, wire: r.wire, raw: r.raw });
+    });
+
+    // Images: only the ones on screen right now. Everything else fetched is
+    // tallied separately as the cost of having changed quality.
+    strandedWire = 0;
+    Object.keys(known).forEach(function (url) {
+      var r = known[url];
+      if (r.group === 'Images' && !shown[url]) strandedWire += r.wire;
+    });
+
+    Object.keys(shown).forEach(function (url) {
+      var r = known[url];
+      if (!r) { pending++; return; }
+      buckets.Images.push({ url: url, wire: r.wire, raw: r.raw });
+    });
+
+    var sum = { n: 0, wire: 0, raw: 0 };
+    var html = '';
+    GROUPS.forEach(function (g) {
+      var list = buckets[g];
+      if (!list.length) return;
+
+      // Biggest first — the interesting rows are at the top.
+      list.sort(function (a, b) { return (b.wire - a.wire) || (b.raw - a.raw); });
+
+      var gw = 0, gr = 0;
+      list.forEach(function (r) { gw += r.wire; gr += r.raw; });
+      sum.n += list.length; sum.wire += gw; sum.raw += gr;
+
+      html += '<tr class="pw-group"><th scope="colgroup">' + g
+        + (g === 'Images' ? ' shown' : '') + ' <small>(' + list.length + ')</small></th>'
+        + '<td style="text-align:right"><strong>' + bytes(gw) + '</strong></td>'
+        + '<td style="text-align:right"><strong>' + bytes(gr) + '</strong></td></tr>';
+
+      list.forEach(function (r) {
+        html += '<tr class="pw-asset"><th scope="row"><code title="' + esc(r.url) + '">'
+          + esc(label(r.url)) + '</code></th>'
+          + '<td style="text-align:right">' + bytes(r.wire) + '</td>'
+          + '<td style="text-align:right">' + bytes(r.raw) + '</td></tr>';
+      });
+    });
+
+    rowsEl.innerHTML = html;
+    root.querySelector('[data-pageweight-count]').textContent = '(' + sum.n + ' assets)';
+    root.querySelector('[data-pageweight-wire]').textContent = bytes(sum.wire);
+    root.querySelector('[data-pageweight-raw]').textContent = bytes(sum.raw);
+    table.hidden = false;
+
+    var notes = ['Images are counted as currently displayed, so switching'
+      + ' quality moves this figure rather than inflating it.'];
+    if (sum.raw > sum.wire && sum.wire > 0) {
+      notes.push('Compression is saving ' + bytes(sum.raw - sum.wire) + ' ('
+        + (100 - (sum.wire / sum.raw) * 100).toFixed(0) + '%) on the text.');
+    }
+    if (strandedWire > 0) {
+      notes.push('A further ' + bytes(strandedWire) + ' of image data was'
+        + ' fetched for variants no longer on screen — the real cost of'
+        + ' changing your mind.');
+    }
+    if (pending > 0) {
+      notes.push(pending + ' displayed image' + (pending === 1 ? '' : 's')
+        + ' not yet costed (served from cache before this page loaded, so no'
+        + ' timing entry exists).');
+    }
+    notes.push('“Transferred” is post-compression and includes response'
+      + ' headers, so it is what the connection actually paid.');
+    noteEl.textContent = notes.join(' ');
+    noteEl.hidden = false;
+  }
+
+  // The document itself. transferSize here is the compressed HTML plus headers.
+  var nav = performance.getEntriesByType('navigation')[0];
+  if (nav) {
+    known[' document'] = {
+      group: 'Document',
+      wire: nav.transferSize || 0,
+      raw: nav.decodedBodySize || 0
+    };
+  }
+
+  performance.getEntriesByType('resource').forEach(learn);
+
+  var queued = false;
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; render(); });
+  }
+
+  render();
+
+  // Newly fetched variants: learn their sizes, then recompute.
+  if (window.PerformanceObserver) {
+    try {
+      new PerformanceObserver(function (list) {
+        list.getEntries().forEach(learn);
+        schedule();
+      }).observe({ type: 'resource', buffered: true });
+    } catch (e) { /* older browsers keep the static readout */ }
+  }
+
+  // The quality toggle rewrites src/srcset in place, so watch for that rather
+  // than hooking a specific control.
+  if (window.MutationObserver) {
+    new MutationObserver(schedule).observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['src', 'srcset', 'sizes']
+    });
+  }
+
+  // currentSrc settles on load, and a viewport change can reselect a rung.
+  addEventListener('load', schedule, true);
+  addEventListener('resize', schedule);
+}());
+</script>
