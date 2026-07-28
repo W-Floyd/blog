@@ -9,17 +9,26 @@
 #   -t  list the files this script produces
 # Run with no arguments, it generates those files.
 #
-# It demonstrates the visual-fidelity difference between the two AVIF ladders
-# the build produces: the bandwidth-tuned "normal" encode (AVIF_SSIMULACRA2=65)
-# and its higher-quality "-hq" sibling (AVIF_HQ_SSIMULACRA2=85). It takes the
-# highest-resolution normal and -hq variants of one source image, crops the same
-# small patch from each, and scales that patch up with no smoothing (point
-# filter) so the per-pixel compression differences are easy to see, then
-# assembles a labelled side-by-side panel plus a context shot.
+# It demonstrates the visual-fidelity difference between the site's two AVIF
+# targets: the bandwidth-tuned ladder (AVIF_SSIMULACRA2=65) and its higher-quality
+# -hq sibling (AVIF_HQ_SSIMULACRA2=85).
 #
-# Outputs are written into src/ as PNG, so the build's PNG pass picks them up
-# and converts them to *lossless* WebP — the comparison itself adds no artifacts;
-# the only ones you see are baked into the AVIF inputs.
+# The figure is deliberately one crop, not two. This script only ever *crops*,
+# losslessly, straight from the pipeline's own source photograph into a PNG. The
+# build's ordinary AVIF pass then encodes that one PNG twice — once to 65, once to
+# 85 — and both encodes are served exactly as they come out. So the two images on
+# the page are real outputs of the real encoder at the real targets, with no
+# generation of loss between the encoder and the reader.
+#
+# That is the whole reason for the arrangement. Earlier versions cropped from an
+# already-encoded AVIF and then re-encoded the crop, which meant the figure showed
+# the delivery encode's artifacts layered over the ones being compared. Cropping
+# before any encoding removes that entirely.
+#
+# Crops are emitted at native scale — one pixel per source pixel, no magnification
+# baked in. Enlargement is a display concern, done in CSS by the page, so it
+# follows the reader's layout and pixel density instead of a factor chosen here,
+# and costs nothing on the wire.
 #
 set -euo pipefail
 
@@ -27,55 +36,47 @@ set -euo pipefail
 # Config — override any of these from the environment.
 ###############################################################################
 
-# Where the processed AVIF variants live (relative to media/, where the build
-# runs this), and the stem to compare.
-SRC_DIR="${SRC_DIR:-../../smart-yogurt-maker-part-01/media}"
-STEM="${STEM:-IMG_20220125_113949_cleaned}"
-
-# Crop patch in the *full-resolution* image: WIDTHxHEIGHT+X+Y.
-# Default lands on the module's etched text, where the normal and -hq encodes
-# diverge most (high-frequency detail is where the bit budget shows).
+# The pipeline's source photograph, not one of its AVIF outputs: cropping has to
+# happen before any lossy encode for the figure to mean what it claims. This is
+# the same file the responsive ladder for that post is built from, so the crop
+# carries exactly the detail the real encoder is given.
 #
-# Kept deliberately small. At 4x this is the single heaviest asset on the page
-# that hosts it, and it is lossless by necessity, so panel area is the only lever
-# on its size. 240px keeps the etched text and its surrounding flat solder mask
-# — enough to show both blocking and banding — at ~45% of the area a 360px crop
-# needed. Centred on the same point the larger crop was.
+# (A lossless .xcf master sits beside it, but this JPEG is what the pipeline
+# actually encodes, so it is the honest input for a figure about that pipeline.)
+SRC_IMG="${SRC_IMG:-../../smart-yogurt-maker-part-01/media/src/IMG_20220125_113949_cleaned.jpg}"
+
+# Crop patch in the *full-resolution* source: WIDTHxHEIGHT+X+Y.
+# Default lands on the module's etched text, where the two targets diverge most
+# (high-frequency detail is where the bit budget shows).
+#
+# 240px keeps the etched text and its surrounding flat solder mask, which is
+# enough to show both blocking and banding. It also sets how far the page can
+# enlarge it: displayed two-up in an 860px column, each crop gets ~430 CSS px, so
+# 240px is already a ~1.8x upscale on a 1x display and roughly 1:1 on a 2x one.
+# Growing this makes the crop sharper but the enlargement weaker.
 CROP="${CROP:-240x240+2380+1900}"
 
-# Integer upscale factor for display, applied with no interpolation so each
-# encoded pixel stays a crisp block.
-ZOOM="${ZOOM:-4}"
-
-# Where to write the results. src/ so the PNG pass converts them to WebP.
+# Where to write the crop. src/ so the build's PNG pass encodes it (to 65 and 85,
+# per this unit's .env).
 OUT_DIR="${OUT_DIR:-./src}"
 
-# Font for the panel labels. ImageMagick's default font is often unset on macOS;
-# point at a system font (override FONT for another platform).
-FONT="${FONT:-/System/Library/Fonts/Supplemental/Arial.ttf}"
+CROP_PNG="${OUT_DIR}/quality-crop.png"
 
-###############################################################################
-# Resolve the input variants (needed by -d/-t and the encode alike).
-###############################################################################
-
-# Highest-resolution variant = the largest width emitted for this stem. The
-# native (100%) width is always one of them, so this is the full-detail image.
-__largest_width() {
-    local prefix="$1"
-    ls "${SRC_DIR}"/${prefix}-[0-9]*.avif 2>/dev/null \
-        | sed -E 's/.*-([0-9]+)\.avif$/\1/' \
-        | sort -rn | head -n1
-}
-
-NORMAL_W="$(__largest_width "${STEM}")"
-HQ_W="$(__largest_width "${STEM}-hq")"
-NORMAL_AVIF="${SRC_DIR}/${STEM}-${NORMAL_W}.avif"
-HQ_AVIF="${SRC_DIR}/${STEM}-hq-${HQ_W}.avif"
-
-NORMAL_CROP="${OUT_DIR}/quality-normal-crop.png"
-HQ_CROP="${OUT_DIR}/quality-hq-crop.png"
-PANEL="${OUT_DIR}/quality-comparison.png"
-CONTEXT="${OUT_DIR}/quality-comparison-context.png"
+# The context shot is written into a *sibling unit* (../context/), not this one.
+# It is a whole photograph and wants the site's ordinary target and its full
+# responsive ladder, where the crop wants exactly two encodes and no ladder at
+# all; those are per-unit .env settings, so the two cannot share a unit. Keeping
+# it a target of this script rather than giving that unit its own generator means
+# CROP is defined exactly once: a second copy could drift and silently outline a
+# region the crop did not come from.
+#
+# Safe by the build's own rules: a directory carrying its own src/.env is a
+# separate unit that prunes itself, and prune candidates only come from
+# directories mirroring this unit's ./src/ tree, which ../context/ is not.
+# Note the two units are not ordered relative to each other, so a CROP change can
+# land in the context AVIF one build later than in the crop.
+CONTEXT_DIR="${CONTEXT_DIR:-./context/src}"
+CONTEXT="${CONTEXT_DIR}/quality-comparison-context.png"
 
 ###############################################################################
 # Script interface
@@ -87,11 +88,11 @@ case "${1:-}" in
         exit
         ;;
     -d)
-        printf '%s\n' "${NORMAL_AVIF}" "${HQ_AVIF}"
+        printf '%s\n' "${SRC_IMG}"
         exit
         ;;
     -t)
-        printf '%s\n' "${PANEL}" "${NORMAL_CROP}" "${HQ_CROP}" "${CONTEXT}"
+        printf '%s\n' "${CROP_PNG}" "${CONTEXT}"
         exit
         ;;
 esac
@@ -100,54 +101,60 @@ esac
 # Generate
 ###############################################################################
 
-[ -n "${NORMAL_W}" ] || { echo "no normal variants for '${STEM}' in ${SRC_DIR}"; exit 1; }
-[ -n "${HQ_W}" ] || { echo "no -hq variants for '${STEM}' in ${SRC_DIR}"; exit 1; }
+[ -e "${SRC_IMG}" ] || { echo "source not found: ${SRC_IMG}"; exit 1; }
 
-echo "normal: ${NORMAL_AVIF} (${NORMAL_W}px wide, $(du -h "${NORMAL_AVIF}" | cut -f1))"
-echo "hq:     ${HQ_AVIF} (${HQ_W}px wide, $(du -h "${HQ_AVIF}" | cut -f1))"
-echo "crop:   ${CROP}  zoom: ${ZOOM}x"
+SRC_W="$(identify -format '%w' "${SRC_IMG}")"
+SRC_H="$(identify -format '%h' "${SRC_IMG}")"
 
-mkdir -p "${OUT_DIR}"
+echo "source: ${SRC_IMG} (${SRC_W}x${SRC_H}, $(du -h "${SRC_IMG}" | cut -f1))"
+echo "crop:   ${CROP} (native scale, lossless; encoded to 65 and 85 by the build)"
 
-# Crop the same patch from each, then point-scale it up. -filter point keeps the
-# blow-up faithful to the encoded pixels (no blur to hide blocking/banding).
-__crop_zoom() {
-    local in="$1" out="$2"
-    magick "${in}" -crop "${CROP}" +repage \
-        -filter point -resize "$((ZOOM * 100))%" \
-        "${out}"
-}
+mkdir -p "${OUT_DIR}" "${CONTEXT_DIR}"
 
-__crop_zoom "${NORMAL_AVIF}" "${NORMAL_CROP}"
-__crop_zoom "${HQ_AVIF}" "${HQ_CROP}"
-
-# Context shot: the full image scaled down with the crop region outlined, so a
-# reader can see where in the photo the patch came from.
+# Parse the crop geometry once; both the crop and the context rectangle need it.
 CROP_W="${CROP%%x*}"; rest="${CROP#*x}"
 CROP_H="${rest%%+*}"; rest="${rest#*+}"
 CROP_X="${rest%%+*}"; CROP_Y="${rest##*+}"
-magick "${NORMAL_AVIF}" -resize 640x \
-    -fill none -stroke red -strokewidth 3 \
-    -draw "rectangle $((CROP_X * 640 / NORMAL_W)),$((CROP_Y * 640 / NORMAL_W)) $(((CROP_X + CROP_W) * 640 / NORMAL_W)),$(((CROP_Y + CROP_H) * 640 / NORMAL_W))" \
+
+# Refuse a crop that falls outside the source rather than silently producing a
+# clipped, smaller patch than the context rectangle claims.
+if [ "$((CROP_X + CROP_W))" -gt "${SRC_W}" ] || [ "$((CROP_Y + CROP_H))" -gt "${SRC_H}" ]; then
+    echo "crop ${CROP} falls outside ${SRC_W}x${SRC_H}" >&2
+    exit 1
+fi
+
+# The crop itself: no resize, no filter, no re-encode. PNG out, so the only lossy
+# step in the whole figure is the build's AVIF encode of this file.
+magick "${SRC_IMG}" -crop "${CROP}" +repage "${CROP_PNG}"
+
+# Context shot: the full frame at native resolution with the crop region
+# outlined, so a reader can see where in the photo the patch came from. Emitted
+# full-size rather than pre-shrunk so the build's own responsive ladder decides
+# the served sizes — the same treatment every other photograph on the site gets,
+# instead of one hardcoded width that is wrong at most viewports.
+#
+# Drawn on the same source the crop comes from, in the crop's own coordinate
+# space, so there is no scaling arithmetic to get wrong and no chance of the
+# outline disagreeing with the patch.
+#
+# Stroke scaled to the image, not fixed: 3px was legible on a 640px render and
+# would be a near-invisible hairline at 4032px. It also has to survive the
+# ladder's smallest rungs, where the whole frame is 400px wide.
+STROKE=$(( SRC_W / 200 ))
+[ "${STROKE}" -lt 2 ] && STROKE=2
+
+magick "${SRC_IMG}" \
+    -fill none -stroke red -strokewidth "${STROKE}" \
+    -draw "rectangle ${CROP_X},${CROP_Y} $((CROP_X + CROP_W)),$((CROP_Y + CROP_H))" \
     "${CONTEXT}"
 
-# Labelled side-by-side panel. Labels carry the SSIMULACRA2 target each ladder
-# was encoded to, so the panel is self-explanatory. Label size scales with the
-# zoomed crop width so it stays legible at any CROP/ZOOM.
-CROP_PX="${CROP%%x*}"
-PT=$(( CROP_PX * ZOOM / 24 ))
-BAR=$(( PT * 3 / 2 ))
-magick -font "${FONT}" \
-    \( "${NORMAL_CROP}" -gravity South -background '#0008' -fill white \
-        -pointsize "${PT}" -splice "0x${BAR}" -annotate "+0+$((PT / 4))" "normal · SSIMULACRA2 65" \) \
-    \( "${HQ_CROP}" -gravity South -background '#0008' -fill white \
-        -pointsize "${PT}" -splice "0x${BAR}" -annotate "+0+$((PT / 4))" "hq · SSIMULACRA2 85" \) \
-    +smush 16 -background white -bordercolor white -border 16 \
-    "${PANEL}"
+# Labels are not burned in. The old composed panel had to carry them because it
+# was one indivisible picture; two separate images are labelled by the page
+# instead, which keeps the text selectable, translatable and legible at any size,
+# and keeps synthetic high-contrast glyphs out of a figure whose subject is
+# photographic compression.
 
 echo
-echo "wrote (PNG -> lossless WebP on build):"
-echo "  ${PANEL}            (side-by-side panel)"
-echo "  ${NORMAL_CROP}    (normal crop, ${ZOOM}x)"
-echo "  ${HQ_CROP}        (hq crop, ${ZOOM}x)"
-echo "  ${CONTEXT} (full image with crop region marked)"
+echo "wrote:"
+echo "  ${CROP_PNG}   (${CROP_W}x${CROP_H} lossless crop -> AVIF at 65 and 85)"
+echo "  ${CONTEXT} (full frame, crop region marked -> AVIF ladder)"

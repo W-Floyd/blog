@@ -81,13 +81,17 @@ The resulting four numbers live in `src/q-model.env`, which *is* committed, so a
 
 ##### Normal vs `-hq`
 
-{{< image src="media/quality-comparison-context.webp" alt="The full breadboard photo with a red rectangle marking the cropped region over the ESP8266 module" >}}
+{{< image src="media/context/quality-comparison-context.avif" alt="The full breadboard photo with a red rectangle marking the cropped region over the ESP8266 module" >}}
 
-The same patch from the highest-resolution normal and `-hq` encodes, magnified 4× with no smoothing, displayed in lossless `WEBP`:
+That patch is cropped out of the source photograph *before* anything encodes it, and then handed to the ordinary build twice — once at 65, once at 85. What you see below is those two files, served exactly as the encoder produced them: normal (SSIMULACRA2 65) on the left, `-hq` (85) on the right.
 
-{{< image src="media/quality-comparison.webp" alt="Side-by-side 4x crops of the ESP8266 module's etched text: normal (SSIMULACRA2 65) on the left, hq (SSIMULACRA2 85) on the right" >}}
+{{< figures >}}
+{{< image src="media/quality-crop.avif" alt="Crop of the ESP8266 module's etched text encoded at SSIMULACRA2 65" pin="true" pixelated="true" link="false" >}}
+{{< image src="media/quality-crop-hq.avif" alt="The same crop encoded at SSIMULACRA2 85" pin="true" pixelated="true" link="false" >}}
+{{< /figures >}}
 
-The crops come from the two 4032px encodes of the same source: {{< filesize "../smart-yogurt-maker-part-01/media/IMG_20220125_113949_cleaned-4032.avif" >}} for the normal encode vs {{< filesize "../smart-yogurt-maker-part-01/media/IMG_20220125_113949_cleaned-hq-4032.avif" >}} for the `-hq` one.
+{{< filesize "media/quality-crop.avif" >}} against {{< filesize "media/quality-crop-hq.avif" >}} for the same 240×240 patch.
+Both ship at native scale, one file pixel per encoded pixel, and your browser enlarges them with `image-rendering: pixelated`
 
 ##### As seen on this site
 
@@ -133,8 +137,12 @@ To help flavor the choice for WEBP for lossless images, here's an example:
 
 A handful of posts here have mathematical notation, and the usual way to render it in a browser is [KaTeX](https://katex.org/).
 On a fast connection you might never notice, but it's not acceptable for my goals.
-At first, I vendored KaTeX to avoid overhead, which did help, but there's a better option: `MathML`[^caniuse_mathml]
-Hugo's `transform.ToMath` can emit presentation MathML instead of KaTeX's HTML.
+At first, I vendored KaTeX to avoid overhead, which did help, but there's a better option: `MathML`.[^caniuse_mathml]
+Hugo's `transform.ToMath` can emit presentation MathML instead of KaTeX's HTML, eg:
+
+$$
+y = mx + b
+$$
 
 So 21.7 KB of CSS and roughly 275 KB of WOFF2 are gone.
 What ships now is the markup itself and a single inline CSS rule, emitted only on pages that actually contain math, giving block equations some breathing room and letting wide ones scroll instead of overflowing on a phone.
