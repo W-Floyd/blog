@@ -1,0 +1,115 @@
+#!/bin/sh
+#
+# pre-commit: block committing images that leak identifying metadata.
+#
+# Essential rendering EXIF (orientation/rotation, resolution, colour space) is
+# allowed. Anything else in EXIF — camera make/model, GPS, timestamps, serial
+# numbers, software — is rejected, as are whole IPTC / XMP / Photoshop 8BIM
+# profiles (pure metadata, nothing rendering-essential).
+#
+# Requires ImageMagick (`identify`, or `magick identify`) on PATH. The fix
+# commands it prints use `jpegtran` (lossless JPEG optimise) and `exiftool`
+# (lossless metadata edit) — both keep the pixels byte-for-byte and preserve
+# the orientation tag; nothing is re-encoded.
+#
+# Bypass for a single commit:  git commit --no-verify
+
+# Locate identify (ImageMagick 7 ships `magick identify`).
+if command -v identify >/dev/null 2>&1; then
+	IDENTIFY="identify"
+elif command -v magick >/dev/null 2>&1; then
+	IDENTIFY="magick identify"
+else
+	printf >&2 "pre-commit: ImageMagick 'identify' not found on PATH; skipping image metadata check.\n"
+	exit 0
+fi
+
+# Whole profiles we never want committed (no rendering-essential data).
+DISALLOWED_PROFILES="iptc xmp 8bim"
+
+# EXIF tags that are safe to keep — rendering/orientation, not identifying.
+# Matched case-insensitively against the tag name (the part after "exif:").
+# Anything NOT listed here is treated as a leak and blocks the commit.
+ALLOWED_EXIF="orientation \
+	xresolution yresolution resolutionunit ycbcrpositioning \
+	colorspace gamma \
+	pixelperunitx pixelperunity pixelunit \
+	iccprofiledescriptor"
+
+bad=""
+fixes=""
+
+# Staged added/copied/modified files (newline-delimited; `IFS= read -r`
+# preserves spaces).
+while IFS= read -r file; do
+	[ -n "$file" ] || continue
+	case "$file" in
+	*.jpg | *.jpeg | *.JPG | *.JPEG \
+	| *.png | *.PNG \
+	| *.webp | *.WEBP \
+	| *.avif | *.AVIF \
+	| *.tif | *.tiff | *.TIF | *.TIFF) ;;
+	*) continue ;;
+	esac
+
+	# Skip paths not present in the working tree.
+	[ -f "$file" ] || continue
+
+	leaks=""
+
+	# 1. Disallowed whole profiles.
+	profiles=$($IDENTIFY -format '%[profiles]' "$file" 2>/dev/null)
+	for p in $DISALLOWED_PROFILES; do
+		case ",$profiles," in
+		*",$p,"*) leaks="$leaks $p" ;;
+		esac
+	done
+
+	# 2. EXIF tags not on the allowlist.
+	case ",$profiles," in
+	*",exif,"*)
+		# Each tag line looks like:  exif:Make=Canon
+		exif_leaks=$(
+			$IDENTIFY -format '%[exif:*]' "$file" 2>/dev/null \
+				| while IFS= read -r line; do
+					tag=${line#exif:}
+					tag=${tag%%=*}
+					[ -n "$tag" ] || continue
+					ltag=$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]')
+					for ok in $ALLOWED_EXIF; do
+						[ "$ltag" = "$ok" ] && continue 2
+					done
+					printf 'exif:%s ' "$tag"
+				done
+		)
+		[ -n "$exif_leaks" ] && leaks="$leaks $exif_leaks"
+		;;
+	esac
+
+	if [ -n "$leaks" ]; then
+		bad="$bad\n  $file →$leaks"
+
+		# Exact, copy-pasteable fix command for this file. JPEGs get a lossless
+		# jpegtran optimise + strip, then orientation copied back; everything
+		# else gets a lossless exiftool metadata strip (orientation preserved).
+		case "$file" in
+		*.jpg | *.jpeg | *.JPG | *.JPEG)
+			fixes="$fixes\n  jpegtran -optimize -progressive -copy none \"$file\" > \"$file.opt\" && exiftool -tagsFromFile \"$file\" -Orientation -overwrite_original \"$file.opt\" && mv \"$file.opt\" \"$file\" && git add \"$file\"" ;;
+		*)
+			fixes="$fixes\n  exiftool -all= -tagsFromFile @ -Orientation -overwrite_original \"$file\" && git add \"$file\"" ;;
+		esac
+	fi
+done <<EOF2
+$(git diff --cached --name-only --diff-filter=ACM)
+EOF2
+
+if [ -n "$bad" ]; then
+	printf >&2 "\npre-commit: the following staged images leak identifying metadata:\n"
+	printf >&2 "$bad\n\n"
+	printf >&2 "Run these to strip it losslessly (keeps orientation, re-stages the file):\n"
+	printf >&2 "$fixes\n\n"
+	printf >&2 "Or bypass this check with: git commit --no-verify\n\n"
+	exit 1
+fi
+
+exit 0
