@@ -34,14 +34,14 @@ And so it was that we began brainstorming.
 
 ***
 
-{{< image src="media/20190919_143530.avif" alt="Laying the groundwork" >}}
+{{< image src="media/20190919_143530.avif" title="Laying the groundwork" alt="Laying the groundwork - two smooth steel rods and a threaded leadscrew held in 3D-printed end plates on wood, a blue servo and zip tie nearby" >}}
 The idea was fairly simple - use two smooth rods and a leadscrew to pull a carriage against springs that would then somehow fire the fishing weight.
 The choice of this mechanism was, for the most part, due to availability of parts.
 I already owned the necessary rods and bearings, and springs were readily available.
 
 ***
 
-{{< image src="media/20190919_224711.avif" alt="First print" >}}
+{{< image src="media/20190919_224711.avif" title="First print" alt="First print - a leadscrew and two guide rods clamped in an orange 3D-printed carriage with a brass nut on a desk" >}}
 Soon, we had [some](media/20190919_213947-4032.avif) basic 3D printed parts in order - for it was 3D printing that was most accessible to us, and allowed largely unattended manufacturing while classes continued.
 Despite this early start of progress, however, the ever present tendency toward procrastination crept in.
 The usual array of excuses were made by all, and little actual work was accomplished.
@@ -55,7 +55,7 @@ Nor was it realistic for us to budget a baitcasting reel instead of a much cheap
 
 ***
 
-{{< image src="media/20191010_152148.avif" alt="T'was but a Fanta-sea" >}}
+{{< image src="media/20191010_152148.avif" title="T'was but a Fanta-sea" alt="T'was but a Fanta-sea - an orange 3D-printed frame holding two coil springs on rods and a leadscrew driven by a black stepper motor" >}}
 Eventually, however, some progress was made - progress in something of a wrong direction, but progress nonetheless.
 As the shape of our ungainly creation began to emerge, it was clear progress needed to be made quickly.
 Once we coupled our stepper motor to the leadscrew and power tested the unit, it was also clear that change was in order.
@@ -65,7 +65,7 @@ An H-Bridge would need to be bought for the drill motor (I [tried to](media/2019
 
 ***
 
-{{< image src="media/20191110_014623.avif" alt="Latching Track Installed" >}}
+{{< image src="media/20191110_014623.avif" title="Latching Track Installed" alt="Latching Track Installed - a hand holds a white 3D-printed launch mechanism with compressed springs, leadscrew and latching track over a lap" >}}
 The next week or so resulted in the beginnings of a working launch mechanism.
 With the aid of a rubber band, a latching track was put under the rods and springs, such that the motor would tension the launching carriage, then return to the front of the mechanism to allow the eventual release of the catch using a servo.
 Soon after this, the motor was [appropriately mounted to the frame](media/20191110_072012-3024.avif), with a carefully fit 3D printed socket.
@@ -81,7 +81,7 @@ The end was near, or so it seemed.
 
 ***
 
-{{< image src="media/20191115_090125.avif" alt="Reel Mounted" >}}
+{{< image src="media/20191115_090125.avif" title="Reel Mounted" alt="Reel Mounted - a white 3D-printed contraption with a mounted fishing reel and cordless-drill battery on carpet, a 3D printer behind it" >}}
 Following soon after was the reel being mounted to the device also.
 Attempts were made to use a small DC motor, but with no luck.
 The lateral pressure of our motor acting through a belt meant friction was too much for our motor.
@@ -91,7 +91,7 @@ Remaining at this point was a means of reeling in the line, a means of depressin
 
 ***
 
-{{< image src="media/20191118_032416.avif" alt="Plenty of Torque" >}}
+{{< image src="media/20191118_032416.avif" title="Plenty of Torque" alt="Plenty of Torque - side view of the white launcher with a stepper motor driving a large belt pulley and a spring-loaded rail, wires trailing on carpet" >}}
 As it turned out, the very same stepper motor that had once tried to turn our leadscrew now instead would be pressed into service reeling in the line.
 Overkill, to be sure, and its power most wastefully used, it did indeed reliably turn our reel, albeit slowly.
 The use of such a large pulley was a matter of making it fit the belt size that I had available.
@@ -100,7 +100,7 @@ This saved the most time 3D printing as compared to a smaller pulley with other 
 
 ***
 
-{{< image src="media/20191120_224129.avif" alt="It'll Send You Reeling!" >}}
+{{< image src="media/20191120_224129.avif" title="It'll Send You Reeling!" alt="It'll Send You Reeling! - the finished white 3D-printed fishing caster with springs, stepper motor, belt and pulley on a table against a tan wall" >}}
 Finally, the mechanics of the project were completed, with each component individually power tested, though not yet in tandem with one another.
 As all of this was coming about, I had also begun getting the electronics in order.
 A limit switch was installed to keep the motor from destroying the machine.

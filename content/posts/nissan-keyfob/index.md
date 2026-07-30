@@ -30,12 +30,12 @@ I am reluctant to tap into the CAN bus directly, so instead I am going to invest
 
 # The Hardware
 
-{{< image src="media/fob/opened.avif" alt="Opened remote" >}}
+{{< image src="media/fob/opened.avif" title="Opened remote" alt="Opened remote - key fob split into two black halves, one showing the green circuit board and the other its coin cell battery, joined by a split ring" >}}
 
 While I may analyze the original fob at some point, for the time being I shall work from the aftermarket fob.
 Opening the casing reveals a rather simple circuit ([front](media/fob/pcb_front-4032.avif), [back](media/fob/pcb_back-4032.avif)) - battery contacts, four buttons, a smattering of passives, an oscillator, the main control chip, 8 test points, and an antenna trace running around the perimeter of the PCB.
 
-{{< image src="media/fob/closeup.avif" alt="Closeup" >}}
+{{< image src="media/fob/closeup.avif" title="Closeup" alt="Closeup - angled macro of the green fob circuit board showing metal battery contacts, a gold antenna pad, a crystal oscillator, and small black chips" >}}
 
 Rather unhelpfully, the control IC is unmarked, so either I'll need to wait until I can look at the original fob to find any clues, or try to find what I need online.
 
@@ -62,7 +62,7 @@ With this information in hand, I ordered a cheap RTL-SDR (a Nooelec NESDR Mini 2
 
 # SDR Analysis
 
-{{< image src="media/4_locks.webp" alt="4 Presses of the Locking Key" >}}
+{{< image src="media/4_locks.webp" title="4 Presses of the Locking Key" alt="4 Presses of the Locking Key - four similar clusters of dark radio-signal bursts along a flat horizontal waveform on a light background" >}}
 
 The radio, being a North American model, operates at 315MHz.
 Using Universal [Radio Hacker](https://github.com/jopohl/urh), I began capturing examples of locking and unlocking signals.
@@ -112,7 +112,7 @@ In any case, this extra trailing bit is always 0.
 
 Finally we have something like this:
 
-{{< image src="media/decoded.webp" alt="Decoded data" >}}
+{{< image src="media/decoded.webp" title="Decoded data" alt="Decoded data - spreadsheet of eight numbered rows of 1s and 0s across 67 columns, with yellow, green, red, and blue color-coded segments" >}}
 
 The top four entries are when locking, the bottom four when unlocking.
 The highlighted segments from left to right, as per the technical document, are:
@@ -131,9 +131,9 @@ What we know now is that the keyfob does indeed use a rolling code algorithm, th
 
 I do not have access to the original keyfob at this time, so some image searching may be in order.
 Several leads appeared, but the main one was this:
-<!-- {{< image src="media/research/alt_1.avif" alt="Different model fob with same compatibility" >}} -->
-{{< image src="media/research/alt_2.avif" alt="Pre-owned OEM fob" >}}
-<!-- {{< image src="media/research/alt_3.avif" alt="Similar model to mine" >}} -->
+<!-- {{< image src="media/research/alt_1.avif" title="Different model fob with same compatibility" alt="Different model fob with same compatibility - front and back of a green three-button fob board with a CnAutoKey watermark logo" >}} -->
+{{< image src="media/research/alt_2.avif" title="Pre-owned OEM fob" alt="Pre-owned OEM fob - front and back views of a green circuit board beside a gray text box describing an OEM pre-owned board" >}}
+<!-- {{< image src="media/research/alt_3.avif" title="Similar model to mine" alt="Similar model to mine - front and back of a green fob board, the front with four yellow buttons and NI-015 NI-018 markings, the back with battery contacts" >}} -->
 
 None of the text appears especially legible, so the first thing I can do is compare the logo on the OEM fob to existing rolling code chip manufacturers.
 As it happens, Microchip is the company in question, producing the widely documented KeeLoq product line ([leaked spec sheet](http://keeloq.narod.ru/decryption.pdf)).

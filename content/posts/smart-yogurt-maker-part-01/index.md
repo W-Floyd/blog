@@ -77,12 +77,12 @@ $$
 
 In my case, I found the points of reference using a setup like so:
 
-{{< image src="media/IMG_20220124_174144.avif" alt="Measuring water temperature and thermistor resistance" >}}
+{{< image src="media/IMG_20220124_174144.avif" title="Measuring water temperature and thermistor resistance" alt="Measuring water temperature and thermistor resistance - desk with a rice cooker pot, two orange digital multimeters reading 33 C and 81.0, laptop, keyboard, and an ESP8266 board" >}}
 Do note that in order to reach a full boil (and $100^\circ \text{C}$ on the thermocouple), the lid of the rice cooker was attached.
 
 While I could show the calculations, and they wouldn't be difficult, I'll be honest: I used an [online calculator](https://www.thinksrs.com/downloads/programs/therm%20calc/ntccalibrator/ntccalculator.html).
 
-{{< image src="media/calc.webp" alt="Calculator results" >}}
+{{< image src="media/calc.webp" title="Calculator results" alt="Calculator results - SRS Thermistor Calculator screenshot with resistance-temperature inputs, computed Steinhart-Hart and beta coefficients, and a resistance-versus-temperature curve" >}}
 Using the measurements:
 
 $$
@@ -127,7 +127,7 @@ In the meantime, a Wemos D1 Mini on a breadboard is ready to go (they're cheap a
 I wire it up with a $6.8\text{k}\Omega$ resistor (what I had handy), and away I went.
 The circuit looks something like this, where the two trailing wires connect to the thermistor bank:
 
-{{< image src="media/IMG_20220125_114006_cleaned.avif" alt="Wired breadboard" >}}
+{{< image src="media/IMG_20220125_114006_cleaned.avif" title="Wired breadboard" alt="Wired breadboard - an ESP8266 WiFi board on a green mini breadboard with a resistor and blue, black, and yellow jumper wires" >}}
 To prevent confusion, here is my final working config, then I'll explain.
 
 ```yaml
@@ -209,7 +209,7 @@ $$
 
 Further tuning is required, but this held well overnight - mostly...
 
-{{< image src="media/log.webp" alt="First overnight test" >}}
+{{< image src="media/log.webp" title="First overnight test" alt="First overnight test - Home Assistant history plot of rice cooker temperature holding near 105 F from 4am to 11am with periodic spikes above 110" >}}
 I did change the set point from $105^\circ\text{F}$ to $107^\circ\text{F}$ halfway through, as well as tweaked some of the PID tuning.
 The concerning spike at 9:00 is marked by a momentary loss of connection with the ESP board - my automation failed to account for a loss of connection and so allowed the heat to continue rising.
 Thankfully, this was a short-lived event, but it is concerning nonetheless, and will require testing of my automation to prove that power loss tends towards a "safer" outcome.
@@ -222,12 +222,12 @@ I am notoriously _not_ picky when it comes to food, but I think it turned out gr
 Filling the rice cooker about halfway with whole milk, I heated it to $180^\circ \text{F}$ for a few minutes (I read I ought to go for longer...), cooled to about $110^\circ \text{F}$, then added a liberal few spoonfuls (think 1/5 volume of milk) of plain Dannon yogurt.
 I let it proof in the rice cooker for 7.5 hours, with the lid sealed.
 
-{{< image src="media/IMG_20220125_105918.avif" alt="First batch, still warm" >}}
+{{< image src="media/IMG_20220125_105918.avif" title="First batch, still warm" alt="First batch, still warm - overhead view of set white yogurt filling the rice cooker pot on a desk, with a twisted thermistor wire, spoon, and wire strippers nearby" >}}
 I put the whole rice cooker in the fridge to cool, with the lid sealed.
 Trying it later that same evening, I quite enjoyed it.
 I'll start my next batch from this one, and hopefully it'll be even better.
 
-{{< image src="media/IMG_20220125_180035.avif" alt="Spoonful of the good stuff" >}}
+{{< image src="media/IMG_20220125_180035.avif" title="Spoonful of the good stuff" alt="Spoonful of the good stuff - a spoon lifting thick creamy white yogurt held above the black rice cooker pot full of set yogurt" >}}
 # "Next time, on Rice Cooker Adventures"
 
 Now that I have a temperature controllable rice-cooker, and the ability to remotely start, stop, and modify set points, I may try other foods.
