@@ -27,13 +27,13 @@ I got so far as adding a sleek new brand name model to my Amazon cart, but thank
 Instead, I opted to swing by the local Goodwill the next day, to see what secondhand options might be available.
 As luck would have it, I found a no-frills, single button coffee maker for the princely sum of $4, and I was on my merry way.
 
-{{< image src="media/20200610_204856.avif" alt="The Spoils of Goodwill" >}}
+{{< image src="media/20200610_204856.avif" title="The Spoils of Goodwill" alt="The Spoils of Goodwill - a black Hamilton Beach single-serve coffee maker with its power cord coiled on a hardwood floor" >}}
 
 ***
 
 Later that evening, opening the black box up (thankfully I had the correct triangular screwdriver head), I found very easily hackable innards.
 
-{{< image src="media/20200610_205351.avif" alt="Poor lighting is the worst..." >}}
+{{< image src="media/20200610_205351.avif" title="Poor lighting is the worst..." alt="Poor lighting is the worst... - the opened black base of the coffee maker showing a small green control PCB and a ribbon of wires inside" >}}
 
 The control board ([front](media/20200610_205847-3024.avif), [back](media/20200610_205841-3024.avif)) is very simple - two buttons in parallel, an LED, and a couple resistors.
 I'm not quite sure what the logic is upstream (it un/latches on each press), but the buttons short to ground, and this is something I can work with.
@@ -41,16 +41,16 @@ The control board has wires for ground, signal, and 5V, in that order.
 
 The ordeal of hacking into the thing, and my missteps trying to do so, is rather boring really, but it produced this:
 
-{{< image src="media/20200702_120309.avif" alt="Interception!" >}}
+{{< image src="media/20200702_120309.avif" title="Interception!" alt="Interception! - close-up of the green control board's underside with white and black wires soldered onto its traces" >}}
 
-{{< image src="media/20200702_120302.avif" alt="Perfboard" >}}
+{{< image src="media/20200702_120302.avif" title="Perfboard" alt="Perfboard - a hand holding an orange perfboard with a blue logic level converter module and a couple of resistors, colored wires attached" >}}
 
-{{< image src="media/20200702_120328.avif" alt="D1 Mini" >}}
+{{< image src="media/20200702_120328.avif" title="D1 Mini" alt="D1 Mini - fingers holding a blue Wemos D1 Mini ESP8266 board with red, white, and blue jumper wires soldered to its pins" >}}
 
 The brains I added was a Wemos D1 Mini (thanks, Aliexpress!), with a 3.3V<->5V converter between to sense when the coffee maker is on, and also turn on a mosfet to short the button to ground.
 I initially had issues with the coffee maker turning on whenever I plugged the D1 Mini in, but a pulldown resistor solved this.
 
-{{< image src="media/20200702_120334.avif" alt="External USB Plug" >}}
+{{< image src="media/20200702_120334.avif" title="External USB Plug" alt="External USB Plug - a black USB cable plugged into a port mounted in the coffee maker's base, with the wired D1 Mini board visible inside" >}}
 
 I also opted for an external USB plug - this allows me to possibly reflash this without opening the enclosure, and also meant I did not need to splice into the mains line inside, which I was reluctant to do.
 

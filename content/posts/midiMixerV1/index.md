@@ -27,7 +27,7 @@ But in the back of my head I still wanted to build some hardware to help with th
 
 ***
 
-{{< image src="media/handwired/20190811_004928.avif" alt="Orange Sherbet Dreams" >}}
+{{< image src="media/handwired/20190811_004928.avif" title="Orange Sherbet Dreams" alt="Orange Sherbet Dreams - hand holding an orange 3D-printed block with eight potentiometers in two rows, white and orange pointer knobs" >}}
 This eventually came about in the summer of 2019, when I finally hand-wired a simple 8 knob control surface.
 Truth be told, I actually built two.
 The [first one](media/handwired/20190811_005806-4032.avif) had some issues (I wonder why...?), and would sporadically jitter values.
@@ -40,14 +40,14 @@ This would come to change, however, in April of 2020.
 
 ***
 
-{{< image src="media/v1/20200506_152328.avif" alt="It's Not Easy, Being Green" >}}
-{{< image src="media/v1/20200506_152317.avif" alt="Look Mum, Open Hardware!" >}}
+{{< image src="media/v1/20200506_152328.avif" title="It's Not Easy, Being Green" alt="It's Not Easy, Being Green - bare green PCB, front side, silkscreen labels RV1 to RV8, U1 and a Sparkfun Pro Micro footprint" >}}
+{{< image src="media/v1/20200506_152317.avif" title="Look Mum, Open Hardware!" alt="Look Mum, Open Hardware! - back of the bare green PCB with copper traces, open-hardware gear logo, and midiMixer v1.0 William Floyd 2020 silkscreen" >}}
 Fast forward close to a year, and here we are - toilet paper is the currency of the quickly collapsing Covid19 crazed world, and I'm back with my grandparents for the remainder of my semester (which, as of writing, is all but concluded).
 Finding my lack of a social life leaving me with a little bit more free time, and being home yielding a *lot* more distractions, I learned the basics of KiCAD from YouTube, and set out to design a simple PCB.
 My old MIDI controller project came to mind, so I set myself to it, and within a few days had my first Gerber files sent off to JLCPCB.
 In reality, I should have waited a bit and done a couple more design iterations before committing, but I guess $7 is the price of impatience.
 
-{{< image src="media/v1/20200506_151852.avif" alt="One In Hand" >}}
+{{< image src="media/v1/20200506_151852.avif" title="One In Hand" alt="One In Hand - hand holding the assembled board with a blue Pro Micro, black CD4051BE chip, eight black knobs and orange 3D-printed clamps" >}}
 So it was that my crisp PCBs showed up 3 weeks later - I had one assembled within the hour, and my old code dusted off and flashed within two hours.
 It's really as simple as it gets - a [Pro Micro](media/v1/20200506_152023-3024.avif) hooked up to a [4051 analogue multiplexer](media/v1/20200506_152016-4032.avif), in turn hooked up to 8 potentiometers.
 
@@ -58,7 +58,7 @@ Should the correct potentiometers be used, these would not be needed, though som
 
 ***
 
-{{< image src="media/v1/20200506_152248.avif" alt="It Ain't Much, But I'm Proud" >}}
+{{< image src="media/v1/20200506_152248.avif" title="It Ain't Much, But I'm Proud" alt="It Ain't Much, But I'm Proud - the bare green PCB beside the finished mixer with eight black knobs and a blue Pro Micro, on white" >}}
 This being my first PCB design, I am quite happy it worked out so well - I am studying for Mechanical Engineering, not Electrical...
 However, I see room for improvement.
 The potentiometers are too close together, and the rows are too far apart.
@@ -66,4 +66,4 @@ The knobs barely clear the Arduino, and the Arduino is mounted far higher off th
 I see myself making a v2 in due course - perhaps next time I will try JLCPCB's SMT assembly?
 I imagine adding indicator LEDs, improving the layout, and adding a button to switch between banks would make this much more useful.
 
-{{< image src="media/v1/20200506_151947.avif" alt="That Hair Is Bothering Me" >}}
+{{< image src="media/v1/20200506_151947.avif" title="That Hair Is Bothering Me" alt="That Hair Is Bothering Me - top-down view of the assembled mixer, eight black knobs in two rows, blue Pro Micro and orange clamps" >}}
