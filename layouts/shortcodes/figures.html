@@ -1,0 +1,72 @@
+{{- /*
+  figures: lay out two (or more) {{< image >}} shortcodes side by side.
+
+  They sit in a flex row sized to the same height, filling the row's horizontal
+  space at every width, including on mobile. Each image's width is proportional
+  to its aspect ratio so they share a uniform height. The small stylesheet is
+  emitted once per page.
+
+  `sizes` is handled automatically: each image's sizes attribute is rewritten to
+  its proportional share of the row based on aspect ratio (relative to 100vw on
+  mobile and ~860px on desktop) so callers never pass `sizes` themselves. (Any
+  sizes set on an inner image is overwritten.)
+
+  Usage:
+    {{< figures >}}
+    {{< image src="media/a.avif" alt="..." >}}
+    {{< image src="media/b.avif" alt="..." >}}
+    {{< /figures >}}
+*/ -}}
+{{- if not (.Page.Store.Get "figuresCSS") -}}
+<style>.figure-row{display:flex;gap:1rem;margin:1rem 0;align-items:flex-start}.figure-row>*{min-width:0;margin:0}.figure-row a{display:block}.figure-row img{display:block;width:100%;height:auto;margin:0 !important}.figure-row .rimg-rot{margin:0 !important;max-width:none !important}</style>
+{{- .Page.Store.Set "figuresCSS" true -}}
+{{- end -}}
+{{- $raw := printf "%s" .Inner -}}
+{{- $clean := replaceRE `(?s)</?p[^>]*>` "" $raw -}}
+{{- $itemPattern := `(?s)(?:<a\b[^>]*>.*?</a>|<span class="rimg-rot"[^>]*>.*?</span>|<img\b[^>]*>(?:<noscript>.*?</noscript>)?)` -}}
+{{- $items := findRE $itemPattern $clean -}}
+{{- $count := len $items -}}
+{{- if eq $count 0 -}}
+<div class="figure-row">{{ $raw | safeHTML }}</div>
+{{- else -}}
+  {{- $ratios := slice -}}
+  {{- $totalRatio := 0.0 -}}
+  {{- range $items -}}
+    {{- $ar := 1.0 -}}
+    {{- $rotMatch := findRESubmatch `aspect-ratio:([0-9]+)/([0-9]+)` . -}}
+    {{- if gt (len $rotMatch) 0 -}}
+      {{- $rw := float (index (index $rotMatch 0) 1) -}}
+      {{- $rh := float (index (index $rotMatch 0) 2) -}}
+      {{- if gt $rh 0.0 -}}
+        {{- $ar = div $rw $rh -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $wMatch := findRESubmatch `<img[^>]*\bwidth="([0-9]+)"` . -}}
+      {{- $hMatch := findRESubmatch `<img[^>]*\bheight="([0-9]+)"` . -}}
+      {{- if and (gt (len $wMatch) 0) (gt (len $hMatch) 0) -}}
+        {{- $w := float (index (index $wMatch 0) 1) -}}
+        {{- $h := float (index (index $hMatch 0) 1) -}}
+        {{- if gt $h 0.0 -}}
+          {{- $ar = div $w $h -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $ratios = $ratios | append $ar -}}
+    {{- $totalRatio = add $totalRatio $ar -}}
+  {{- end -}}
+  {{- if le $totalRatio 0.0 -}}
+    {{- $totalRatio = float $count -}}
+  {{- end -}}
+<div class="figure-row">
+  {{- range $i, $item := $items -}}
+    {{- $ar := index $ratios $i -}}
+    {{- $share := div $ar $totalRatio -}}
+    {{- $vw := math.Max 1 (int (math.Round (mul 100.0 $share))) -}}
+    {{- $px := math.Max 1 (int (math.Round (mul 860.0 $share))) -}}
+    {{- $sz := printf "(max-width: 768px) %dvw, %dpx" $vw $px -}}
+    {{- $item = replaceRE `sizes="[^"]*"` (printf `sizes="%s"` $sz) $item -}}
+    <div style="flex: {{ printf "%.4f" $ar }} 1 0%; min-width: 0;">{{ $item | safeHTML }}</div>
+  {{- end -}}
+</div>
+{{- end -}}
+
