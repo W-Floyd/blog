@@ -25,6 +25,7 @@ __hashfunc='sha256sum'
 # here would change every hash and force a full re-encode of the whole site.
 #
 __dry_run='false'
+__rehash='false'
 __prune='true'
 __reference_gate='true'
 
@@ -52,6 +53,11 @@ Options:
       --no-prune  Generate as usual, but delete nothing.
       --no-gate   Ignore references entirely: build everything, prune nothing
                   (the pre-reference-gating behaviour).
+      --rehash    Encode nothing: for each referenced source whose outputs all
+                  exist, rewrite its .hash to match the source as it is now.
+                  For a lossless source change (metadata strip, jpegtran) that
+                  leaves the pixels alone; the existing outputs are assumed
+                  still valid. A source with outputs missing is left alone.
       --refit-interval N
                   Re-fit the quality-seed model every N encodes during the build
                   (default 1 — every encode; 0 for start/end of build only).
@@ -62,6 +68,7 @@ EOF
 while [ "${#}" -gt 0 ]; do
     case "${1}" in
         -n | --dry-run) __dry_run='true' ;;
+        --rehash) __rehash='true' ;;
         --no-prune) __prune='false' ;;
         --no-gate)
             __reference_gate='false'
@@ -1325,6 +1332,21 @@ __process_generic_image() {
 
         if ! __check_file "${__source_file}"; then
 
+            # --rehash: bless the existing outputs against the changed source,
+            # and never encode.
+            if [ "${__rehash}" == 'true' ]; then
+                if ! __outputs_exist "${__source_file}"; then
+                    echo "Not rehashing (outputs missing): ${__source_file}"
+                elif [ "${__dry_run}" == 'true' ]; then
+                    echo "Would rehash: ${__source_file}"
+                else
+                    echo "Rehashing: ${__source_file}"
+                    echo "$(__hash_env)" >"$(__get_hash_file "${__source_file}")"
+                fi
+                unset FILE_HASH
+                continue
+            fi
+
             # Classify once per source rather than per ladder rung: the probe
             # reads a histogram, and every rung of one source gets the same
             # answer anyway. Plain variable, so the parallel encode subshells
@@ -1670,6 +1692,17 @@ __prune_outputs() {
 
     rm -f "${__expected}" "${__candidates}"
 
+}
+
+# __outputs_exist <source>
+#
+# Succeeds if every output predicted for <source> is on disk.
+__outputs_exist() {
+    local __target
+    while read -r __target; do
+        [ -e "${__target}" ] || return 1
+    done < <(__predict_targets "${1}" | sed '/^$/d')
+    return 0
 }
 
 ########################################
