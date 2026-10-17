@@ -1,0 +1,127 @@
+{{- /*
+  immich-video: click-to-load video from a public Immich shared link. Nothing
+  but a small poster is fetched until the reader clicks, then it streams via
+  Immich's realtime-transcode HLS (hls.js from cdnjs, loaded on click),
+  falling back to the stored MP4 where hls.js is unsupported or errors. The
+  HLS rung follows the site's low/med/hi toggle (coder.js, `imagequality`):
+  480p / 720p / 1080p, taking the cheapest codec hls.js can play at that size.
+  Flipping the toggle mid-playback moves an HLS video to the nearest level at the
+  next segment boundary (hls.js nextLevel); the MP4 fallback is one file and
+  can't change.
+  Playback uses a custom control bar (play, seek, time, mute, quality, fullscreen).
+  The JS/CSS must avoid `<p` and `</div>`: {{< figures >}} strips <p> tags and
+  cuts items at the first closing div.
+  A hidden data-rimg marker image makes coder.js show the toggle on pages whose
+  only managed image is a video; the poster itself is deliberately not marked,
+  since coder.js would restore its stashed src and fight the poster switch.
+  The card shows an estimated download size for the active tier, computed at
+  build time from Immich's playlist bitrates and the asset duration.
+  Every instance carries the style and script inside its own wrapper div (the
+  script runs once, behind a window flag). Deliberately stateless: a once-per-page
+  gate via Page.Store/Scratch is unreliable under `hugo serve` (content is also
+  rendered for summaries/metadata, and the gate fires on the wrong pass), and
+  {{< figures >}} keeps only recognised items so anything outside the div is
+  dropped. Give videos in a figure a `ratio` so figures can size them.
+
+    id     required. Asset id.
+    slug   required. Shared-link slug.
+    muted  optional. "true" starts the video muted.
+    poster optional. Pin the Immich poster size: "preview" (1440px) or
+           "thumbnail" (250px, ~10x smaller). Unset, the poster follows the
+           quality toggle: low = thumbnail, med/hi = preview (Immich's
+           "fullsize" just redirects to preview for videos).
+    ratio  optional. Poster aspect ratio (e.g. "9/16") to reserve space and
+           avoid layout shift while the poster loads.
+*/ -}}
+{{- $id := .Get "id" -}}
+{{- $slug := .Get "slug" -}}
+{{- $muted := eq (.Get "muted") "true" -}}
+{{- $base := printf "https://immich.notmy.space/api/assets/%s" $id -}}
+{{- /* Build-time size estimate per tier: bitrate of the cheapest level x duration. Omitted if Immich is unreachable. */ -}}
+{{- $dur := 0.0 -}}
+{{- with try (resources.GetRemote (printf "https://immich.notmy.space/api/shared-links/me?slug=%s" $slug)) -}}
+  {{- with .Value -}}
+    {{- range (.Content | transform.Unmarshal).assets -}}
+      {{- if eq .id $id }}{{ $dur = div (float .duration) 1000 }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $bw := dict -}}
+{{- with try (resources.GetRemote (printf "%s/video/stream/main.m3u8?slug=%s" $base $slug)) -}}
+  {{- with .Value -}}
+    {{- range findRESubmatch `BANDWIDTH=(\d+),RESOLUTION=(\d+)x(\d+)` .Content -}}
+      {{- $b := float (index . 1) -}}
+      {{- $k := string (int (math.Min (float (index . 2)) (float (index . 3)))) -}}
+      {{- if or (not (isset $bw $k)) (lt $b (index $bw $k)) }}{{ $bw = merge $bw (dict $k $b) }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+<div class="immich-video">
+<style>
+.immich-video{position:relative;width:100%;margin:2rem auto;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.25);container-type:inline-size}
+.immich-video .iv-load{all:unset;display:block;width:100%;cursor:pointer}
+.immich-video img,.immich-video video{display:block;width:100%;height:auto;margin:0 auto !important;border-radius:0 !important;box-shadow:none !important}
+.immich-video img[hidden]{display:none!important}
+.immich-video .iv-load span{position:absolute;inset:auto 0 50% 0;margin:0 auto;width:fit-content;padding:.6rem 1.2rem;border-radius:999px;background:rgba(0,0,0,.7);color:#fff;font-size:1.6rem}
+.immich-video small{font-size:.8em;opacity:.8}
+.immich-video .iv-load:hover span,.immich-video .iv-load:focus-visible span{background:rgba(0,0,0,.9)}
+.iv-bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:.8rem;padding:2.4rem 1rem .8rem;background:linear-gradient(transparent,rgba(0,0,0,.8));color:#fff;opacity:0;transition:opacity .2s}
+.immich-video:hover .iv-bar,.immich-video:focus-within .iv-bar,.immich-video.iv-paused .iv-bar{opacity:1}
+.iv-btn,.iv-q{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;border-radius:4px}
+.iv-btn{width:3.2rem;height:3.2rem}
+.iv-btn svg{width:2.4rem;height:2.4rem}
+.iv-q{height:3.2rem;padding:0 .6rem;font-size:1.3rem;font-weight:600}
+.iv-q[hidden]{display:none}
+.iv-btn:focus-visible,.iv-q:focus-visible{outline:2px solid #fff}
+.iv-seek{flex:1;min-width:0;margin:0;accent-color:#fff;cursor:pointer}
+.iv-time{flex:none;font-size:1.3rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+@container (max-width:420px){.iv-time{display:none}}
+.immich-video:fullscreen,.immich-video:-webkit-full-screen{width:100%;height:100%;margin:0;border-radius:0;background:#000;display:flex;align-items:center;justify-content:center}
+.immich-video:fullscreen video,.immich-video:-webkit-full-screen video{width:auto;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+</style>
+<script>
+if(!window.immichVideo){window.immichVideo=1;
+var SVGNS="http://www.w3.org/2000/svg";
+var ICONS={play:{f:1,d:["M8 5v14l11-7z"]},pause:{f:1,d:["M6 5h4v14H6zM14 5h4v14h-4z"]},vol:{f:1,d:["M3 9v6h4l5 5V4L7 9z","M16 8.5a5 5 0 0 1 0 7","M19 6a9 9 0 0 1 0 12"]},mute:{f:1,d:["M3 9v6h4l5 5V4L7 9z","M16 9l5 6","M21 9l-5 6"]},fs:{f:0,d:["M5 9V5h4","M15 5h4v4","M19 15v4h-4","M9 19H5v-4"]}};
+function tier(){var m=document.body.dataset.imageMode;try{m=m||localStorage.getItem("imagequality")}catch(x){}return{low:480,med:720,hi:1080}[m]||720}
+function pick(L,t){var k=-1,g=1e9;L.forEach(function(l,i){var s=Math.min(l.width,l.height),n=Math.abs(s-t);if(n<g||n===g&&l.bitrate<L[k].bitrate){g=n;k=i}});return k}
+function ic(n){var a=ICONS[n],s=document.createElementNS(SVGNS,"svg");s.setAttribute("viewBox","0 0 24 24");a.d.forEach(function(d,i){var e=document.createElementNS(SVGNS,"path");e.setAttribute("d",d);if(a.f&&i===0){e.setAttribute("fill","currentColor")}else{e.setAttribute("fill","none");e.setAttribute("stroke","currentColor");e.setAttribute("stroke-width","2");e.setAttribute("stroke-linecap","round");e.setAttribute("stroke-linejoin","round")}s.appendChild(e)});return s}
+function el(t,c,l){var e=document.createElement(t);if(c)e.className=c;if(l)e.setAttribute("aria-label",l);return e}
+function btn(c,l){var b=el("button",c,l);b.type="button";return b}
+function setIc(b,n){b.textContent="";b.appendChild(ic(n))}
+function fmt(s){if(!isFinite(s))return"0:00";var m=Math.floor(s/60),x=Math.floor(s%60);return m+":"+(x>9?"":"0")+x}
+function controls(box,v){
+var bar=el("div","iv-bar"),pl=btn("iv-btn","Play"),sk=el("input","iv-seek","Seek"),tm=el("span","iv-time"),mu=btn("iv-btn","Mute"),q=btn("iv-q","Quality"),fs=btn("iv-btn","Fullscreen");
+sk.type="range";sk.min=0;sk.max=1000;sk.value=0;q.hidden=true;setIc(fs,"fs");
+[pl,sk,tm,mu,q,fs].forEach(function(e){bar.appendChild(e)});box.appendChild(bar);
+function toggle(){if(v.paused){v.play().catch(function(){})}else{v.pause()}}
+function sync(){setIc(pl,v.paused?"play":"pause");pl.setAttribute("aria-label",v.paused?"Play":"Pause");box.classList.toggle("iv-paused",v.paused);setIc(mu,v.muted?"mute":"vol");mu.setAttribute("aria-label",v.muted?"Unmute":"Mute")}
+function time(){var d=v.duration;tm.textContent=fmt(v.currentTime)+" / "+fmt(d);if(d&&isFinite(d)&&!sk.dragging)sk.value=v.currentTime/d*1000}
+["play","pause","volumechange"].forEach(function(e){v.addEventListener(e,sync)});
+["timeupdate","durationchange","loadedmetadata"].forEach(function(e){v.addEventListener(e,time)});
+pl.addEventListener("click",toggle);v.addEventListener("click",toggle);
+sk.addEventListener("input",function(){sk.dragging=1;if(isFinite(v.duration))v.currentTime=sk.value/1000*v.duration;time()});
+sk.addEventListener("change",function(){sk.dragging=0});
+mu.addEventListener("click",function(){v.muted=!v.muted});
+fs.addEventListener("click",function(){var d=document;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else if(box.requestFullscreen){box.requestFullscreen()}else if(box.webkitRequestFullscreen){box.webkitRequestFullscreen()}else if(v.webkitEnterFullscreen){v.webkitEnterFullscreen()}});
+q.addEventListener("click",function(){var h=v.immichHls;if(!h||!h.levels)return;var t=[];h.levels.forEach(function(l){var s=Math.min(l.width,l.height);if(t.indexOf(s)===-1)t.push(s)});t.sort(function(a,b){return a-b});var c=h.levels[h.nextLevel>-1?h.nextLevel:h.currentLevel];v.immichSet(t[(t.indexOf(c?Math.min(c.width,c.height):0)+1)%t.length])});
+v.immichSet=function(t){var h=v.immichHls;if(!h||!h.levels||!h.levels.length)return;var k=pick(h.levels,t),l=h.levels[k];h.nextLevel=k;q.hidden=false;q.textContent=Math.min(l.width,l.height)+"p"};
+sync();time()}
+function sizes(){var t=tier();
+document.querySelectorAll(".immich-video video").forEach(function(v){if(v.immichSet)v.immichSet(t)});
+document.querySelectorAll(".immich-video img[data-thumb]").forEach(function(i){var u=t<720?i.dataset.thumb:i.dataset.preview;if(i.getAttribute("src")!==u)i.src=u});
+document.querySelectorAll(".immich-video .iv-load").forEach(function(b){var z=b.querySelector("small"),n=b.dataset["s"+t];if(z)z.textContent=n?" \u00b7 ~"+n:""})}
+document.addEventListener("DOMContentLoaded",function(){sizes();new MutationObserver(sizes).observe(document.body,{attributes:true,attributeFilter:["data-image-mode"]})});
+document.addEventListener("click",function(e){var b=e.target.closest(".immich-video .iv-load");if(!b)return;
+var d=b.dataset,box=b.parentNode,v=document.createElement("video");v.playsInline=true;v.muted=d.muted==="true";b.replaceWith(v);controls(box,v);var t=tier();
+function mp4(){v.src=d.src;v.play().catch(function(){})}
+function go(){if(!window.Hls||!Hls.isSupported())return mp4();
+var h=new Hls({xhrSetup:function(x,u){if(u.indexOf("slug=")<0)x.open("GET",u+(u.indexOf("?")<0?"?":"&")+"slug="+d.slug,true)}});
+v.immichHls=h;
+h.on(Hls.Events.MANIFEST_PARSED,function(){h.currentLevel=pick(h.levels,t);v.immichSet(t)});
+h.on(Hls.Events.ERROR,function(_,r){if(r.fatal){h.destroy();v.immichHls=null;mp4()}});
+h.loadSource(d.hls);h.attachMedia(v);v.play().catch(function(){})}
+if(window.Hls)return go();
+var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js";s.onload=go;s.onerror=mp4;document.head.appendChild(s)})}
+</script>
+<button type="button" class="iv-load" data-slug="{{ $slug }}"{{ range $k := slice "480" "720" "1080" }}{{ with index $bw $k }}{{ if gt $dur 0.0 }}{{ $mb := div (mul . $dur) 8000000.0 }} data-s{{ $k }}="{{ if lt $mb 10.0 }}{{ printf "%.1f" $mb }}{{ else }}{{ printf "%.0f" $mb }}{{ end }} MB"{{ end }}{{ end }}{{ end }} data-hls="{{ $base }}/video/stream/main.m3u8?slug={{ $slug }}" data-src="{{ $base }}/video/playback?slug={{ $slug }}"{{ if $muted }} data-muted="true"{{ end }}>{{ with .Get "poster" }}<img src="{{ $base }}/thumbnail?size={{ . }}&slug={{ $slug }}" alt="" loading="lazy"{{ with $.Get "ratio" }} style="aspect-ratio:{{ . | safeCSS }};object-fit:cover"{{ end }}>{{ else }}<img data-thumb="{{ $base }}/thumbnail?size=thumbnail&slug={{ $slug }}" data-preview="{{ $base }}/thumbnail?size=preview&slug={{ $slug }}" alt="" loading="lazy"{{ with $.Get "ratio" }} style="aspect-ratio:{{ . | safeCSS }};object-fit:cover"{{ end }}>{{ end }}<img data-rimg src="data:," alt="" hidden width="0" height="0"><span>▶ Load video<small></small></span></button></div>

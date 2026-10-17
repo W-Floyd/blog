@@ -68,7 +68,14 @@
                low (no wasted large fetch). The builder also carries any `-hq`
                companion as data-* for the quality toggle. */}}
           {{ $r := partial "responsive-img.html" (dict "page" $ "src" . "alt" "Featured image" "widths" "400 800 1200 1720" "deferSrcset" true) }}
-          <a href="{{ $r.full }}"{{ with $r.hqFull }} data-hq-href="{{ . }}"{{ end }} target="_blank" rel="noopener" class="image-full" title="View full size">{{ $r.img | safeHTML }}</a>
+          {{/* LOCAL: optional crop. featuredImageCrop is a CSS aspect ratio ("16/9"); featuredImagePosition is the
+               focal point as object-position ("50% 60%", default centre). The full-size link still opens the
+               uncropped image. */}}
+          {{ $img := printf "%s" $r.img }}
+          {{ with $.Params.featuredImageCrop }}
+            {{ $img = replaceRE `<img ` (printf `<img style="aspect-ratio:%s;object-fit:cover;object-position:%s" ` (. | string | safeCSS) ($.Params.featuredImagePosition | default "50% 50%" | safeCSS)) $img 1 }}
+          {{ end }}
+          <a href="{{ $r.full }}"{{ with $r.hqFull }} data-hq-href="{{ . }}"{{ end }} target="_blank" rel="noopener" class="image-full" title="View full size">{{ $img | safeHTML }}</a>
         {{ end }}
         {{/* LOCAL: standing disclaimer above every post's body. */}}
         <i>Views and opinions of the author are independent of employers past or present. Duh...</i>

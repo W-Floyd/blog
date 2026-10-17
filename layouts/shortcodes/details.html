@@ -1,0 +1,9 @@
+{{- /*
+  details: collapsible section. Markdown inside is rendered; closed by default.
+
+    summary  required. Clickable label.
+    open     optional. "true" starts it expanded.
+*/ -}}
+<details{{ if eq (.Get "open") "true" }} open{{ end }}><summary style="cursor:pointer;font-weight:600">{{ .Get "summary" }}</summary>
+{{ .Inner | .Page.RenderString (dict "display" "block") }}
+</details>

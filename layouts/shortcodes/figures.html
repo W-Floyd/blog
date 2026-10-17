@@ -4,7 +4,8 @@
   They sit in a flex row sized to the same height, filling the row's horizontal
   space at every width, including on mobile. Each image's width is proportional
   to its aspect ratio so they share a uniform height. The small stylesheet is
-  emitted once per page.
+  emitted with every row (stateless: a once-per-page gate misfires under
+  `hugo serve`).
 
   `sizes` is handled automatically: each image's sizes attribute is rewritten to
   its proportional share of the row based on aspect ratio (relative to 100vw on
@@ -17,13 +18,10 @@
     {{< image src="media/b.avif" alt="..." >}}
     {{< /figures >}}
 */ -}}
-{{- if not (.Page.Store.Get "figuresCSS") -}}
-<style>.figure-row{display:flex;gap:1rem;margin:1rem 0;align-items:flex-start}.figure-row>*{min-width:0;margin:0}.figure-row a{display:block}.figure-row img{display:block;width:100%;height:auto;margin:0 !important}.figure-row .rimg-rot{margin:0 !important;max-width:none !important}</style>
-{{- .Page.Store.Set "figuresCSS" true -}}
-{{- end -}}
+<style>.figure-row{display:flex;gap:1rem;margin:1rem 0;align-items:flex-start}.figure-row>*{min-width:0;margin:0}.figure-row a{display:block}.figure-row img{display:block;width:100%;height:auto;margin:0 !important}.figure-row .rimg-rot{margin:0 !important;max-width:none !important}.figure-row .immich-video{margin:0}</style>
 {{- $raw := printf "%s" .Inner -}}
 {{- $clean := replaceRE `(?s)</?p[^>]*>` "" $raw -}}
-{{- $itemPattern := `(?s)(?:<a\b[^>]*>.*?</a>|<span class="rimg-rot"[^>]*>.*?</span>|<img\b[^>]*>(?:<noscript>.*?</noscript>)?)` -}}
+{{- $itemPattern := `(?s)(?:<div class="immich-video">.*?</div>|<a\b[^>]*>.*?</a>|<span class="rimg-rot"[^>]*>.*?</span>|<img\b[^>]*>(?:<noscript>.*?</noscript>)?)` -}}
 {{- $items := findRE $itemPattern $clean -}}
 {{- $count := len $items -}}
 {{- if eq $count 0 -}}
