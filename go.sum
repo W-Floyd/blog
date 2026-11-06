@@ -10,5 +10,9 @@ github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261105210932-f94c72c6b4ce h1:9uQ/
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261105210932-f94c72c6b4ce/go.mod h1:gd/NUQ5dn8znqYhU6iIe5hlxg/ZyreKye16zBkgAxTU=
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261106052744-fded0d426f0e h1:cvSAZ5YeL7d3pb8q4vHoqtFUfg7Pu9OMJXNpjxeMvfE=
 github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261106052744-fded0d426f0e/go.mod h1:gd/NUQ5dn8znqYhU6iIe5hlxg/ZyreKye16zBkgAxTU=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261106163515-e9e83f9df0bb h1:PI3wAZlnIIH8/et1p82tOfmlWXKvbvfY+Zz+N09bTf8=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261106163515-e9e83f9df0bb/go.mod h1:CAjxsKjz3WCKT7Hdec78tCZcDgxSzh+RHJMCh+hwFBc=
 github.com/hugomods/shortcodes v0.25.1 h1:JQZ/Kw9aOlFVnDiDgXsSqiu8gLFXAM7tQn+TYr8q2bc=
 github.com/hugomods/shortcodes v0.25.1/go.mod h1:EnVopbZMNI/HeteM3Lp3phBTCRLvPSe7l142qhRFFPY=
+github.com/leeoniya/uPlot v0.0.0-20250314024639-e995b061e9fc h1:urYfRKvj8rGMiRAMJPF6o85zHSOMGFKMiOo9z9QMMUw=
+github.com/leeoniya/uPlot v0.0.0-20250314024639-e995b061e9fc/go.mod h1:BYrQ8chCTNzthrkAAH91uicx31oOr2cmKDXX0YhctoA=
