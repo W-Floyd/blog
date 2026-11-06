@@ -1,11 +1,10 @@
 {{ if (not (isset .Site.Params "gravatar")) }}
-  {{ $targetSize := float 200 }}
   {{ $srcset := slice }}
   {{ $smallest := 0 }}
   {{ range readDir "/content/media/" }}
     {{ if (findRE `^avatar-[0-9]+.avif$` .Name) }}
       {{ $size := float (index (index (findRESubmatch `^avatar-([0-9]+).avif$` .Name) 0) 1) }}
-      {{ $srcset = $srcset | append (printf "media/%s %vx" .Name (div $size $targetSize)) }}
+      {{ $srcset = $srcset | append (printf "media/%s %vw" .Name $size) }}
       {{ if or (lt $size $smallest) (eq $smallest 0) }}
         {{ $smallest = $size }}
       {{ end }}
@@ -16,7 +15,9 @@
       src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
       alt="avatar"
       {{ printf "srcset=%q" (delimit $srcset ", ") | safeHTMLAttr }}
-      sizes="(max-width: 768px) 17rem, 20rem"
+      {{- /* px, not the stylesheet's 17rem/20rem: rem in sizes is the browser default
+        16px, not the theme's 10px root. Keep in step with AVIF_DISPLAY_REM. */}}
+      sizes="(max-width: 768px) 170px, 200px"
       fetchpriority=high
     />
   </div>
