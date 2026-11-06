@@ -162,7 +162,7 @@ New (to me) car, new project!
 Once I got the stock system image (download from Kia, community knows how to decrypt), a root shell on the running unit (others already figured this out), and the vendor source, I was off to the races.
 
 Given the ancient (3.18.24, from 2015) vendor kernel (for Android Kitkat!), I used LLMs to do minimal mainline porting for the quad Cortex-A53 Telechips TCC803x SoC, which turned out to almost work first try.
-With a bit of back and forth (and much USB swapping), display out was achieved and I could feed log messages back into the LLM to help it fix things up.
+With a bit of back and forth (and much USB swapping), display out was achieved and I could feed log messages back into the LLM and iterate on fixes.
 Note that stock was never reflashed, this is a `kexec` cycle that uses USB data only.
 The old Android version is in some ways a blessing in disguise, because older systems are in some ways much easier to bend to your will.
 
@@ -171,8 +171,8 @@ I figured the quickest path to something useful was to get `bootmanager` running
 {{< image src="media/PXL_20261016_214811840.MP.avif" alt="bootmanager running on the Kia EV6 head unit: a Choose a system screen titled Telechips TCC803x AVN, with a single Tools card (services, partitions, log, power)." >}}
 
 Still, after ~3.5min, it would reboot.
-So using LLMs I logged serial transfers from Android and did some decompilation of the MICOM firmware (seems to be some kind of PowerPC VLE chip) and Android apps to see what signals we needed to respond to, and found a hung SoC check that we can respond to to keep from being reset.
-At the same time we find signals for things like power draw of climate, battery state, etc. (I still need to map this out properly).
+So using LLMs I logged serial transfers from Android and did some decompilation of the MICOM firmware (seems to be some kind of PowerPC VLE chip) and Android apps to see what signals I needed to respond to, and found a hung SoC check that I can respond to to keep from being reset.
+At the same time I found signals for things like power draw of climate, battery state, etc. (I still need to map this out properly).
 
 Working:
 * Display
