@@ -8,7 +8,7 @@ theme = ["github.com/W-Floyd/hugo-coder-iconify"]
 [[module.mounts]]
 source = "content"
 target = "content"
-files = ["! **/media/src"]
+files = ["! **/src", "! media/src"]
 [[module.mounts]]
 source = "static"
 target = "static"
