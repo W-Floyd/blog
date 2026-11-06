@@ -297,6 +297,15 @@ __SIZES_DEFAULT='400,432,640,864,960,1280,1296,1728,1920,2160,2560,2592,3840'
 
 __SIZE_LADDERS='SIZES_DEFAULT'
 
+# A .env may instead give an image's CSS display widths in rem, as
+# AVIF_DISPLAY_REM='17,20': each is converted at __REM_PX and multiplied by every
+# __DISPLAY_DENSITIES entry, and the result is merged into AVIF_SIZES. Only the
+# resolved AVIF_SIZES enters the env hash.
+# 10px: the theme sets `html { font-size: 62.5% }`.
+__REM_PX='10'
+# Common device pixel ratios, up to 4x.
+__DISPLAY_DENSITIES='1 1.5 2 3 4'
+
 __ENVIRONMENT_LIST='PROCESS_JPEG
 PROCESS_PNG
 PROCESS_SCRIPT
@@ -358,6 +367,10 @@ __set_env() {
         set +o allexport
     fi
 
+    if [ -n "${AVIF_DISPLAY_REM:-}" ]; then
+        export AVIF_SIZES="$(__rem_sizes "${AVIF_DISPLAY_REM}" "${AVIF_SIZES}")"
+    fi
+
     while read -r __line; do
         if ! [ "${__line}" == "" ]; then
             unset "${__line}"
@@ -365,6 +378,30 @@ __set_env() {
     done <<<"$(printenv | sed 's/^\([^=]*\)=.*/\1/' | grep -Fxv "${__ignore_variables}" | grep -Fxv "${__ENVIRONMENT_LIST}")"
 
     __resolve_env
+
+}
+
+########################################
+# __rem_sizes <rem list> <size list>
+########################################
+#
+# Rem Sizes
+# Echoes the size list merged with every rem width at every display density,
+# in px, sorted and comma-separated.
+#
+########################################
+
+__rem_sizes() {
+
+    {
+        tr ',' '\n' <<<"${2}"
+        tr ',' '\n' <<<"${1}" | while read -r __rem; do
+            [ -n "${__rem}" ] || continue
+            for __density in ${__DISPLAY_DENSITIES}; do
+                awk -v r="${__rem}" -v px="${__REM_PX}" -v d="${__density}" 'BEGIN { printf "%d\n", r * px * d + 0.5 }'
+            done
+        done
+    } | sed '/^$/d' | sort -n -u | paste -sd, -
 
 }
 
@@ -1539,11 +1576,17 @@ __process_scripts() {
             else
 
                 echo "Running: ${__source_file}"
-                echo "$(__hash_env)" >"$(__get_hash_file "${__source_file}")"
 
                 __target_files="$("${__source_file}" -t)"
 
-                "${__source_file}"
+                # Hash only on success: a stale target from an earlier run would
+                # otherwise hide the failure and the script would never rerun.
+                if "${__source_file}"; then
+                    echo "$(__hash_env)" >"$(__get_hash_file "${__source_file}")"
+                else
+                    echo "Error: $(pwd)${__source_file:1} failed"
+                    rm -f "$(__get_hash_file "${__source_file}")"
+                fi
 
                 while read -r __file; do
                     if ! [ -a "${__file}" ]; then

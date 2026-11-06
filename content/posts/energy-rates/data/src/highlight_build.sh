@@ -26,5 +26,8 @@ if [ "${1:-}" == '-t' ]; then
     exit
 fi
 
+# images_build.sh clears the environment; go needs HOME for its module cache.
+export HOME="${HOME:-$(cd ~ && pwd)}"
+
 (cd "${__tool}" && go run . jq "${OLDPWD}/${__source}") >"${__target}.tmp"
 mv "${__target}.tmp" "${__target}"
