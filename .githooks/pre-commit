@@ -1,0 +1,27 @@
+#!/bin/sh
+# The Dockerfile gives each closed year one media layer, listed as
+# `COPY --from=compress /srv-media/yYYYY` lines. Every past year with posts
+# needs one; the current year must not have one, or its posts lose their
+# per-post layers.
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+
+year=${YEAR:-$(date +%Y)}
+closed=$(sed -n 's#^COPY --from=compress /srv-media/y\([0-9]\{4\}\) .*#\1#p' Dockerfile)
+posts=$(grep -rhm1 -E '^date *[:=]' content --include='*.md' |
+	sed -E 's/^date *[:=] *["'\'']?//' | cut -c1-4 | sort -u)
+
+fail=0
+for y in $posts; do
+	if [ "$y" -lt "$year" ] && ! echo "$closed" | grep -qx "$y"; then
+		echo "Dockerfile: $y is over; add: COPY --from=compress /srv-media/y$y /srv" >&2
+		fail=1
+	fi
+done
+for y in $closed; do
+	if [ "$y" -ge "$year" ]; then
+		echo "Dockerfile: remove the y$y layer; $y is not over" >&2
+		fail=1
+	fi
+done
+exit $fail

@@ -1,7 +1,7 @@
 THEME_MOD := github.com/W-Floyd/hugo-coder-iconify
 THEME_BRANCH := main
 
-.PHONY: bump-theme
+.PHONY: bump-theme hooks
 
 ## Bump the hugo-coder theme module to the latest commit on its default branch, then commit.
 bump-theme:
@@ -10,3 +10,7 @@ bump-theme:
 	@ver=$$(grep -oE '$(THEME_MOD) v[^ ]+' go.mod | head -1 | awk '{print $$2}'); \
 	git commit --only go.mod go.sum -m "build: bump hugo-coder theme to $$ver"; \
 	echo "Bumped theme to $$ver"
+
+## Use the repo's git hooks (.githooks): run once per clone.
+hooks:
+	git config core.hooksPath .githooks
