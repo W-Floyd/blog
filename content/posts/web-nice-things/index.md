@@ -152,6 +152,37 @@ So 21.7 KB of CSS and roughly 275 KB of WOFF2 are gone.
 What ships now is the markup itself and a single inline CSS rule, emitted only on pages that actually contain math, giving block equations some breathing room and letting wide ones scroll instead of overflowing on a phone.
 One wrinkle, `transform.ToMath` includes an `<annotation>` holding the original LaTeX so every formula showed up twice in RSS. The feed template strips the annotation, the page keeps it.
 
+## Twisting my own words
+
+Images will always be the heavy part of a post, but we still have some juice left in the text.
+My reverse proxy (Caddy) used to compress all of it on the fly, with `zstd` or `gzip` at their default levels, which was *fine*, but we can do better - namely, compress the snot out of text files at build time.
+
+The docker build now compresses every text file over 1 KB three ways, each at maximum effort:
+* `brotli -Z` [^caniuse_brotli]
+* `zstd --ultra -22` [^caniuse_zstd]
+* `zopfli --i4`
+
+For a representative `.html` file, we get the following tradeoff on `zopfli` iteration count:
+{{< uplot src="data/zopfli-iterations.json" x="iterations" y="zopfli,gzip -9" hidden="gzip -9" logx=2 xlabel="Zopfli iterations" ylabel="Compressed bytes" >}}
+
+And across the entire site, we find:
+
+{{< uplot src="data/compression-by-size.json" x="bytes" y="brotli -Z,zstd --ultra -22,zopfli --i4" logx=2 xlabel="File size (bytes, median of each power-of-two range)" ylabel="Size relative to zopfli" >}}
+
+We got most of the value of `zopfli` with only a few iterations, and this is only used when clients don't take `zstd` or `brotli`, which are better anyway.
+
+The container that serves this site now uses Caddy, which picks the pre-compressed file matching what the browser accepts and sends it as is.
+My reverse proxy out front will just pass these compressed files straight through.
+
+### What it bought
+
+Measured against the old setup, for a browser that accepts `brotli`:
+
+{{< size-table src="data/transfer-sizes.json" >}}
+
+Net result being roughly a fifth off, with no extra work for the server at request time or the client browser at all.
+The "before" column assumes Caddy's default `zstd` level, roughly `zstd -3`.
+
 [^png]: [Papua New Guinea](https://en.wikipedia.org/wiki/Papua_New_Guinea)
 [^usa]: USA, mostly
 [^cost]: At developed country prices, a whole topic in itself
@@ -161,3 +192,5 @@ One wrinkle, `transform.ToMath` includes an `<annotation>` holding the original 
 [^caniuse_srcset]: https://caniuse.com/srcset
 [^avif_lossless]: Still open as [av1-avif#111](https://github.com/AOMediaCodec/av1-avif/issues/111), where the format's own contributors concede that "the AV1 lossless compression mode has not been as finely tuned as the lossy modes" and that LZ77-style coding suits this content better. [av1-avif#89](https://github.com/AOMediaCodec/av1-avif/issues/89) says "deciding we don't care about lossless", "since a purpose-designed codec for lossless like WebP-LL […] can usually outperform a hybrid block based codec like AV1".
 [^caniuse_mathml]: https://caniuse.com/mathml
+[^caniuse_brotli]: https://caniuse.com/brotli
+[^caniuse_zstd]: https://caniuse.com/zstd

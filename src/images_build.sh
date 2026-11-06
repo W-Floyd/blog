@@ -111,11 +111,17 @@ done <<<"${__needed_programs}"
 # Variables
 ###############################################################################
 
+# For generator scripts, so they can reach shared tooling without ../../../..
+# Ignored here and stripped from -d output before hashing: an absolute path
+# differs per clone, and would otherwise change every hash.
+export REPO_ROOT="$(pwd)"
+
 __ignore_variables='PWD
 SHLVL
 _
 OLDPWD
-PATH'
+PATH
+REPO_ROOT'
 
 # Max concurrent per-image size encodes. Each AVIF variant runs its own
 # SSIMULACRA2 binary search (the bottleneck); the search is sequential but the
@@ -1512,7 +1518,7 @@ __process_scripts() {
                 "${__source_file}" -d | sort | while read -r __file; do
                     "${__hashfunc}" "${__file}"
                 done
-            } | sort | "${__hashfunc}" -
+            } | sed "s|${REPO_ROOT}/||g" | sort | "${__hashfunc}" -
         )"
 
         if ! __check_file "${__source_file}" "$("${__source_file}" -t)"; then

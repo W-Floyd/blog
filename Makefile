@@ -1,7 +1,7 @@
 THEME_MOD := github.com/W-Floyd/hugo-coder-iconify
 THEME_BRANCH := main
 
-.PHONY: bump-theme hooks highlight
+.PHONY: bump-theme hooks
 
 ## Bump the hugo-coder theme module to the latest commit on its default branch, then commit.
 bump-theme:
@@ -14,9 +14,3 @@ bump-theme:
 ## Use the repo's git hooks (.githooks): run once per clone.
 hooks:
 	git config core.hooksPath .githooks
-
-## Pre-highlight code in languages Hugo's chroma lacks (*.jq -> *.jq.chroma); commit the output.
-highlight: $(patsubst %,%.chroma,$(shell find content -name '*.jq'))
-
-%.jq.chroma: %.jq scripts/highlight/main.go
-	cd scripts/highlight && go run . jq $(abspath $<) > $(abspath $@)

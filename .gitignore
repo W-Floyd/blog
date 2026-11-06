@@ -5,3 +5,4 @@
 *.DS_Store
 /src/encode-log.tsv
 /src/encode-log.tsv.*
+_vendor/

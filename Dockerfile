@@ -5,12 +5,19 @@ RUN hugo --minify
 
 # Max-effort compression once here, instead of per request in the proxy.
 FROM alpine AS compress
-RUN apk add --no-cache brotli zstd mailcap
+RUN apk add --no-cache brotli zstd zopfli mailcap
 COPY --from=hugo /src/public /srv
-RUN find /srv -type f -size +1k \
+# zopfli --i4 gets ~96% of what 512 iterations save, at ~1/100th the CPU.
+# No size cutoff: each encoding is kept only if it beats the original, and
+# Caddy serves the original when no smaller encoding exists.
+RUN find /srv -type f \
       -regex '.*\.\(html\|css\|js\|mjs\|xml\|svg\|json\|txt\|ico\|webmanifest\)' \
-      -print0 | xargs -0 -n1 -P "$(nproc)" \
-      sh -c 'brotli -Z -k "$1" && zstd --ultra -22 -q -k "$1" && gzip -9 -k "$1"' _
+      -print0 | xargs -0 -n1 -P "$(nproc)" sh -ec ' \
+        brotli -Z -k "$1"; zstd --ultra -22 -q -k "$1"; zopfli --i4 "$1"; \
+        size=$(wc -c <"$1"); \
+        for c in "$1.br" "$1.zst" "$1.gz"; do \
+          [ "$(wc -c <"$c")" -lt "$size" ] || rm "$c"; \
+        done' _
 # Media gets its own layers, with fixed mtimes (Hugo writes fresh ones every
 # build), so unchanged layers are skipped on push and pull. A closed year (one
 # with a /srv-media/yYYYY COPY line below, read from this file) is one layer;

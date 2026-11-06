@@ -1,0 +1,36 @@
+{{- /*
+Table of byte counts from the page bundle, with a saving column.
+
+  {{< size-table src="data/transfer-sizes.json" >}}
+
+src's JSON is {"columns": [label, before, after], "rows": [[label, bytes,
+bytes], …]}. Bytes render as KB (1000), and the last column is the after
+column's saving over the before column.
+*/ -}}
+{{- $src := .Get "src" }}
+{{- with .Page.Resources.Get $src }}
+{{- $d := . | transform.Unmarshal }}
+{{- $kb := dict }}
+<table>
+  <thead><tr>
+    {{- range $i, $c := $d.columns }}<th{{ if $i }} style="text-align:right"{{ end }}>{{ $c }}</th>{{ end -}}
+    <th style="text-align:right">Saved</th>
+  </tr></thead>
+  <tbody>
+  {{- range $d.rows }}
+    {{- $before := index . 1 }}{{ $after := index . 2 }}
+    <tr>
+      <td>{{ index . 0 }}</td>
+      {{- range slice $before $after }}
+      {{- $k := div (float .) 1000 }}
+      <td style="text-align:right">{{ if ge $k 100 }}{{ lang.FormatNumber 0 $k }}{{ else }}{{ lang.FormatNumber 1 $k }}{{ end }} KB</td>
+      {{- end }}
+      <td style="text-align:right">{{ lang.FormatNumber 0 (mul 100 (sub 1 (div (float $after) $before))) }}%</td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+{{- else }}
+{{- /* Only a warning: the generator builds the site before src exists. */}}
+{{- warnf "size-table: %q not found in %s" $src .Page.File.Path }}
+{{- end }}
