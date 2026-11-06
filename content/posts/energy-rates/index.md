@@ -69,8 +69,4 @@ I get carried away, and built out JQ functions to model my utility rate options.
 cat export_filtered_counters.json | jq -f calculate.jq
 ```
 
-(Note as of writing, syntax highlighting is funky, [someday I'll try adding JQ support](https://github.com/alecthomas/chroma/issues/1135), but I'll embed below if I figure that out)
-
-<!-- ```jq
-{{< file-content "data/calculate.jq" >}}
-``` -->
+{{< file-content "data/calculate.jq.chroma" >}}

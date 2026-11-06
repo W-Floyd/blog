@@ -1,0 +1,264 @@
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-jq" data-lang="jq"><span style="display:flex;"><span>(
+</span></span><span style="display:flex;"><span>    [
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">153.90</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">118.72</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">84.34</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">80.71</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">101.59</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">116.60</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">136.78</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">192.62</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">207.16</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">144.40</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">135.87</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">114.62</span>
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> add
+</span></span><span style="display:flex;"><span>) <span style="color:#66d9ef">as</span> $actual <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">isHoliday</span>($dateTime):
+</span></span><span style="display:flex;"><span>    ($dateTime <span style="color:#f92672">|</span> strftime(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%m</span><span style="color:#e6db74">&#34;</span>) <span style="color:#f92672">|</span> tonumber) <span style="color:#66d9ef">as</span> $month <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    ($dateTime <span style="color:#f92672">|</span> strftime(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span>) <span style="color:#f92672">|</span> tonumber) <span style="color:#66d9ef">as</span> $day <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    ($dateTime <span style="color:#f92672">|</span> strftime(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%w</span><span style="color:#e6db74">&#34;</span>) <span style="color:#f92672">|</span> tonumber) <span style="color:#66d9ef">as</span> $weekday <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># New Year&#39;s Day: January 1</span>
+</span></span><span style="display:flex;"><span>    ($month <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">or</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Memorial Day: last Monday in May</span>
+</span></span><span style="display:flex;"><span>    ($month <span style="color:#f92672">==</span> <span style="color:#ae81ff">5</span> <span style="color:#f92672">and</span> $weekday <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">25</span>) <span style="color:#f92672">or</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Independence Day: July 4</span>
+</span></span><span style="display:flex;"><span>    ($month <span style="color:#f92672">==</span> <span style="color:#ae81ff">7</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">==</span> <span style="color:#ae81ff">4</span>) <span style="color:#f92672">or</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Labor Day: first Monday in September</span>
+</span></span><span style="display:flex;"><span>    ($month <span style="color:#f92672">==</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">and</span> $weekday <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">7</span>) <span style="color:#f92672">or</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Thanksgiving Day: fourth Thursday in November</span>
+</span></span><span style="display:flex;"><span>    ($month <span style="color:#f92672">==</span> <span style="color:#ae81ff">11</span> <span style="color:#f92672">and</span> $weekday <span style="color:#f92672">==</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">22</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">28</span>) <span style="color:#f92672">or</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Christmas Day: December 25</span>
+</span></span><span style="display:flex;"><span>    ($month <span style="color:#f92672">==</span> <span style="color:#ae81ff">12</span> <span style="color:#f92672">and</span> $day <span style="color:#f92672">==</span> <span style="color:#ae81ff">25</span>)
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Examples</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># RESIDENTIAL GENERAL USE AND SPACE HEAT - ONE METER: 2RS6A</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_residential_general_use_and_space_heat_one_meter_2rs6a</span>:
+</span></span><span style="display:flex;"><span>    . <span style="color:#66d9ef">as</span> $dot <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    (
+</span></span><span style="display:flex;"><span>        group_by(<span style="color:#a6e22e">.month</span>) <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        map(
+</span></span><span style="display:flex;"><span>            (first <span style="color:#f92672">|</span> <span style="color:#a6e22e">.month</span>) <span style="color:#66d9ef">as</span> $groupMonth <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>            {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">month</span>: $groupMonth,
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">state</span>: (map(<span style="color:#a6e22e">.state</span>) <span style="color:#f92672">|</span> add)
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>    ) <span style="color:#66d9ef">as</span> $monthstates <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    $dot <span style="color:#f92672">|</span> map(
+</span></span><span style="display:flex;"><span>        . <span style="color:#66d9ef">as</span> $entry <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        ($monthstates <span style="color:#f92672">|</span> map(select(<span style="color:#a6e22e">.month</span><span style="color:#f92672">==</span>$entry<span style="color:#a6e22e">.month</span>)) <span style="color:#f92672">|</span> first <span style="color:#f92672">|</span> <span style="color:#a6e22e">.state</span>) <span style="color:#66d9ef">as</span> $thisMonthstate <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        $entry <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">.month</span> <span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">6</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.month</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">9</span>) <span style="color:#66d9ef">as</span> $isSummer <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> $isSummer <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#ae81ff">0.10021</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span> <span style="color:#75715e"># Winter</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># That is, the rate is 0.06966 for the first 1000, and 0.06123 for everything past 1000</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> ($thisMonthstate<span style="color:#f92672">&gt;</span><span style="color:#ae81ff">1000</span>) <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Calculate the average charge given the 1000 split</span>
+</span></span><span style="display:flex;"><span>                ((($thisMonthstate<span style="color:#ae81ff">-1000</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.06123</span>) <span style="color:#f92672">+</span> (<span style="color:#ae81ff">1000</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.06966</span>)) <span style="color:#f92672">/</span> $thisMonthstate
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.06966</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span> <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        $entry <span style="color:#f92672">+</span> {<span style="color:#a6e22e">rate</span>: .}
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># RESIDENTIAL GENERAL USE – ONE METER: 2RS1A</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_residential_general_use_one_meter_2rs1a</span>:
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        . <span style="color:#66d9ef">as</span> $entry <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">.month</span> <span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">6</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.month</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">9</span>) <span style="color:#66d9ef">as</span> $isSummer <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> $isSummer <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#ae81ff">0.10021</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span> <span style="color:#75715e"># Winter</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#ae81ff">0.07735</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span> <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        $entry <span style="color:#f92672">+</span> {<span style="color:#a6e22e">rate</span>: .}
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 2RTOU, With Net Metering 2RTOUN</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_2rtou_with_net_metering_2rtoun</span>:
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        . <span style="color:#66d9ef">as</span> $entry <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">.month</span> <span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">6</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.month</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">9</span>) <span style="color:#66d9ef">as</span> $isSummer <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (
+</span></span><span style="display:flex;"><span>            (<span style="color:#a6e22e">.weekday</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.weekday</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>) <span style="color:#75715e"># Weekday</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">and</span> (<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">20</span>) <span style="color:#75715e"># 4pm-8pm</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">and</span> (<span style="color:#a6e22e">isHoliday</span>(<span style="color:#a6e22e">.datetime</span>) <span style="color:#f92672">|</span> <span style="color:#f92672">not</span>) <span style="color:#75715e"># Not holidays</span>
+</span></span><span style="display:flex;"><span>        ) <span style="color:#66d9ef">as</span> $isOnPeak <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>) <span style="color:#66d9ef">as</span> $isSuperOffPeak <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> $isOnPeak <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> $isSummer <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.26838</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.20151</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">elif</span> $isSuperOffPeak <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> $isSummer <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.03834</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.02879</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span> <span style="color:#75715e"># Off-Peak</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> $isSummer <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.07668</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.05758</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span> <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        $entry <span style="color:#f92672">+</span> {<span style="color:#a6e22e">rate</span>: .}
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_rtou2_with_net_metering_rtou2n</span>:
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        . <span style="color:#66d9ef">as</span> $entry <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">.month</span> <span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">6</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.month</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">9</span>) <span style="color:#66d9ef">as</span> $isSummer <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (
+</span></span><span style="display:flex;"><span>            (<span style="color:#a6e22e">.weekday</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.weekday</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>) <span style="color:#75715e"># Weekday</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">and</span> (<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">20</span>) <span style="color:#75715e"># 4pm-8pm</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">and</span> (<span style="color:#a6e22e">isHoliday</span>(<span style="color:#a6e22e">.datetime</span>) <span style="color:#f92672">|</span> <span style="color:#f92672">not</span>) <span style="color:#75715e"># Not holidays</span>
+</span></span><span style="display:flex;"><span>        ) <span style="color:#66d9ef">as</span> $isOnPeak <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>) <span style="color:#66d9ef">as</span> $isSuperOffPeak <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> $isSummer <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> $isOnPeak <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.2725</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span> <span style="color:#75715e"># Off-Peak</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.0681</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span> <span style="color:#75715e"># Winter</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> $isSuperOffPeak <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.0397</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span> <span style="color:#75715e"># Off-Peak</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#ae81ff">0.0793</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span> <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        $entry <span style="color:#f92672">+</span> {<span style="color:#a6e22e">rate</span>: .}
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_apply_rate</span>:
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        . <span style="color:#f92672">+</span> { <span style="color:#a6e22e">cost</span>: (<span style="color:#a6e22e">.state</span><span style="color:#f92672">*</span><span style="color:#a6e22e">.rate</span>)}
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Monthly Costs</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_add_monthly_cost</span>:
+</span></span><span style="display:flex;"><span>    . <span style="color:#f92672">+</span> <span style="color:#ae81ff">14.25</span><span style="color:#f92672">*</span><span style="color:#ae81ff">12</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_add_rate_fees</span>:
+</span></span><span style="display:flex;"><span>    .
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># | map(.rate *= 1.287) # TAX ADJUSTMENT</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> map(<span style="color:#a6e22e">.rate</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">0.00103</span>) <span style="color:#75715e"># PROPERTY TAX SURCHARGE</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> map(<span style="color:#a6e22e">.rate</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">0.01084</span>) <span style="color:#75715e"># TRANSMISSION DELIVERY CHARGE</span>
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_cost_adder</span>:
+</span></span><span style="display:flex;"><span>    map(<span style="color:#a6e22e">.cost</span>) <span style="color:#f92672">|</span> add;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_analyze_by</span>($grouperField; <span style="color:#a6e22e">analyzer</span>):
+</span></span><span style="display:flex;"><span>    group_by(.[$grouperField]) <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        (first <span style="color:#f92672">|</span> .[$grouperField]) <span style="color:#66d9ef">as</span> $group <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            $grouperField: $group,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">data</span>: <span style="color:#a6e22e">analyzer</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># total_cost: _cost_adder</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_flatten_analyze</span>($obj):
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        . <span style="color:#66d9ef">as</span> $entry
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">|</span> <span style="color:#66d9ef">if</span> (($entry<span style="color:#a6e22e">.data</span> <span style="color:#f92672">|</span> type) <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">array</span><span style="color:#e6db74">&#34;</span>) <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            $entry<span style="color:#a6e22e">.data</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">_flatten_analyze</span>($entry <span style="color:#f92672">|</span> del(<span style="color:#a6e22e">.data</span>))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>            $entry <span style="color:#f92672">+</span> $obj
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">|</span> flatten;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_flatten_analyze</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">_flatten_analyze</span>({});
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_is_outlier</span>($state):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Heuristic</span>
+</span></span><span style="display:flex;"><span>    $state <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">6</span> <span style="color:#f92672">or</span> $state <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_fix_outliers</span>:
+</span></span><span style="display:flex;"><span>    (
+</span></span><span style="display:flex;"><span>        map(select(<span style="color:#a6e22e">_is_outlier</span>(<span style="color:#a6e22e">.state</span>) <span style="color:#f92672">|</span> <span style="color:#f92672">not</span>))
+</span></span><span style="display:flex;"><span>    ) <span style="color:#66d9ef">as</span> $withoutOutliers <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    (
+</span></span><span style="display:flex;"><span>        $withoutOutliers
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">|</span> group_by(<span style="color:#a6e22e">.hour</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">|</span> map({ (first <span style="color:#f92672">|</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">|</span> tostring): (map(<span style="color:#a6e22e">.state</span>) <span style="color:#f92672">|</span> add <span style="color:#f92672">/</span> length) })
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">|</span> add
+</span></span><span style="display:flex;"><span>    ) <span style="color:#66d9ef">as</span> $hourAvgs <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">_is_outlier</span>(<span style="color:#a6e22e">.state</span>) <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            . <span style="color:#f92672">+</span> { <span style="color:#a6e22e">state</span>: $hourAvgs[<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">|</span> tostring] }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>            .
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span>(<span style="color:#ae81ff">0.550</span>) <span style="color:#66d9ef">as</span> $load <span style="color:#f92672">|</span> <span style="color:#75715e"># kWh</span>
+</span></span><span style="display:flex;"><span>(<span style="color:#ae81ff">0.920</span>) <span style="color:#66d9ef">as</span> $RTE <span style="color:#f92672">|</span> <span style="color:#75715e"># Round Trip Efficiency</span>
+</span></span><span style="display:flex;"><span>(<span style="color:#ae81ff">0.850</span>) <span style="color:#66d9ef">as</span> $SoCWindow <span style="color:#f92672">|</span> <span style="color:#75715e"># State of Charge window, eg 10% to 90% = %80</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2.875</span> <span style="color:#66d9ef">as</span> $hours <span style="color:#f92672">|</span> <span style="color:#75715e"># Intended duration of battery runtime</span>
+</span></span><span style="display:flex;"><span>($hours<span style="color:#f92672">*</span>($load<span style="color:#f92672">/</span>$RTE)<span style="color:#f92672">/</span>$SoCWindow) <span style="color:#66d9ef">as</span> $batterySize <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_adjust_usage</span>:
+</span></span><span style="display:flex;"><span>    map(
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&lt;</span> (<span style="color:#ae81ff">16</span><span style="color:#f92672">+</span>$hours)) <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">.state</span> <span style="color:#f92672">-=</span> $load
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">elif</span> (<span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">and</span> <span style="color:#a6e22e">.hour</span> <span style="color:#f92672">&lt;</span> ($hours)) <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">.state</span> <span style="color:#f92672">+=</span> ($load<span style="color:#f92672">/</span>$RTE)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>            .
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    ;
+</span></span><span style="display:flex;"><span>map(
+</span></span><span style="display:flex;"><span>    . <span style="color:#66d9ef">as</span> $dot
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> <span style="color:#a6e22e">.datetime</span> <span style="color:#f92672">|</span> fromdate
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> (strftime(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%H</span><span style="color:#e6db74">&#34;</span>) <span style="color:#f92672">|</span> tonumber) <span style="color:#66d9ef">as</span> $hour <span style="color:#75715e"># 0 through 23 |</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> (strftime(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%w</span><span style="color:#e6db74">&#34;</span>) <span style="color:#f92672">|</span> tonumber) <span style="color:#66d9ef">as</span> $weekday <span style="color:#75715e"># 0 is Sunday, 6 is Saturday |</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span> (strftime(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%m</span><span style="color:#e6db74">&#34;</span>) <span style="color:#f92672">|</span> tonumber) <span style="color:#66d9ef">as</span> $month <span style="color:#75715e"># 1 through 12 |</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">datetime</span>: .,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">state</span>: $dot<span style="color:#a6e22e">.state</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">hour</span>: $hour,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">weekday</span>: $weekday,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">month</span>: $month
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | _fix_outliers</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | _adjust_usage</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> <span style="color:#a6e22e">_residential_general_use_one_meter_2rs1a</span> <span style="color:#75715e"># RESIDENTIAL GENERAL USE – ONE METER: 2RS1A</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | _residential_general_use_and_space_heat_one_meter_2rs6a # RESIDENTIAL GENERAL USE AND SPACE HEAT - ONE METER: 2RS6A </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | _2rtou_with_net_metering_2rtoun # 2RTOU, With Net Metering 2RTOUN</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | _rtou2_with_net_metering_rtou2n # RESIDENTIAL TIME OF USE TWO-PERIOD</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> <span style="color:#a6e22e">_add_rate_fees</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> <span style="color:#a6e22e">_apply_rate</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | _analyze_by(&#34;month&#34;;(_analyze_by(&#34;hour&#34;;_cost_adder))) | _flatten_analyze</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> map(<span style="color:#a6e22e">.cost</span>) <span style="color:#f92672">|</span> add <span style="color:#f92672">|</span> <span style="color:#a6e22e">_add_monthly_cost</span> <span style="color:#66d9ef">as</span> $calculated
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">actual</span>: $actual,
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">calculated</span>: $calculated
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | (</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#     (</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         _2rtou_with_net_metering_2rtoun</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | _add_rate_fees</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | _apply_rate</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | map(.cost) | add | _add_monthly_cost</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#     ) -</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#     (</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         _adjust_usage</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | _2rtou_with_net_metering_2rtoun</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | _add_rate_fees</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | _apply_rate</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         | map(.cost) | add | _add_monthly_cost</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#     )</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># )</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># | {&#34;Yearly Savings ($)&#34;: ., &#34;Battery Size (kWh)&#34;: $batterySize}</span></span></span></code></pre></div>
