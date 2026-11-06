@@ -10,8 +10,11 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v6
-        with:
-          lfs: true
+      # LFS by hand: src/ holds image originals (~300 MB of ~850) that
+      # .dockerignore drops anyway. No LFS cache: pushes are often more than
+      # the 7 days apart that GitHub evicts after, and a miss costs an upload.
+      - name: Fetch LFS objects outside src/
+        run: git lfs pull --exclude='**/src/**'
       - name: Build and publish a Docker image for ${{ github.repository }}
         uses: macbre/push-to-ghcr@master
         with:
