@@ -533,6 +533,8 @@ __unset_unused() {
 #   layouts/**               site templates, e.g. _partials/home/avatar.html,
 #                            which builds "media/avatar-<width>.avif" at render
 #                            time
+#   assets/**                Hugo-pipeline JS/CSS, e.g. js/avatar-relight.js,
+#                            which fetches "media/avatar-normals-<width>.avif"
 #   config.toml              params naming site images
 #
 # A source is referenced when the corpus contains its *page-relative stem* —
@@ -572,6 +574,7 @@ __build_reference_corpus() {
     {
         find './content/' -type f \( -iname '*.md' -o -iname '*.html' \) ! -path '*/src/*' -exec cat {} +
         find './layouts/' -type f -exec cat {} +
+        find './assets/' -type f -exec cat {} +
         cat './config.toml'
 
         # A generator script's declared dependencies are references too, and they
