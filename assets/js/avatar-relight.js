@@ -1,5 +1,5 @@
 // How far each look pulls from the photo toward the relit shading: 0 none, 1 full.
-const RELIGHT_STRENGTH = { dark: .65, light: .6 };
+const RELIGHT_STRENGTH = { dark: .7, light: .6 };
 
 // Returns a toggle(event) for the given .relight box.
 window.avatarRelight = (box) => {
@@ -120,7 +120,7 @@ window.avatarRelight = (box) => {
   let shown;
   const fetchPair = () => {
     const src = img.currentSrc || img.src;
-    const nsrc = src.replace(/media\/avatar-(\d+)\.avif$/, NORMALS + "$1.avif");
+    const nsrc = src.replace(/media\/avatar-((?:hq-)?\d+)\.avif$/, NORMALS + "$1.avif");
     if (nsrc === src) return Promise.reject();
     if (src === shown) return Promise.resolve();
     return Promise.all([load(src), load(nsrc)]).then(([c, n]) => {

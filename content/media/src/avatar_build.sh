@@ -5,9 +5,10 @@
 # other source. PNG so the only lossy step after the camera's JPEG is the AVIF
 # encode.
 #
-# avatar-alpha.png (BiRefNet-matting, HR) and avatar-normals.png (from Apple
-# Depth Pro depth) are model outputs on this exact crop, kept rather than
-# regenerated: change the crop and both must be redone.
+# avatar-alpha.png (ViTMatte, trimap from BiRefNet_HR-matting) and
+# avatar-normals.png (from Apple Depth Pro depth) are model outputs on this
+# exact crop, kept rather than regenerated: change the crop and both must be
+# redone.
 set -euo pipefail
 
 __source='src/headshot.jpg'

@@ -1,12 +1,19 @@
 {{ if (not (isset .Site.Params "gravatar")) }}
   {{ $srcset := slice }}
+  {{ $hqSrcset := slice }}
   {{ $smallest := 0 }}
   {{ range readDir "/content/media/" }}
-    {{ if (findRE `^avatar-[0-9]+.avif$` .Name) }}
-      {{ $size := float (index (index (findRESubmatch `^avatar-([0-9]+).avif$` .Name) 0) 1) }}
-      {{ $srcset = $srcset | append (printf "media/%s %vw" .Name $size) }}
-      {{ if or (lt $size $smallest) (eq $smallest 0) }}
-        {{ $smallest = $size }}
+    {{ with findRESubmatch `^avatar-(hq-)?([0-9]+).avif$` .Name }}
+      {{ $m := index . 0 }}
+      {{ $size := float (index $m 2) }}
+      {{ $entry := printf "media/avatar-%s%v.avif %vw" (index $m 1) (index $m 2) $size }}
+      {{ if index $m 1 }}
+        {{ $hqSrcset = $hqSrcset | append $entry }}
+      {{ else }}
+        {{ $srcset = $srcset | append $entry }}
+        {{ if or (lt $size $smallest) (eq $smallest 0) }}
+          {{ $smallest = $size }}
+        {{ end }}
       {{ end }}
     {{ end }}
   {{ end }}
@@ -16,7 +23,11 @@
     .avatar .relight {
       position: relative; display: inline-block; line-height: 0; border-radius: 50%;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
-      background: color-mix(in srgb, currentColor 4%, transparent);
+      /* Lifted upper left, where the relight key sits. White rather than currentColor,
+         which would darken that side in light mode. */
+      background:
+        radial-gradient(circle at 35% 30%, rgb(255 255 255 / 7%), transparent 70%),
+        color-mix(in srgb, currentColor 5%, transparent);
       box-shadow: 0 0 0 .3rem color-mix(in srgb, currentColor 18%, transparent);
       transition: box-shadow .3s;
     }
@@ -32,15 +43,34 @@
   </style>
   <div class="avatar">
     <span class="relight" role="button" tabindex="0" aria-pressed="false" aria-label="Relight avatar with the cursor">
+      {{- /* -hq unless the theme's image toggle is stored as low, which keeps the stock
+        ladder. Chosen before the image fetches: with srcset in the markup, the preload
+        scanner would fetch -hq even for low. */}}
       <img
-        src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
         alt="avatar"
-        {{ printf "srcset=%q" (delimit $srcset ", ") | safeHTMLAttr }}
+        data-src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
+        {{ printf "data-srcset=%q" (delimit $srcset ", ") | safeHTMLAttr }}
+        {{ printf "data-hq-srcset=%q" (delimit $hqSrcset ", ") | safeHTMLAttr }}
         {{- /* px, not the stylesheet's 17rem/20rem: rem in sizes is the browser default
           16px, not the theme's 10px root. Keep in step with AVIF_DISPLAY_REM. */}}
         sizes="(max-width: 768px) 170px, 200px"
         fetchpriority=high
       />
+      <script>
+      (() => {
+        const img = document.currentScript.previousElementSibling, d = img.dataset;
+        let low = false;
+        try { low = localStorage.getItem("imagequality") === "low"; } catch {}
+        img.srcset = low ? d.srcset : d.hqSrcset;
+        img.src = d.src;
+      })();
+      </script>
+      <noscript><img
+        src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
+        alt="avatar"
+        {{ printf "srcset=%q" (delimit $hqSrcset ", ") | safeHTMLAttr }}
+        sizes="(max-width: 768px) 170px, 200px"
+      /></noscript>
       <canvas aria-hidden="true"></canvas>
     </span>
   </div>
