@@ -7,8 +7,8 @@
 #
 # avatar-alpha.png (ViTMatte, trimap from BiRefNet_HR-matting) and
 # avatar-normals.png (from Apple Depth Pro depth) are model outputs on this
-# exact crop, kept rather than regenerated: change the crop and both must be
-# redone.
+# exact crop, kept rather than regenerated: change the crop and redo both with
+# avatar_models.py.
 set -euo pipefail
 
 __source='src/headshot.jpg'
