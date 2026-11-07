@@ -1,0 +1,2 @@
+{{- /* Readers often strip inline <svg>; link the file as an image instead. */ -}}
+{{- with .Page.Resources.Get (strings.TrimPrefix "./" (.Get 0)) }}<p><img src="{{ .Permalink }}" alt="{{ $.Get 1 }}"></p>{{ end -}}

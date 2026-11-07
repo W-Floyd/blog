@@ -111,7 +111,7 @@ Note that clicking the image loads the largest resolution version of the image i
 Everything below is measured in your browser, for this visit.
 It updates live, so flip the quality toggle to and watch the image totals change the as browser refetches (likely from cache) the alternative quality.
 
-{{< pageweight >}}
+{{< feed-skip "a live table of what this page cost your browser" >}}{{< pageweight >}}{{< /feed-skip >}}
 
 ### Lossless
 
