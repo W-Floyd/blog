@@ -131,7 +131,7 @@ Supports touchscreen, SSH, fastboot, LUKS decryption, usage in place of [unl0kr]
 {{< figures >}}
 {{< image src="media/PXL_20261017_195654058.avif" alt="Moto G Play (2024) in hand, showing the bootmanager Unlock screen with a password field and on-screen keyboard for the UFS userdata partition." >}}
 {{< image src="media/PXL_20261017_195700115.avif" alt="Moto G Play (2024) in hand, showing the bootmanager Choose a system screen with a postmarketOS card marked default, on encrypted UFS userdata." >}}
-{{< immich-video url="https://immich.notmy.space/share/bootmanager-fogona/photos/ebf60442-44d2-4a6d-a578-b7f413fc37e8" ratio="9/16" >}}
+{{< immich-video url="https://immich.notmy.space/s/bootmanager-fogona/photos/ebf60442-44d2-4a6d-a578-b7f413fc37e8" ratio="9/16" >}}
 {{< /figures >}}
 
 #### [godot-maps](https://github.com/W-Floyd/godot-maps)
@@ -191,7 +191,7 @@ If you saw the cover image, you'll know. Of course it does!
 
 {{< figures >}}
 {{< image src="media/PXL_20261017_003820837.avif" alt="DOOM running on the 2024 Kia EV6 head unit at night, a first-person corridor with on-screen touch controls (move, turn, run, fire, use, map) on either side." >}}
-{{< immich-video url="https://immich.notmy.space/share/2024-kia-ev6-doom/photos/dd0c904e-5202-4942-9c63-af051766bfa4" muted="true" ratio="9/16" >}}
+{{< immich-video url="https://immich.notmy.space/s/2024-kia-ev6-doom/photos/dd0c904e-5202-4942-9c63-af051766bfa4" muted="true" ratio="9/16" >}}
 {{< /figures >}}
 
 {{< details summary="Vendor Resources" >}}
