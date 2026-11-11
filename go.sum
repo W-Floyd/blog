@@ -1,9 +1,7 @@
 github.com/Templarian/MaterialDesign-SVG v7.4.47+incompatible h1:w99yYrLvkTj5A9Dxd8mzNoFQpOBx9aRS03RrrqjzLuw=
 github.com/Templarian/MaterialDesign-SVG v7.4.47+incompatible/go.mod h1:SRSiaLOZazGp4UpKPQRm37h4A3cKLHXaybAqaJ7Lfx8=
-github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261107015043-aa8eda043a1e h1:dx4JN6rYucGGa3IKSTnVTdn3ZZbAWsMJousqN5bCDlI=
-github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261107015043-aa8eda043a1e/go.mod h1:CAjxsKjz3WCKT7Hdec78tCZcDgxSzh+RHJMCh+hwFBc=
-github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261107185406-2e624e0702b9 h1:ocD4IPboblkXWXN6pbZkav0W//6JDaiBn+8e2nFhWIM=
-github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261107185406-2e624e0702b9/go.mod h1:CAjxsKjz3WCKT7Hdec78tCZcDgxSzh+RHJMCh+hwFBc=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261111181710-d33e7f6ea864 h1:KVz+0zM9RKbdxFOwv79Outb7KcHyuh1Fijwkqz2umso=
+github.com/W-Floyd/hugo-coder-iconify v0.0.0-20261111181710-d33e7f6ea864/go.mod h1:CAjxsKjz3WCKT7Hdec78tCZcDgxSzh+RHJMCh+hwFBc=
 github.com/hugomods/shortcodes v0.25.1 h1:JQZ/Kw9aOlFVnDiDgXsSqiu8gLFXAM7tQn+TYr8q2bc=
 github.com/hugomods/shortcodes v0.25.1/go.mod h1:EnVopbZMNI/HeteM3Lp3phBTCRLvPSe7l142qhRFFPY=
 github.com/leeoniya/uPlot v0.0.0-20250314024639-e995b061e9fc h1:urYfRKvj8rGMiRAMJPF6o85zHSOMGFKMiOo9z9QMMUw=
