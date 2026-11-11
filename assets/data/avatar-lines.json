@@ -1,0 +1,254 @@
+{
+  "regions": {
+    "glasses": [0.3, 0.36, 0.7, 0.5],
+    "hair": [0.3, 0.12, 0.7, 0.33],
+    "mouth": [0.38, 0.54, 0.62, 0.66],
+    "shirt": [0, 0.76, 1, 1]
+  },
+  "elements": {
+    "name": ".about h1",
+    "nav": ".navigation",
+    "theme-toggle": "#dark-mode-toggle"
+  },
+  "on": [
+    "Oh, hello.",
+    "Right, where were we?",
+    "Ah. You found the button.",
+    "This is the bit I'm proudest of.",
+    "Mind the shadows."
+  ],
+  "back": [
+    "Welcome back.",
+    "You again?",
+    "Still here!",
+    "Did you miss me?",
+    "Picked up where we left off."
+  ],
+  "page": [],
+  "idle": [
+    "I'm a normal map. Don't make it weird.",
+    "Hold still, I'm rendering.",
+    "Yes, the shadows are real. Sort of.",
+    "I'd wave, but it's a still photo.",
+    "Pure vanity, dressed up as a demo.",
+    "You could be reading the posts, you know.",
+    "Nobody asked for this.",
+    "Squint and it's almost a face.",
+    "If I flicker, that's a feature."
+  ],
+  "left": [
+    "That's my good side.",
+    "Now the other side feels left out.",
+    "Ever so slightly flattering.",
+    "Rembrandt would approve. Mostly."
+  ],
+  "right": [
+    "Try the other side.",
+    "Fine, this side works too.",
+    "I did say the other side.",
+    "Both sides are fine, honestly."
+  ],
+  "above": [
+    "Just like the office lighting.",
+    "Are you interrogating me?",
+    "You've found the forehead.",
+    "The noon look."
+  ],
+  "below": [
+    "Lit from the floor. Unflattering.",
+    "Footlights. Am I on stage?",
+    "That's the chin's bad side.",
+    "Nobody looks good lit from below."
+  ],
+  "below:dark": [
+    "Campfire story time?",
+    "Torch under the chin. Classic.",
+    "It was a dark and stormy night.",
+    "Gather round, children.",
+    "Boo."
+  ],
+  "front": [
+    "Bit bright, isn't it?",
+    "Eye contact. Bold.",
+    "Deer, meet headlights.",
+    "No shadows to hide in.",
+    "Passport photo mode."
+  ],
+  "hover:glasses": [
+    "Don't smudge them.",
+    "They're not for show, I really do need them",
+    "Yes, I can see you."
+  ],
+  "hover:hair": [
+    "It's meant to look like that.",
+    "Don't ruffle it.",
+    "An okay hair day, frozen forever."
+  ],
+  "hover:mouth": [
+    "Careful, I bite.",
+    "Nothing to see here. Move along.",
+    "I'm smiling on the inside too."
+  ],
+  "hover:shirt": [
+    "I have an iron deficiency.",
+    "It was clean. That's what counts.",
+    "Wrinkles are the spice of life.",
+    "Business casual. Emphasis on casual."
+  ],
+  "shake": [
+    { "text": "Steady on!", "hold": 2 },
+    { "text": "Stop that, I'll get dizzy.", "hold": 2 },
+    { "text": "Shake it off, shake it off.", "hold": 2 },
+    { "text": "I'm not a snow globe.", "hold": 2 },
+    { "text": "Was that a no?", "hold": 2 }
+  ],
+  "spin": [
+    { "text": "You spin my head right round, right round.", "hold": 3 },
+    { "text": "Around the world, around the world.", "hold": 3 },
+    { "text": "Wheels on the bus go round and round.", "hold": 3 },
+    { "text": "I'm getting dizzy, and I'm a photo.", "hold": 3 }
+  ],
+  "leave": [
+    "Leaving already?",
+    "Was it something I said?",
+    "I'll just... stay here, then.",
+    "Don't forget to write.",
+    "Take care out there.",
+    "The posts are still here when you're back.",
+    "See ya's!",
+    "Catch you later.",
+    "Nice seeing you!"
+  ],
+  "dark": [
+    "Lights out.",
+    "Who turned off the sun?",
+    "Easier on the eyes.",
+    "Hello darkness my old friend."
+  ],
+  "zoom:in": [
+    "Close enough to count the pores?",
+    "Hello. You're very close."
+  ],
+  "zoom:out": [
+    "Fine. Admire me from afar.",
+    "Getting the full picture?",
+    "Still here. Just further away.",
+    "Right, who's a tiny face now."
+  ],
+  "flip:auto": [
+    "Auto mode. Looks the same, doesn't it?",
+    "Auto. The computer decides now.",
+    "Nothing changed, but it's the thought that counts.",
+    "Auto mode: same look, less responsibility.",
+    "Somewhere, a setting just felt seen."
+  ],
+  "flip": [
+    "Spot the difference.",
+    "Did you see that? No? Me neither.",
+    "The toggle toggled. Allegedly.",
+    "Subtle, that.",
+    "Nothing happened, as expected.",
+    "Same as before, but now on purpose."
+  ],
+  "light": [
+    "Ow, my eyes.",
+    "Who opened the curtains?",
+    "Daylight. Brave choice.",
+    "Give me a second to adjust.",
+    "Ooh, I'm blinded by the lights"
+  ],
+  "click": [
+    "That's not a button.",
+    "Nice try.",
+    "That did precisely nothing.",
+    "Keep going, something's bound to be a link.",
+    "You're bound to get it someday!"
+  ],
+  "rss": [
+    "A feed reader! A person of culture.",
+    "RSS isn't dead.",
+    "Pick a size. Tiny, medium, or the lot.",
+    "Finally, someone with a feed reader.",
+    "See you in your reader."
+  ],
+  "link:/": ["Home again."],
+  "link:/posts/": ["Pick a post, any post."],
+  "link:/about/": ["Ah, the bit about me."],
+  "link": [
+    "Here we are.",
+    "Made it.",
+    "Followed you here.",
+    "Tagging along. Don't mind me.",
+    "I came too."
+  ],
+  "over:name": [
+    "That's me!",
+    "Yes, that one's mine.",
+    "Still the author, last I checked.",
+    "Not a pen name."
+  ],
+  "over:nav": [
+    "Plenty more to see.",
+    "The grown-up bits of the site.",
+    "There's a resume in there, if you must.",
+    "The posts are the good bit, allegedly."
+  ],
+  "over:theme-toggle": [
+    "Go on, flip it.",
+    "Dark mode is a lifestyle, not a setting.",
+    "Pick a mood.",
+    "It cycles. It's complicated.",
+    "Light, dark, or let the machine decide.",
+    "Careful, I'm sensitive to light."
+  ],
+  "over:github.com": [
+    "Where the code lives.",
+    "Where I pretend to do stuff.",
+    "The code, warts and all.",
+    "Where the side projects go to die.",
+    "To the source!",
+    "This site's code is in there somewhere.",
+    "Take a look under the hood."
+  ],
+  "over:www.linkedin.com": [
+    "Suit and tie not included.",
+    "Where I might use the word 'synergy' someday.",
+    "Open to coffee!",
+    "Where the buzzwords live.",
+    "The formal version of me.",
+    "Same face, more buzzwords.",
+    "Let's connect?",
+    "I'm thrilled to announce... nothing."
+  ],
+  "over:mailto": [
+    "I do read these.",
+    "Old-fashioned, but I like it.",
+    "Opens your mail app. Probably.",
+    "Write soon!",
+    "I'll reply. Eventually.",
+    "A letter! How quaint."
+  ],
+  "over:rss": [
+    "Pick your resolution.",
+    "HI, MED, LOW. Like a volume knob.",
+    "The feed comes in three sizes.",
+    "Pick a size. Bandwidth is precious.",
+    "Tiny pictures or big ones. Your call.",
+    "Dial the pixels to taste."
+  ],
+  "menu": [
+    "Thinking it over? Reasonable.",
+    "The long way round. I respect it."
+  ],
+  "copy": [
+    "Plagiarism is the sincerest form of flattery.",
+    "Taking notes? I'm flattered.",
+    "That's going straight into a chat somewhere.",
+    "You're not a narc are you?"
+  ],
+  "copy:link": [
+    "Spread the word.",
+    "That link's got my name on it.",
+    "Tell them I sent you."
+  ]
+}

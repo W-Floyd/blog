@@ -66,6 +66,12 @@ series = "series"
 tag = "tags"
 author = "authors"
 
+# While the avatar's relight mode is on, it parks on every page (assets/js/avatar-dock.js).
+[[params.lazyScripts]]
+storage = "avatarrelight"
+value = "on"
+src = "js/avatar-dock.js"
+
 [[params.social]]
 name = "Github"
 icon = "github"

@@ -1,56 +1,17 @@
 {{ if (not (isset .Site.Params "gravatar")) }}
-  {{ $srcset := slice }}
-  {{ $hqSrcset := slice }}
-  {{ $smallest := 0 }}
-  {{ range readDir "/content/media/" }}
-    {{ with findRESubmatch `^avatar-(hq-)?([0-9]+).avif$` .Name }}
-      {{ $m := index . 0 }}
-      {{ $size := float (index $m 2) }}
-      {{ $entry := printf "media/avatar-%s%v.avif %vw" (index $m 1) (index $m 2) $size }}
-      {{ if index $m 1 }}
-        {{ $hqSrcset = $hqSrcset | append $entry }}
-      {{ else }}
-        {{ $srcset = $srcset | append $entry }}
-        {{ if or (lt $size $smallest) (eq $smallest 0) }}
-          {{ $smallest = $size }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-  <style>
-    /* The cutout has no backdrop, so the ring gives the circle its edge; tinted from the
-       text colour so it follows the colour scheme. */
-    .avatar .relight {
-      position: relative; display: inline-block; line-height: 0; border-radius: 50%;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-      /* Lifted upper left, where the relight key sits. White rather than currentColor,
-         which would darken that side in light mode. */
-      background:
-        radial-gradient(circle at 35% 30%, rgb(255 255 255 / 7%), transparent 70%),
-        color-mix(in srgb, currentColor 5%, transparent);
-      box-shadow: 0 0 0 .3rem color-mix(in srgb, currentColor 18%, transparent);
-      transition: box-shadow .3s;
-    }
-    .avatar .relight[aria-pressed="true"] {
-      box-shadow: 0 0 0 .3rem var(--link-color);
-    }
-    .avatar .relight canvas {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      border-radius: 50%; opacity: 0; transition: opacity .4s;
-    }
-    .avatar .relight.lit canvas { opacity: 1; }
-    .avatar .relight.solid img { visibility: hidden; }
-  </style>
+  {{ $src := partial "avatar/sources.html" . }}
+  {{ partial "avatar/style.html" . }}
+  {{ $lines := resources.Get "data/avatar-lines.json" | minify | fingerprint }}
   <div class="avatar">
-    <span class="relight" role="button" tabindex="0" aria-pressed="false" aria-label="Relight avatar with the cursor">
+    <span class="relight" data-lines="{{ $lines.RelPermalink }}" role="button" tabindex="0" aria-pressed="false" aria-label="Relight avatar with the cursor">
       {{- /* -hq unless the theme's image toggle is stored as low, which keeps the stock
         ladder. Chosen before the image fetches: with srcset in the markup, the preload
         scanner would fetch -hq even for low. */}}
       <img
         alt="avatar"
-        data-src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
-        {{ printf "data-srcset=%q" (delimit $srcset ", ") | safeHTMLAttr }}
-        {{ printf "data-hq-srcset=%q" (delimit $hqSrcset ", ") | safeHTMLAttr }}
+        data-src="{{ $src.src }}"
+        {{ printf "data-srcset=%q" $src.srcset | safeHTMLAttr }}
+        {{ printf "data-hq-srcset=%q" $src.hqSrcset | safeHTMLAttr }}
         {{- /* px, not the stylesheet's 17rem/20rem: rem in sizes is the browser default
           16px, not the theme's 10px root. Keep in step with AVIF_DISPLAY_REM. */}}
         sizes="(max-width: 768px) 170px, 200px"
@@ -66,9 +27,9 @@
       })();
       </script>
       <noscript><img
-        src="{{ print "media/avatar-" ($smallest | string) ".avif" }}"
+        src="{{ $src.src }}"
         alt="avatar"
-        {{ printf "srcset=%q" (delimit $hqSrcset ", ") | safeHTMLAttr }}
+        {{ printf "srcset=%q" $src.hqSrcset | safeHTMLAttr }}
         sizes="(max-width: 768px) 170px, 200px"
       /></noscript>
       <canvas aria-hidden="true"></canvas>
@@ -77,11 +38,12 @@
   {{ $js := resources.Get "js/avatar-relight.js" | minify | fingerprint }}
   <script>
   (() => {
-    // Relighting is opt-in: its script and the normal map load on the first tap.
+    // Relighting is opt-in: its script and the normal map load on the first tap, or at once
+    // when a previous visit left it on.
     const box = document.currentScript.previousElementSibling.querySelector(".relight");
     let toggle, loading;
-    const go = (e) => {
-      if (toggle) return toggle(e);
+    const go = (e, restored) => {
+      if (toggle) return toggle(e, restored);
       loading = loading || new Promise((ok, fail) => {
         const s = document.createElement("script");
         s.src = {{ $js.RelPermalink }};
@@ -89,12 +51,13 @@
         s.onerror = fail;
         document.head.append(s);
       });
-      loading.then(() => { toggle = toggle || avatarRelight(box); toggle(e); }, () => {});
+      loading.then(() => { toggle = toggle || avatarRelight(box); toggle(e, restored); }, () => {});
     };
     box.addEventListener("click", go);
     box.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); }
     });
+    try { if (localStorage.getItem("avatarrelight") === "on") go(null, true); } catch {}
   })();
   </script>
 {{ end }}

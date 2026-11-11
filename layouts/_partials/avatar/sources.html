@@ -1,0 +1,24 @@
+{{- /* The avatar's AVIF ladders from content/media: stock and -hq srcsets, and the
+  smallest stock rung as src. Site-root URLs, so they work from any page. */ -}}
+{{- $srcset := slice -}}
+{{- $hqSrcset := slice -}}
+{{- $smallest := 0 -}}
+{{- range readDir "/content/media/" -}}
+  {{- with findRESubmatch `^avatar-(hq-)?([0-9]+).avif$` .Name -}}
+    {{- $m := index . 0 -}}
+    {{- $size := float (index $m 2) -}}
+    {{- $entry := printf "%s %vw" (printf "media/avatar-%s%v.avif" (index $m 1) (index $m 2) | relURL) $size -}}
+    {{- if index $m 1 -}}
+      {{- $hqSrcset = $hqSrcset | append $entry -}}
+    {{- else -}}
+      {{- $srcset = $srcset | append $entry -}}
+      {{- if or (lt $size $smallest) (eq $smallest 0) -}}
+        {{- $smallest = $size -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return dict
+  "src" (print "media/avatar-" ($smallest | string) ".avif" | relURL)
+  "srcset" (delimit $srcset ", ")
+  "hqSrcset" (delimit $hqSrcset ", ") -}}
